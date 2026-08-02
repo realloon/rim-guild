@@ -98,7 +98,7 @@ if (result && !result.error) {
           alt="我的头像"
         />
         <h2>{nickname}</h2>
-        <span class="logged-email" title="已登录账号">{loggedEmail}</span>
+        <span title="已登录账号">{loggedEmail}</span>
       </div>
       <form method="POST" action={actions.updateProfile}>
         <label class="form-field" for="authorName">
@@ -205,13 +205,11 @@ if (result && !result.error) {
 </Layout>
 
 <style>
-  .logged-email {
-    margin-left: auto;
-    color: var(--text-dim);
-    font-size: 0.85rem;
-  }
-
-  .profile-head .field-note {
-    margin: 0;
+  .profile-head {
+    span {
+      margin-left: auto;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
   }
 </style>

@@ -182,16 +182,16 @@ const submitLabel = post ? '保存修改' : '发布'
     display: flex;
     gap: 8px;
     align-items: center;
-  }
 
-  .role-pair select {
-    flex-shrink: 0;
-    width: auto;
-    min-width: 104px;
-  }
+    select {
+      flex-shrink: 0;
+      width: auto;
+      min-width: 104px;
+    }
 
-  .role-pair input {
-    flex: 1;
+    input {
+      flex: 1;
+    }
   }
 
   .role-count {
@@ -210,11 +210,11 @@ const submitLabel = post ? '保存修改' : '发布'
     color: var(--text-dim);
     font-size: 1rem;
     cursor: pointer;
-  }
 
-  .remove-role:hover {
-    border-color: #e08b8b;
-    color: #e08b8b;
+    &:hover {
+      border-color: #e08b8b;
+      color: #e08b8b;
+    }
   }
 
   .add-role {
@@ -225,10 +225,10 @@ const submitLabel = post ? '保存修改' : '发布'
     color: var(--text-dim);
     padding: 4px 16px;
     cursor: pointer;
-  }
 
-  .add-role:hover {
-    border-color: var(--accent);
-    color: var(--accent-strong);
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent-strong);
+    }
   }
 </style>

@@ -26,7 +26,7 @@ const result = mode === 'register' ? registerResult : loginResult
 
 <Layout title={mode === 'register' ? '注册 · 边缘工会' : '登录 · 边缘工会'}>
   <main>
-    <section class="auth-card auth-single">
+    <section>
       <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
 
       <form method="POST" action={action}>
@@ -60,7 +60,7 @@ const result = mode === 'register' ? registerResult : loginResult
         >
       </form>
 
-      <p class="auth-switch">
+      <p>
         {
           mode === 'register' ? (
             <>
@@ -86,31 +86,28 @@ const result = mode === 'register' ? registerResult : loginResult
 </Layout>
 
 <style>
-  .auth-card {
+  section {
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 16px;
-  }
-
-  .auth-card h2 {
-    margin: 0 0 8px;
-    font-size: 1.05rem;
-  }
-
-  .auth-single {
     max-width: 360px;
     margin: 16px auto 0;
     box-sizing: border-box;
-  }
 
-  .auth-switch {
-    margin: 16px 0 0;
-    color: var(--text-dim);
-    font-size: 0.9rem;
-  }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
 
-  .auth-switch a {
-    color: var(--accent-strong);
+    > p {
+      margin: 16px 0 0;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+
+      a {
+        color: var(--accent-strong);
+      }
+    }
   }
 </style>

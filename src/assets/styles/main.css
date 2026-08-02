@@ -42,33 +42,33 @@ a {
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-}
 
-.btn:hover {
-  background: var(--accent-strong);
+  &:hover {
+    background: var(--accent-strong);
+  }
 }
 
 .btn-ghost {
   background: none;
   border: 1px solid var(--border);
   color: var(--text);
-}
 
-.btn-ghost:hover {
-  border-color: var(--accent);
-  background: none;
-  color: var(--accent-strong);
+  &:hover {
+    border-color: var(--accent);
+    background: none;
+    color: var(--accent-strong);
+  }
 }
 
 .btn-danger {
   background: none;
   border: 1px solid #b35858;
   color: #d98a8a;
-}
 
-.btn-danger:hover {
-  background: #b35858;
-  color: #fff;
+  &:hover {
+    background: #b35858;
+    color: #fff;
+  }
 }
 
 .btn-sm {
@@ -76,31 +76,32 @@ a {
   font-size: 0.85rem;
 }
 
-form :is(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 8px 12px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font: inherit;
-}
+form {
+  :is(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font: inherit;
+  }
 
-form textarea {
-  min-height: 180px;
-  resize: vertical;
-  line-height: 1.5;
-}
+  textarea {
+    min-height: 180px;
+    resize: vertical;
+    line-height: 1.5;
+  }
 
-form
   :is(
     input:not([type='hidden']):not([type='checkbox']),
     select,
     textarea
   ):focus {
-  outline: none;
-  border-color: var(--accent);
+    outline: none;
+    border-color: var(--accent);
+  }
 }
 
 .form-field {
@@ -108,24 +109,24 @@ form
   margin-bottom: 16px;
   color: var(--text-dim);
   font-size: 0.9rem;
-}
 
-.form-field > :is(input, select, textarea) {
-  display: block;
-  margin-top: 4px;
+  > :is(input, select, textarea) {
+    display: block;
+    margin-top: 4px;
+  }
 }
 
 .form-options {
   margin: 0 0 16px;
   padding: 0;
   border: 0;
-}
 
-.form-options legend {
-  margin-bottom: 4px;
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  padding: 0;
+  legend {
+    margin-bottom: 4px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    padding: 0;
+  }
 }
 
 .form-section {
@@ -133,12 +134,12 @@ form
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
-}
 
-.form-section legend {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  padding: 0 4px;
+  legend {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    padding: 0 4px;
+  }
 }
 
 .role-checkboxes {
@@ -155,15 +156,15 @@ form
   border: 1px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
-}
 
-.role-checkbox input {
-  width: auto;
-}
+  input {
+    width: auto;
+  }
 
-.role-checkbox:has(input:checked) {
-  border-color: var(--accent);
-  color: var(--accent-strong);
+  &:has(input:checked) {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
 }
 
 .field-note {
@@ -212,10 +213,10 @@ form
   font-size: 0.85rem;
   text-decoration: none;
   white-space: nowrap;
-}
 
-a.author:hover {
-  color: var(--accent-strong);
+  &:hover {
+    color: var(--accent-strong);
+  }
 }
 
 .author-avatar {
@@ -227,30 +228,35 @@ a.author:hover {
   list-style: none;
   margin: 0;
   padding: 0;
-}
 
-.post-list li {
-  border: 1px solid var(--border);
-  background: var(--bg-raised);
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
+  li {
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
 
-.post-list a {
-  display: block;
-  padding: 16px;
-  text-decoration: none;
-}
+  a {
+    display: block;
+    padding: 16px;
+    text-decoration: none;
 
-.post-list a:hover {
-  border-color: var(--accent);
-}
+    &:hover {
+      border-color: var(--accent);
+    }
+  }
 
-.post-list h2 {
-  margin: 0 0 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.5;
+  h2 {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .post-meta {
+    justify-content: space-between;
+    margin: 0;
+  }
 }
 
 .post-excerpt {
@@ -272,11 +278,6 @@ a.author:hover {
   color: var(--text-dim);
   font-size: 0.85rem;
   margin-bottom: 24px;
-}
-
-.post-list .post-meta {
-  justify-content: space-between;
-  margin: 0;
 }
 
 .tags {
@@ -316,11 +317,11 @@ a.author:hover {
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 24px;
-}
 
-.profile-card h2 {
-  margin: 0 0 16px;
-  font-size: 1.05rem;
+  h2 {
+    margin: 0 0 16px;
+    font-size: 1.05rem;
+  }
 }
 
 .profile-head {
@@ -328,9 +329,9 @@ a.author:hover {
   align-items: center;
   gap: 16px;
   margin-bottom: 16px;
-}
 
-.profile-head h2 {
-  margin: 0 0 4px;
-  font-size: 1.1rem;
+  h2 {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+  }
 }

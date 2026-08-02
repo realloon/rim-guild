@@ -88,7 +88,7 @@ const posts: Post[] = results.map(postFromRow)
   <main>
     {
       recommended.length > 0 && (
-        <section class="recommended">
+        <section>
           <h2>适合你的需求</h2>
           <ul class="post-list">
             {recommended.map(post => (
@@ -99,7 +99,7 @@ const posts: Post[] = results.map(postFromRow)
       )
     }
 
-    <form class="search-bar" method="GET" action="/">
+    <form method="GET" action="/">
       {activeRole && <input type="hidden" name="role" value={activeRole} />}
       <input
         type="search"
@@ -111,7 +111,7 @@ const posts: Post[] = results.map(postFromRow)
       <button class="btn btn-ghost" type="submit">搜索</button>
     </form>
 
-    <nav class="role-filter" aria-label="按类型筛选">
+    <nav aria-label="按类型筛选">
       <a
         href={q ? `/?q=${encodeURIComponent(q)}` : '/'}
         class={activeRole === null ? 'active' : ''}>全部</a
@@ -149,63 +149,63 @@ const posts: Post[] = results.map(postFromRow)
 </Layout>
 
 <style>
-  .recommended {
+  section {
     margin-bottom: 24px;
+
+    h2 {
+      font-size: 1rem;
+      margin: 0 0 8px;
+      color: var(--accent-strong);
+    }
   }
 
-  .recommended h2 {
-    font-size: 1rem;
-    margin: 0 0 8px;
-    color: var(--accent-strong);
-  }
-
-  .search-bar {
+  form {
     display: flex;
     gap: 8px;
     margin-bottom: 16px;
+
+    input {
+      flex: 1;
+      box-sizing: border-box;
+      padding: 8px 12px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+    }
   }
 
-  .search-bar input {
-    flex: 1;
-    box-sizing: border-box;
-    padding: 8px 12px;
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font: inherit;
-  }
-
-  .search-bar input:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-
-  .role-filter {
+  nav {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 24px;
-  }
 
-  .role-filter a {
-    padding: 4px 16px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: 0.85rem;
-  }
+    a {
+      padding: 4px 16px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.85rem;
 
-  .role-filter a:hover {
-    border-color: var(--accent);
-    color: var(--accent-strong);
-  }
+      &:hover {
+        border-color: var(--accent);
+        color: var(--accent-strong);
+      }
 
-  .role-filter a.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #1a1408;
-    font-weight: 600;
+      &.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #1a1408;
+        font-weight: 600;
+      }
+    }
   }
 </style>

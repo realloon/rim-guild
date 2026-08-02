@@ -120,7 +120,7 @@ for (const resp of responseRows) {
   <main>
     {
       post ? (
-        <article class="post-detail">
+        <article>
           <h1>{post.title}</h1>
           <div class="post-meta">
             <AuthorAvatar
@@ -131,7 +131,7 @@ for (const resp of responseRows) {
             />
             <time>{formatDate(post.created_at)}</time>
           </div>
-          {post.description && <p class="description">{post.description}</p>}
+          {post.description && <p>{post.description}</p>}
           {post.tags.length > 0 && (
             <div class="post-tags">
               {post.tags.map(tag => (
@@ -233,24 +233,18 @@ for (const resp of responseRows) {
           </div>
           <div class="contact-box">
             <strong>发布者联系方式</strong>
-            {post.author_qq && (
-              <div class="contact-line">QQ：{post.author_qq}</div>
-            )}
-            {post.author_github && (
-              <div class="contact-line">GitHub：{post.author_github}</div>
-            )}
-            {post.author_steam && (
-              <div class="contact-line">Steam：{post.author_steam}</div>
-            )}
+            {post.author_qq && <div>QQ：{post.author_qq}</div>}
+            {post.author_github && <div>GitHub：{post.author_github}</div>}
+            {post.author_steam && <div>Steam：{post.author_steam}</div>}
             {!post.author_qq && !post.author_github && !post.author_steam && (
-              <div class="contact-line">未填写</div>
+              <div>未填写</div>
             )}
           </div>
 
           <section class="post-updates">
             <h2>项目更新</h2>
             {updateRows.length > 0 ? (
-              <ul class="update-list">
+              <ul>
                 {updateRows.map(update => (
                   <li>
                     <p>{update.content}</p>
@@ -313,20 +307,22 @@ for (const resp of responseRows) {
 </Layout>
 
 <style>
-  .post-detail h1 {
-    font-size: 1.4rem;
-    margin: 0 0 8px;
-    line-height: 1.5;
-  }
+  article {
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 8px;
+      line-height: 1.5;
+    }
 
-  .post-detail .description {
-    white-space: pre-wrap;
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 24px;
-    line-height: 1.5;
+    > p {
+      white-space: pre-wrap;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
   }
 
   .post-tags {
@@ -353,31 +349,31 @@ for (const resp of responseRows) {
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 16px;
+
+    form {
+      margin-top: 8px;
+    }
+
+    p {
+      margin: 8px 0 0;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
   }
 
   .role-requirement-head {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
 
-  .role-requirement-head .status {
-    margin-left: auto;
+    .status {
+      margin-left: auto;
+    }
   }
 
   .role-count-label {
     color: var(--text-dim);
     font-size: 0.85rem;
-  }
-
-  .role-requirement form {
-    margin-top: 8px;
-  }
-
-  .role-requirement p {
-    margin: 8px 0 0;
-    white-space: pre-wrap;
-    line-height: 1.5;
   }
 
   .role-closed {
@@ -397,57 +393,57 @@ for (const resp of responseRows) {
     border-radius: 8px;
     padding: 16px;
     color: var(--accent-strong);
-  }
 
-  .contact-box strong {
-    display: block;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
+    strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
 
-  .contact-line {
-    color: var(--accent-strong);
+    div {
+      color: var(--accent-strong);
+    }
   }
 
   .post-updates {
     margin: 24px 0;
-  }
 
-  .post-updates h2 {
-    font-size: 1rem;
-    margin: 0 0 8px;
-  }
+    h2 {
+      font-size: 1rem;
+      margin: 0 0 8px;
+    }
 
-  .post-updates form > textarea {
-    display: block;
-    margin-bottom: 16px;
-  }
+    form > textarea {
+      display: block;
+      margin-bottom: 16px;
+    }
 
-  .update-list {
-    list-style: none;
-    margin: 0 0 16px;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+    ul {
+      list-style: none;
+      margin: 0 0 16px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
 
-  .update-list li {
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-  }
+      li {
+        background: var(--bg-raised);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+      }
 
-  .update-list p {
-    margin: 0 0 4px;
-    white-space: pre-wrap;
-    line-height: 1.5;
-  }
+      p {
+        margin: 0 0 4px;
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
 
-  .update-list time {
-    color: var(--text-dim);
-    font-size: 0.8rem;
+      time {
+        color: var(--text-dim);
+        font-size: 0.8rem;
+      }
+    }
   }
 
   .post-owner-actions {
