@@ -121,13 +121,7 @@ for (const resp of responseRows) {
     {
       post ? (
         <article class="post-detail">
-          <div class="detail-record-line">
-            <span>OPEN CALL / REQ-{String(post.id).padStart(2, '0')}</span>
-            <span>{post.roles.filter(role => role.status === 'open').length} 个开放岗位</span>
-          </div>
-
           <header class="detail-header">
-            <p class="eyebrow">PROJECT REQUEST</p>
             <h1>{post.title}</h1>
             <div class="detail-meta">
               <AuthorAvatar
@@ -160,7 +154,6 @@ for (const resp of responseRows) {
               <section class="role-section">
                 <div class="section-heading">
                   <div>
-                    <p class="eyebrow">LOOKING FOR</p>
                     <h2>招揽需求</h2>
                   </div>
                   <span class="section-count">{post.roles.length} 个角色</span>
@@ -268,7 +261,6 @@ for (const resp of responseRows) {
               <section class="post-updates">
                 <div class="section-heading">
                   <div>
-                    <p class="eyebrow">FIELD LOG</p>
                     <h2>项目更新</h2>
                   </div>
                   <span class="section-count">{updateRows.length} 条记录</span>
@@ -350,20 +342,6 @@ for (const resp of responseRows) {
   .post-detail {
     max-width: 1080px;
     margin: 0 auto;
-  }
-
-  .detail-record-line {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 13px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-dim);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.64rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
   }
 
   .detail-header {
@@ -555,12 +533,6 @@ for (const resp of responseRows) {
   }
 
   @media (max-width: 720px) {
-    .detail-record-line {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 5px;
-    }
-
     .detail-header {
       padding-top: 30px;
     }

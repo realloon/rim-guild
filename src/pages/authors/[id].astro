@@ -73,7 +73,6 @@ if (!profile) {
                   alt={`${profile.author_name} 的头像`}
                 />
                 <div>
-                  <p class="eyebrow">AUTHOR PROFILE</p>
                   <h1>{profile.author_name}</h1>
                   {authorRoles.length > 0 && (
                     <div class="tags">
@@ -84,7 +83,7 @@ if (!profile) {
                   )}
                 </div>
               </div>
-              <span class="profile-badge">CREATOR</span>
+              <span class="profile-badge">发布者</span>
             </div>
             {(profile.qq || profile.github || profile.steam) && (
               <div class="profile-contacts">
@@ -112,7 +111,6 @@ if (!profile) {
 
           <div class="section-heading">
             <div>
-              <p class="eyebrow">PUBLISHED CALLS</p>
               <h2>TA 的需求</h2>
             </div>
             <span class="section-count">{posts.length} 条记录</span>

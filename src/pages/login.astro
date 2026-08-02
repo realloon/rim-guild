@@ -27,7 +27,6 @@ const result = mode === 'register' ? registerResult : loginResult
 <Layout title={mode === 'register' ? '注册 · 边缘工会' : '登录 · 边缘工会'}>
   <main class="auth-page">
     <section class="auth-intro">
-      <p class="eyebrow">MEMBER ACCESS / 001</p>
       <div class="auth-symbol" aria-hidden="true">
         <svg viewBox="0 0 120 120" fill="none">
           <rect x="14" y="14" width="92" height="92" stroke="currentColor" />
@@ -47,7 +46,6 @@ const result = mode === 'register' ? registerResult : loginResult
 
     <section class="auth-card">
       <div class="auth-card-heading">
-        <p class="eyebrow">{mode === 'register' ? 'NEW MEMBER' : 'WELCOME BACK'}</p>
         <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
       </div>
       <p class="auth-note">
@@ -131,7 +129,7 @@ const result = mode === 'register' ? registerResult : loginResult
     line-height: 0.98;
   }
 
-  .auth-intro > p:not(.eyebrow) {
+  .auth-intro > p {
     max-width: 420px;
     margin-bottom: 30px;
     color: var(--text-dim);

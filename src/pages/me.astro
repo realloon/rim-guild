@@ -89,7 +89,26 @@ if (result && !result.error) {
 
 <Layout title="我的主页 · 边缘工会">
   <main class="profile-page">
-    <section class="profile-card">
+    <div class="profile-layout">
+      <aside class="profile-index">
+        <nav aria-label="个人主页索引">
+          <a href="#profile">
+            <span>01</span>
+            个人资料
+          </a>
+          <a href="#posts">
+            <span>02</span>
+            我的需求
+          </a>
+          <a href="#claims">
+            <span>03</span>
+            我的认领
+          </a>
+        </nav>
+      </aside>
+
+      <div class="profile-content">
+        <section class="profile-card" id="profile">
       <div class="profile-hero">
         <div class="profile-identity">
           <img
@@ -100,12 +119,11 @@ if (result && !result.error) {
             alt="我的头像"
           />
           <div>
-            <p class="eyebrow">YOUR GUILD PROFILE</p>
             <h1>{nickname}</h1>
             <span class="profile-email" title="已登录账号">{loggedEmail}</span>
           </div>
         </div>
-        <span class="profile-badge">MEMBER / ACTIVE</span>
+        <span class="profile-badge">已登录成员</span>
       </div>
 
       <form class="profile-form" method="POST" action={actions.updateProfile}>
@@ -166,12 +184,11 @@ if (result && !result.error) {
 
         <button class="btn" type="submit">保存资料</button>
       </form>
-    </section>
+        </section>
 
-    <section class="profile-section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">MY OPEN CALLS</p>
+        <section class="profile-section" id="posts">
+        <div class="section-heading">
+          <div>
           <h2>我的需求</h2>
         </div>
         <span class="section-count">{posts.length} 条记录</span>
@@ -187,25 +204,27 @@ if (result && !result.error) {
           <p class="empty">你还没有发布过需求</p>
         )
       }
-    </section>
+        </section>
 
-    <section class="profile-section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">MY CLAIMS</p>
+        <section class="profile-section" id="claims">
+        <div class="section-heading">
+          <div>
           <h2>我的认领</h2>
         </div>
         <span class="section-count">{claimedRows.length} 条记录</span>
       </div>
       {
         claimedRows.length > 0 ? (
-          <ul class="post-list claim-list">
+            <ul class="post-list claim-list">
             {claimedRows.map(claim => (
               <li>
                 <a class="post-card-link" href={`/posts/${claim.post_id}`}>
                   <div class="post-card-top">
                     <span class="post-card-type">
-                      <span class={`claim-dot claim-${claim.role_status}`}></span>
+                      <span
+                        class={`quest-pin quest-pin-${claim.role_status}`}
+                        aria-hidden="true"
+                      ></span>
                       我的认领
                     </span>
                     <span class={`status status-${claim.role_status}`}>
@@ -235,11 +254,61 @@ if (result && !result.error) {
           <p class="empty">你还没有认领过需求</p>
         )
       }
-    </section>
+        </section>
+      </div>
+    </div>
   </main>
 </Layout>
 
 <style>
+  .profile-layout {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr);
+    gap: clamp(32px, 6vw, 84px);
+    align-items: start;
+  }
+
+  .profile-index {
+    position: sticky;
+    top: 88px;
+    align-self: start;
+  }
+
+  .profile-index nav {
+    display: grid;
+    gap: 0;
+    border-left: 1px solid var(--border-strong);
+  }
+
+  .profile-index a {
+    display: grid;
+    grid-template-columns: 27px 1fr;
+    gap: 8px;
+    padding: 9px 10px 9px 12px;
+    border-left: 2px solid transparent;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: 0.2s;
+  }
+
+  .profile-index a span {
+    color: var(--accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.63rem;
+    font-weight: 700;
+  }
+
+  .profile-index a:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .profile-content > :is(.profile-card, .profile-section) {
+    scroll-margin-top: 88px;
+  }
+
   .contact-fields {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -250,28 +319,44 @@ if (result && !result.error) {
     margin-bottom: 0;
   }
 
-  .claim-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--text-dim);
-  }
-
-  .claim-open {
-    background: var(--success);
-    box-shadow: 0 0 0 3px var(--forest-soft);
-  }
-
-  .claim-closed {
-    background: var(--border-strong);
-  }
-
   .author-name {
     color: var(--text-dim);
     font-size: 0.8rem;
   }
 
   @media (max-width: 720px) {
+    .profile-layout {
+      display: block;
+    }
+
+    .profile-index {
+      position: static;
+      margin-bottom: 28px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-index nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      border-left: 0;
+    }
+
+    .profile-index a {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg-raised);
+    }
+
+    .profile-index a:hover {
+      border-color: var(--accent);
+    }
+
     .contact-fields {
       grid-template-columns: 1fr;
     }

@@ -19,16 +19,17 @@ const closedCount = post.roles.length - openRoles.length
         {
           openRoles.length > 0 ? (
             <>
-              <span class="live-dot"></span>
+              <span class="quest-pin quest-pin-open" aria-hidden="true"></span>
               开放招募
             </>
           ) : (
             <>
-              <span class="closed-dot"></span>
+              <span class="quest-pin quest-pin-closed" aria-hidden="true"></span>
               招募已结束
             </>
           )
         }
+        <time class="post-card-date">{formatDate(post.created_at)}</time>
       </span>
       {
         showClosedCount && closedCount > 0 && (
@@ -52,7 +53,6 @@ const closedCount = post.roles.length - openRoles.length
         href={`/authors/${post.author_id}`}
         size={28}
       />
-      <time>{formatDate(post.created_at)}</time>
     </span>
   </div>
 </li>

@@ -11,7 +11,6 @@ interface Props {
 const { title = '边缘工会', back = false } = Astro.props
 const profileToken = Astro.locals.auth?.profileToken ?? null
 const isHome = Astro.url.pathname === '/'
-const isProfile = Astro.url.pathname === '/me'
 ---
 
 <!doctype html>
@@ -35,17 +34,12 @@ const isProfile = Astro.url.pathname === '/me'
           </span>
           <span class="brand-copy">
             <strong>边缘工会</strong>
-            <small>RIMWORLD MOD GUILD</small>
+            <small>模组创作者协作平台</small>
           </span>
         </a>
 
         <nav class="site-nav" aria-label="主导航">
           <a class:list={{ active: isHome }} href="/">发现需求</a>
-          <a
-            class:list={{ active: isProfile }}
-            href={profileToken ? '/me' : '/login?next=/me'}
-            >我的主页</a
-          >
         </nav>
 
         <div class="header-actions">
@@ -97,7 +91,7 @@ const isProfile = Astro.url.pathname === '/me'
       </div>
 
       <div id="profile-menu" class="profile-menu" popover>
-        <span class="menu-label">ACCOUNT</span>
+        <span class="menu-label">账户</span>
         {
           profileToken ? (
             <>
@@ -144,7 +138,7 @@ const isProfile = Astro.url.pathname === '/me'
     max-width: 1440px;
     margin: 0 auto;
     padding: 0 clamp(16px, 4vw, 72px);
-    min-height: 82px;
+    min-height: 64px;
   }
 
   .brand {
@@ -201,7 +195,7 @@ const isProfile = Astro.url.pathname === '/me'
 
   .site-nav a {
     position: relative;
-    padding: 30px 0 27px;
+    padding: 21px 0 20px;
     color: var(--text-dim);
     font-size: 0.83rem;
     font-weight: 700;
@@ -218,9 +212,7 @@ const isProfile = Astro.url.pathname === '/me'
     content: "";
     opacity: 0;
     transform: scaleX(0.35);
-    transition:
-      opacity 0.18s ease,
-      transform 0.18s ease;
+    transition: 0.2s;
   }
 
   .site-nav a:hover,
@@ -267,16 +259,12 @@ const isProfile = Astro.url.pathname === '/me'
     line-height: 0;
     place-items: center;
     anchor-name: --profile-anchor;
-    transition:
-      border-color 0.18s ease,
-      color 0.18s ease,
-      transform 0.18s ease;
+    transition: 0.2s;
   }
 
   .header-profile:hover {
     border-color: var(--accent);
     color: var(--accent-strong);
-    transform: translateY(-1px);
   }
 
   .header-profile .author-avatar {
@@ -365,7 +353,7 @@ const isProfile = Astro.url.pathname === '/me'
 
   @media (max-width: 800px) {
     .site-header-inner {
-      min-height: 72px;
+      min-height: 64px;
     }
 
     .site-nav {

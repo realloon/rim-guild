@@ -88,7 +88,6 @@ const posts: Post[] = results.map(postFromRow)
   <main class="home-page">
     <section class="home-hero">
       <div class="hero-copy">
-        <p class="eyebrow">RIMWORLD / MOD MAKER NETWORK</p>
         <h1>让每一份模组需求，<em>找到合适的搭档。</em></h1>
         <p class="hero-lede">
           发布需求，寻找画师、开发者和其他合作者。边缘工会把还在草稿里的想法，带到真正的制作现场。
@@ -114,8 +113,8 @@ const posts: Post[] = results.map(postFromRow)
 
       <aside class="hero-note" aria-label="开放需求概览">
         <div class="note-topline">
-          <span>FIELD NOTE / 001</span>
-          <span class="note-status"><span class="live-dot"></span>ACTIVE</span>
+          <span>公告信息</span>
+          <span class="note-status"><span class="live-dot"></span>开放中</span>
         </div>
         <div class="hero-mark" aria-hidden="true">
           <svg viewBox="0 0 150 150" fill="none">
@@ -144,7 +143,6 @@ const posts: Post[] = results.map(postFromRow)
         <section class="featured-section">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">MATCHED FOR YOU</p>
               <h2>适合你的需求</h2>
             </div>
             <span class="section-count">基于你的身份偏好</span>
@@ -161,7 +159,6 @@ const posts: Post[] = results.map(postFromRow)
     <section class="board-section" id="board">
       <div class="section-heading board-heading">
         <div>
-          <p class="eyebrow">THE OPEN BOARD</p>
           <h2>最新需求</h2>
         </div>
         <span class="section-count">
@@ -228,7 +225,7 @@ const posts: Post[] = results.map(postFromRow)
           </ul>
         ) : (
           <div class="empty-state">
-            <span>{q ? 'NO MATCH / 404' : 'FIRST CALL / 001'}</span>
+            <span>{q ? '没有匹配结果' : '暂无需求'}</span>
             <p>{q ? '没有找到匹配的需求' : '还没有需求，来发布第一条吧'}</p>
             {q && <a class="text-link" href={activeRole ? `/?role=${activeRole}` : '/'}>清除搜索</a>}
           </div>
@@ -246,7 +243,6 @@ const posts: Post[] = results.map(postFromRow)
     align-items: center;
     min-height: 500px;
     padding: 26px 0 72px;
-    border-bottom: 1px solid var(--border);
   }
 
   .hero-copy h1 {
@@ -490,10 +486,7 @@ const posts: Post[] = results.map(postFromRow)
     color: var(--text-dim);
     font-size: 0.8rem;
     text-decoration: none;
-    transition:
-      border-color 0.18s ease,
-      background 0.18s ease,
-      color 0.18s ease;
+    transition: 0.2s;
   }
 
   .filter-links a:hover {
