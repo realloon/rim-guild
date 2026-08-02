@@ -146,9 +146,7 @@ for (const resp of responseRows) {
                 r => r.profile_token === myProfileToken,
               )
               return (
-                <div
-                  class={`role-requirement ${role.status === 'closed' ? 'role-closed' : ''}`}
-                >
+                <div class="role-requirement">
                   <div class="role-requirement-head">
                     <span class="tag">{roleLabel(role.type)}</span>
                     <span class="role-count-label">
@@ -359,6 +357,10 @@ for (const resp of responseRows) {
       white-space: pre-wrap;
       line-height: 1.5;
     }
+
+    &:has(.status-closed) {
+      opacity: 0.6;
+    }
   }
 
   .role-requirement-head {
@@ -374,10 +376,6 @@ for (const resp of responseRows) {
   .role-count-label {
     color: var(--text-dim);
     font-size: 0.85rem;
-  }
-
-  .role-closed {
-    opacity: 0.6;
   }
 
   .response-avatars {
