@@ -1,7 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
-import { POST_SELECT, postFromRow, roleLabel, statusLabel, formatDate, type Post } from '../../lib/posts'
+import { AUTHOR_COOKIE, POST_SELECT, postFromRow, roleLabel, statusLabel, formatDate, type Post } from '../../lib/posts'
+import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
@@ -17,21 +18,21 @@ const post: Post | undefined = row ? postFromRow(row) : undefined
 if (!post) {
 	Astro.response.status = 404
 }
+
+const isOwner = !!post && Astro.cookies.get(AUTHOR_COOKIE)?.value === post.author_token
+
+const statusResult = Astro.getActionResult(actions.updatePostStatus)
+if (statusResult && !statusResult.error && post) {
+	return Astro.redirect(`/posts/${post.id}`)
+}
+const deleteResult = Astro.getActionResult(actions.deletePost)
+if (deleteResult && !deleteResult.error) {
+	return Astro.redirect('/me')
+}
 ---
 
-<Layout title={post ? `${post.title} · 边缘工会` : '需求不存在 · 边缘工会'}>
-	<div class="container">
-		<header class="site-header">
-			<h1><a href="/">边缘工会</a></h1>
-			<a class="btn" href="/posts/new">发布需求</a>
-		</header>
-
-		<nav class="quick-nav">
-			<a href="/">返回列表</a>
-			<a href="/me">我的主页</a>
-		</nav>
-
-		<main>
+<Layout title={post ? `${post.title} · 边缘工会` : '需求不存在 · 边缘工会'} back>
+	<main>
 			{post ? (
 				<article class="post-detail">
 					<h1>{post.title}</h1>
@@ -41,7 +42,7 @@ if (!post) {
 						</span>
 						<span class="meta-side">
 							<AuthorAvatar seed={post.author_token} name={post.author_name} href={`/authors/${post.author_id}`} size={28} />
-							<span>{statusLabel(post.status)}</span>
+							<span class={`status status-${post.status}`}>{statusLabel(post.status)}</span>
 							<time>{formatDate(post.created_at)}</time>
 						</span>
 					</div>
@@ -58,10 +59,46 @@ if (!post) {
 						<strong>联系方式</strong>
 						{post.contact}
 					</div>
+
+					{isOwner && (
+						<div class="post-owner-actions">
+							<a class="btn btn-ghost" href={`/posts/${post.id}/edit`}>编辑</a>
+							<form method="POST" action={actions.updatePostStatus}>
+								<input type="hidden" name="postId" value={post.id} />
+								<input type="hidden" name="status" value={post.status === 'open' ? 'closed' : 'open'} />
+								<button class="btn btn-ghost" type="submit">
+									{post.status === 'open' ? '关闭需求' : '重新开放'}
+								</button>
+							</form>
+							<form method="POST" action={actions.deletePost} data-confirm="确定删除这条需求吗？删除后不可恢复。">
+								<input type="hidden" name="postId" value={post.id} />
+								<button class="btn btn-danger" type="submit">删除</button>
+							</form>
+						</div>
+					)}
+
+					{(statusResult?.error || deleteResult?.error) && (
+						<div class="error">
+							{(statusResult?.error?.message ?? deleteResult?.error?.message) && (
+								<p>{statusResult?.error?.message ?? deleteResult?.error?.message}</p>
+							)}
+						</div>
+					)}
 				</article>
 			) : (
 				<p class="not-found">该需求不存在或已被删除</p>
 			)}
 		</main>
-	</div>
 </Layout>
+
+<script>
+	const forms = document.querySelectorAll('[data-confirm]')
+	forms.forEach((form) => {
+		form.addEventListener('submit', (event) => {
+			const message = (form as HTMLElement).dataset.confirm
+			if (!confirm(message)) {
+				event.preventDefault()
+			}
+		})
+	})
+</script>

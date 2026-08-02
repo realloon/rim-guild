@@ -10,12 +10,14 @@ const activeRole: RoleType | null = roleParam && roleParam in ROLE_TYPES ? (role
 
 const sql = activeRole
 	? `${POST_SELECT}
-		WHERE EXISTS (
+		WHERE p.status = 'open'
+		AND EXISTS (
 			SELECT 1 FROM post_roles pr2 WHERE pr2.post_id = p.id AND pr2.role_type = ?
 		)
 		GROUP BY p.id
 		ORDER BY p.created_at DESC, p.id DESC`
 	: `${POST_SELECT}
+		WHERE p.status = 'open'
 		GROUP BY p.id
 		ORDER BY p.created_at DESC, p.id DESC`
 
@@ -27,16 +29,7 @@ const posts: Post[] = results.map(postFromRow)
 ---
 
 <Layout title="边缘工会 · RimWorld 模组需求平台">
-	<div class="container">
-		<header class="site-header">
-			<h1><a href="/">边缘工会</a></h1>
-			<a class="btn" href="/posts/new">发布需求</a>
-		</header>
-
-		<nav class="quick-nav">
-			<a href="/me">我的主页</a>
-		</nav>
-
+	<main>
 		<nav class="role-filter" aria-label="按类型筛选">
 			<a href="/" class={activeRole === null ? 'active' : ''}>全部</a>
 			{
@@ -48,8 +41,7 @@ const posts: Post[] = results.map(postFromRow)
 			}
 		</nav>
 
-		<main>
-			{results.length > 0 ? (
+		{results.length > 0 ? (
 				<ul class="post-list">
 					{
 						posts.map((post) => (
@@ -75,5 +67,4 @@ const posts: Post[] = results.map(postFromRow)
 				<p class="empty">{activeRole ? '该类型下还没有需求' : '还没有需求，来发布第一条吧'}</p>
 			)}
 		</main>
-	</div>
 </Layout>

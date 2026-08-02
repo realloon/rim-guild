@@ -11,33 +11,56 @@ const text = (min: number, message: string, max?: number) =>
 		max ? z.string().min(min, message).max(max, message) : z.string().min(min, message)
 	)
 
+const postInput = {
+	title: text(2, '标题至少 2 个字', 80),
+	description: z.preprocess(
+		(v) => (v == null ? '' : String(v).trim()),
+		z.string().max(5000, '描述最多 5000 个字')
+	),
+	roleTypes: z.array(z.enum(roleTypes)),
+	roleDescriptions: z.array(
+		z.preprocess(
+			(v) => (v == null ? '' : String(v).trim()),
+			z.string().min(1, '每类需求请填写具体内容')
+		)
+	),
+}
+
+function validateRolePairs(
+	roleTypes: string[],
+	roleDescriptions: string[]
+): void {
+	if (roleTypes.length === 0) {
+		throw new ActionError({ code: 'BAD_REQUEST', message: '请至少添加一项招揽需求' })
+	}
+	if (roleTypes.length !== roleDescriptions.length) {
+		throw new ActionError({
+			code: 'BAD_REQUEST',
+			message: '招揽类型与需求数量不匹配',
+		})
+	}
+}
+
+async function assertOwner(postId: number, authorToken: string | undefined) {
+	if (!authorToken) {
+		throw new ActionError({ code: 'FORBIDDEN', message: '无权操作' })
+	}
+	const db = env.rim_guild_db
+	const post = await db
+		.prepare('SELECT author_token FROM posts WHERE id = ?')
+		.bind(postId)
+		.first<{ author_token: string }>()
+	if (!post || post.author_token !== authorToken) {
+		throw new ActionError({ code: 'FORBIDDEN', message: '无权操作' })
+	}
+}
+
 export const server = {
 	createPost: defineAction({
 		accept: 'form',
-		input: z.object({
-			title: text(2, '标题至少 2 个字', 80),
-			description: z.preprocess(
-				(v) => (v == null ? '' : String(v).trim()),
-				z.string().max(5000, '描述最多 5000 个字')
-			),
-			roleTypes: z.array(z.enum(roleTypes)),
-			roleDescriptions: z.array(
-				z.preprocess(
-					(v) => (v == null ? '' : String(v).trim()),
-					z.string().min(1, '每类需求请填写具体内容')
-				)
-			),
-		}),
+		input: z.object(postInput),
 		handler: async (input, context) => {
-			if (input.roleTypes.length === 0) {
-				throw new ActionError({ code: 'BAD_REQUEST', message: '请至少添加一项招揽需求' })
-			}
-			if (input.roleTypes.length !== input.roleDescriptions.length) {
-				throw new ActionError({
-					code: 'BAD_REQUEST',
-					message: '招揽类型与需求数量不匹配',
-				})
-			}
+			validateRolePairs(input.roleTypes, input.roleDescriptions)
 
 			const db = env.rim_guild_db
 
@@ -89,6 +112,70 @@ export const server = {
 			)
 
 			return { id: postId }
+		},
+	}),
+	updatePost: defineAction({
+		accept: 'form',
+		input: z.object({
+			postId: z.number(),
+			...postInput,
+		}),
+		handler: async (input, context) => {
+			validateRolePairs(input.roleTypes, input.roleDescriptions)
+			await assertOwner(input.postId, context.cookies.get(AUTHOR_COOKIE)?.value)
+
+			const db = env.rim_guild_db
+			await db
+				.prepare('UPDATE posts SET title = ?, description = ? WHERE id = ?')
+				.bind(input.title, input.description || '', input.postId)
+				.run()
+			await db.batch([
+				db.prepare('DELETE FROM post_roles WHERE post_id = ?').bind(input.postId),
+				...input.roleTypes.map((role, i) =>
+					db
+						.prepare(
+							'INSERT INTO post_roles (post_id, role_type, description) VALUES (?, ?, ?)'
+						)
+						.bind(input.postId, role, input.roleDescriptions[i])
+				),
+			])
+
+			return { id: input.postId }
+		},
+	}),
+	updatePostStatus: defineAction({
+		accept: 'form',
+		input: z.object({
+			postId: z.number(),
+			status: z.enum(['open', 'closed']),
+		}),
+		handler: async (input, context) => {
+			await assertOwner(input.postId, context.cookies.get(AUTHOR_COOKIE)?.value)
+
+			const db = env.rim_guild_db
+			await db
+				.prepare('UPDATE posts SET status = ? WHERE id = ?')
+				.bind(input.status, input.postId)
+				.run()
+
+			return { id: input.postId }
+		},
+	}),
+	deletePost: defineAction({
+		accept: 'form',
+		input: z.object({
+			postId: z.number(),
+		}),
+		handler: async (input, context) => {
+			await assertOwner(input.postId, context.cookies.get(AUTHOR_COOKIE)?.value)
+
+			const db = env.rim_guild_db
+			await db.batch([
+				db.prepare('DELETE FROM post_roles WHERE post_id = ?').bind(input.postId),
+				db.prepare('DELETE FROM posts WHERE id = ?').bind(input.postId),
+			])
+
+			return { ok: true }
 		},
 	}),
 	updateProfile: defineAction({

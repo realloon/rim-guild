@@ -10,7 +10,7 @@ export type RoleType = keyof typeof ROLE_TYPES
 
 export const POST_STATUSES = {
 	open: '招聘中',
-	closed: '已关闭',
+	closed: '已招到',
 } as const
 
 export type PostStatus = keyof typeof POST_STATUSES

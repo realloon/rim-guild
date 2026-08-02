@@ -54,17 +54,7 @@ if (result && !result.error) {
 ---
 
 <Layout title="我的主页 · 边缘工会">
-	<div class="container">
-		<header class="site-header">
-			<h1><a href="/">边缘工会</a></h1>
-			<a class="btn" href="/posts/new">发布需求</a>
-		</header>
-
-		<nav class="quick-nav">
-			<a href="/">返回列表</a>
-		</nav>
-
-		<main>
+	<main>
 			<section class="profile-card">
 				<div class="profile-head">
 					{authorToken && (
@@ -112,7 +102,7 @@ if (result && !result.error) {
 				<ul class="post-list">
 					{
 						posts.map((post) => (
-							<li>
+							<li class={post.status === 'closed' ? 'post-closed' : ''}>
 								<a href={`/posts/${post.id}`}>
 									<h2>{post.title}</h2>
 									{post.description && <p class="post-excerpt">{post.description}</p>}
@@ -120,7 +110,10 @@ if (result && !result.error) {
 										<span class="tags">
 											{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
 										</span>
-										<time>{formatDate(post.created_at)}</time>
+										<span class="meta-side">
+											{post.status === 'closed' && <span class="status status-closed">已招到</span>}
+											<time>{formatDate(post.created_at)}</time>
+										</span>
 									</div>
 								</a>
 							</li>
@@ -131,5 +124,4 @@ if (result && !result.error) {
 				<p class="empty">{hasProfile ? '你还没有发布过需求' : '完善资料后，去发布你的第一个需求吧'}</p>
 			)}
 		</main>
-	</div>
 </Layout>

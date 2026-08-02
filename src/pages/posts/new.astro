@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
+import PostForm from '../../components/PostForm.astro'
 import { actions } from 'astro:actions'
-import { ROLE_TYPES } from '../../lib/posts'
 
 const result = Astro.getActionResult(actions.createPost)
 
@@ -11,92 +11,15 @@ if (result && !result.error) {
 ---
 
 <Layout title="发布需求 · 边缘工会">
-	<div class="container">
-		<header class="site-header">
-			<h1><a href="/">边缘工会</a></h1>
-			<a class="btn" href="/">返回列表</a>
-		</header>
+	<main>
+		<h2>发布项目需求</h2>
+		<PostForm />
 
-		<nav class="quick-nav">
-			<a href="/">返回列表</a>
-			<a href="/me">我的主页</a>
-		</nav>
-
-		<main>
-			<h2>发布项目需求</h2>
-			<form method="POST" action={actions.createPost} data-role-form>
-				<div class="form-group">
-					<label for="title">项目标题</label>
-					<input id="title" name="title" required maxlength="80" placeholder="例如：为武器扩展模组招募成员" />
-				</div>
-				<div class="form-group">
-					<label for="description">项目描述（可选）</label>
-					<textarea id="description" name="description" maxlength="5000" placeholder="介绍你的模组项目：玩法、规模、进度、工期与报酬……"></textarea>
-				</div>
-
-				<fieldset class="form-group">
-					<legend>招揽需求</legend>
-					<div class="role-pairs">
-						<div class="role-pair">
-							<select name="roleTypes" required>
-								{Object.entries(ROLE_TYPES).map(([value, label]) => (
-									<option value={value}>{label}</option>
-								))}
-							</select>
-							<input name="roleDescriptions" required placeholder="面向该类型的具体需求……" maxlength="2000" />
-							<button class="remove-role" type="button" title="移除" hidden>×</button>
-						</div>
-					</div>
-					<button class="add-role" type="button">+ 添加一项招揽</button>
-				</fieldset>
-
-				<div class="form-group">
-					<label for="contact">联系方式</label>
-					<p class="field-note">使用「我的主页」中保存的联系方式</p>
-				</div>
-
-				{result?.error && (
-					<div class="error">
-						{result.error.message && <p>{result.error.message}</p>}
-						{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
-					</div>
-				)}
-
-				<button class="btn" type="submit">发布</button>
-			</form>
-		</main>
-	</div>
+		{result?.error && (
+			<div class="error">
+				{result.error.message && <p>{result.error.message}</p>}
+				{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
+			</div>
+		)}
+	</main>
 </Layout>
-
-<script>
-	const form = document.querySelector('[data-role-form]') as HTMLFormElement | null
-	if (form) {
-		const pairs = form.querySelector('.role-pairs') as HTMLElement
-		const addBtn = form.querySelector('.add-role') as HTMLButtonElement
-
-		const makePair = (): HTMLDivElement => {
-			const template = pairs.querySelector('.role-pair') as HTMLElement
-			const pair = template.cloneNode(true) as HTMLElement
-			const removeBtn = pair.querySelector('.remove-role') as HTMLButtonElement
-			removeBtn.hidden = false
-			const select = pair.querySelector('select') as HTMLSelectElement
-			select.selectedIndex = 0
-			const input = pair.querySelector('input') as HTMLInputElement
-			input.value = ''
-			return pair as HTMLDivElement
-		}
-
-		addBtn.addEventListener('click', () => {
-			const pair = makePair()
-			pairs.appendChild(pair)
-		})
-
-		pairs.addEventListener('click', (event) => {
-			const btn = (event.target as HTMLElement).closest('.remove-role') as HTMLButtonElement | null
-			if (btn) {
-				const pair = btn.closest('.role-pair') as HTMLElement
-				pair.remove()
-			}
-		})
-	}
-</script>

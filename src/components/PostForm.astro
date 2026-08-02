@@ -1,0 +1,100 @@
+---
+import { actions } from 'astro:actions'
+import { ROLE_TYPES, type Post } from '../lib/posts'
+
+interface Props {
+	post?: Post
+}
+
+const { post } = Astro.props
+const action = post ? actions.updatePost : actions.createPost
+const submitLabel = post ? '保存修改' : '发布'
+---
+
+<form method="POST" action={action} data-role-form>
+	{post && <input type="hidden" name="postId" value={post.id} />}
+
+	<div class="form-group">
+		<label for="title">项目标题</label>
+		<input id="title" name="title" required maxlength="80" value={post?.title} placeholder="例如：为武器扩展模组招募成员" />
+	</div>
+	<div class="form-group">
+		<label for="description">项目描述（可选）</label>
+		<textarea id="description" name="description" maxlength="5000" placeholder="介绍你的模组项目：玩法、规模、进度、工期与报酬……">{post?.description}</textarea>
+	</div>
+
+	<fieldset class="form-group">
+		<legend>招揽需求</legend>
+		<div class="role-pairs">
+			{post ? (
+				post.roles.map((role, i) => (
+					<div class="role-pair">
+						<select name="roleTypes" required>
+							{Object.entries(ROLE_TYPES).map(([value, label]) => (
+								<option value={value} selected={role.type === value}>{label}</option>
+							))}
+						</select>
+						<input name="roleDescriptions" required value={role.description} placeholder="面向该类型的具体需求……" maxlength="2000" />
+						<button class="remove-role" type="button" title="移除" hidden={i === 0 && post.roles.length === 1}>×</button>
+					</div>
+				))
+			) : (
+				<div class="role-pair">
+					<select name="roleTypes" required>
+						{Object.entries(ROLE_TYPES).map(([value, label]) => (
+							<option value={value}>{label}</option>
+						))}
+					</select>
+					<input name="roleDescriptions" required placeholder="面向该类型的具体需求……" maxlength="2000" />
+					<button class="remove-role" type="button" title="移除" hidden>×</button>
+				</div>
+			)}
+		</div>
+		<button class="add-role" type="button">+ 添加一项招揽</button>
+	</fieldset>
+
+	<div class="form-group">
+		<label>联系方式</label>
+		<p class="field-note">使用「我的主页」中保存的联系方式</p>
+	</div>
+
+	<button class="btn" type="submit">{submitLabel}</button>
+</form>
+
+<script>
+	const form = document.querySelector('[data-role-form]') as HTMLFormElement | null
+	if (form) {
+		const pairs = form.querySelector('.role-pairs') as HTMLElement
+		const addBtn = form.querySelector('.add-role') as HTMLButtonElement
+
+		const makePair = (): HTMLDivElement => {
+			const template = pairs.querySelector('.role-pair') as HTMLElement
+			const pair = template.cloneNode(true) as HTMLElement
+			const removeBtn = pair.querySelector('.remove-role') as HTMLButtonElement
+			removeBtn.hidden = false
+			const select = pair.querySelector('select') as HTMLSelectElement
+			select.selectedIndex = 0
+			const input = pair.querySelector('input') as HTMLInputElement
+			input.value = ''
+			return pair as HTMLDivElement
+		}
+
+		addBtn.addEventListener('click', () => {
+			const pair = makePair()
+			pairs.appendChild(pair)
+		})
+
+		pairs.addEventListener('click', (event) => {
+			const btn = (event.target as HTMLElement).closest('.remove-role') as HTMLButtonElement | null
+			if (btn) {
+				const pair = btn.closest('.role-pair') as HTMLElement
+				if (pairs.querySelectorAll('.role-pair').length > 1) {
+					pair.remove()
+				} else {
+					const input = pair.querySelector('input') as HTMLInputElement
+					input.value = ''
+				}
+			}
+		})
+	}
+</script>

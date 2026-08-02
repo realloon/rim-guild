@@ -1,23 +1,46 @@
 ---
 import '../assets/styles/main.css'
+import { avatarUrl } from '../lib/avatar'
+import { AUTHOR_COOKIE } from '../lib/posts'
 
 interface Props {
-  title?: string
+	title?: string
+	back?: boolean
 }
 
-const { title = '边缘工会' } = Astro.props
+const { title = '边缘工会', back = false } = Astro.props
+const authorToken = Astro.cookies.get(AUTHOR_COOKIE)?.value
 ---
 
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
-  </head>
-  <body>
-    <slot />
-  </body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body>
+		<div class="container">
+			<header class="site-header">
+				<h1><a href="/">边缘工会</a></h1>
+				<div class="header-actions">
+					{back && <a class="btn btn-ghost" href="/">返回列表</a>}
+					<a class="btn" href="/posts/new">发布需求</a>
+					{authorToken ? (
+						<a class="header-profile" href="/me" title="我的主页">
+							<img class="author-avatar" src={avatarUrl(authorToken, 32)} width={32} height={32} alt="我的头像" />
+						</a>
+					) : (
+						<a class="header-profile" href="/me" title="我的主页">
+							<span class="header-profile-placeholder" aria-hidden="true"></span>
+						</a>
+					)}
+				</div>
+			</header>
+
+			<slot />
+		</div>
+	</body>
 </html>
