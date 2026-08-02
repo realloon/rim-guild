@@ -1,15 +1,17 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import { roleLabel, statusLabel, formatDate, type Post } from '../../lib/posts'
+import { POST_SELECT, postFromRow, roleLabel, statusLabel, formatDate, type Post } from '../../lib/posts'
 import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
 const { id } = Astro.params
 
-const post = await db
-	.prepare('SELECT * FROM posts WHERE id = ?')
+const row = await db
+	.prepare(`${POST_SELECT} WHERE p.id = ? GROUP BY p.id`)
 	.bind(Number(id))
-	.first<Post>()
+	.first()
+
+const post: Post | undefined = row ? postFromRow(row) : undefined
 
 if (!post) {
 	Astro.response.status = 404
@@ -23,16 +25,32 @@ if (!post) {
 			<a class="btn" href="/posts/new">发布需求</a>
 		</header>
 
+		<nav class="quick-nav">
+			<a href="/">返回列表</a>
+			<a href="/me">我的主页</a>
+		</nav>
+
 		<main>
 			{post ? (
 				<article class="post-detail">
 					<h1>{post.title}</h1>
 					<div class="post-meta">
-						<span class="tag">{roleLabel(post.role_type)}</span>
+						<span class="tags">
+							{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
+						</span>
+						<span>发布人：{post.author_name}</span>
 						<span>{statusLabel(post.status)}</span>
 						<time>{formatDate(post.created_at)}</time>
 					</div>
-					<p class="description">{post.description}</p>
+					{post.description && <p class="description">{post.description}</p>}
+					<div class="role-requirements">
+						{post.roles.map((role) => (
+							<div class="role-requirement">
+								<span class="tag">{roleLabel(role.type)}</span>
+								<p>{role.description}</p>
+							</div>
+						))}
+					</div>
 					<div class="contact-box">
 						<strong>联系方式</strong>
 						{post.contact}
