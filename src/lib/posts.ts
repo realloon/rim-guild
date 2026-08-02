@@ -28,6 +28,7 @@ export interface Post {
 	contact: string
 	author_name: string
 	author_token: string
+	author_id: string
 	status: PostStatus
 	created_at: string
 }
@@ -40,6 +41,7 @@ interface PostRow {
 	contact: string
 	author_name: string
 	author_token: string
+	author_id: string
 	status: PostStatus
 	created_at: string
 }

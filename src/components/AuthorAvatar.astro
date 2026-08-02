@@ -1,0 +1,17 @@
+---
+import { avatarUrl } from '../lib/avatar'
+
+interface Props {
+	seed: string
+	name: string
+	href: string
+	size?: number
+}
+
+const { seed, name, href, size = 40 } = Astro.props
+---
+
+<a class="author" href={href}>
+	<img class="author-avatar" src={avatarUrl(seed, size)} width={size} height={size} alt={`${name} 的头像`} />
+	<span>{name}</span>
+</a>

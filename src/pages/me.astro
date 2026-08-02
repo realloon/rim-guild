@@ -3,11 +3,14 @@ import Layout from '../layouts/Layout.astro'
 import {
 	AUTHOR_COOKIE,
 	POST_SELECT,
+	ROLE_TYPES,
 	postFromRow,
 	roleLabel,
 	formatDate,
 	type Post,
+	type RoleType,
 } from '../lib/posts'
+import { avatarUrl } from '../lib/avatar'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
@@ -18,15 +21,19 @@ let posts: Post[] = []
 let nickname = ''
 let contact = ''
 let hasProfile = false
+let myRoles: RoleType[] = []
 
 if (authorToken) {
 	const profile = await db
-		.prepare('SELECT author_name, contact FROM profiles WHERE token = ?')
+		.prepare('SELECT author_name, contact, roles FROM profiles WHERE token = ?')
 		.bind(authorToken)
-		.first<{ author_name: string; contact: string }>()
+		.first<{ author_name: string; contact: string; roles: string }>()
 	hasProfile = !!profile
 	nickname = profile?.author_name ?? ''
 	contact = profile?.contact ?? ''
+	myRoles = profile?.roles
+		? (profile.roles.split(',').filter(Boolean) as RoleType[])
+		: []
 
 	const { results } = await db
 		.prepare(
@@ -58,63 +65,70 @@ if (result && !result.error) {
 		</nav>
 
 		<main>
-			{authorToken ? (
-				<>
-					<section class="profile-card">
-						<h2>个人资料</h2>
-						{!hasProfile && (
-							<p class="field-note">完善资料后，发布需求时会自动使用这里的信息</p>
-						)}
-						<form method="POST" action={actions.updateProfile}>
-							<div class="form-group">
-								<label for="authorName">昵称</label>
-								<input id="authorName" name="authorName" required maxlength="30" value={nickname} />
-							</div>
-							<div class="form-group">
-								<label for="contact">联系方式</label>
-								<input id="contact" name="contact" required maxlength="200" value={contact} placeholder="QQ / 微信 / Discord / 邮箱……" />
-							</div>
-
-							{result?.error && (
-								<div class="error">
-									{result.error.message && <p>{result.error.message}</p>}
-									{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
-								</div>
-							)}
-
-							<button class="btn" type="submit">保存</button>
-						</form>
-					</section>
-
-					<h2>我的需求（{posts.length}）</h2>
-					{posts.length > 0 ? (
-						<ul class="post-list">
-							{
-								posts.map((post) => (
-									<li>
-										<a href={`/posts/${post.id}`}>
-											<h2>{post.title}</h2>
-											{post.description && <p class="post-excerpt">{post.description}</p>}
-											<div class="post-meta">
-												<span class="tags">
-													{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
-												</span>
-												<time>{formatDate(post.created_at)}</time>
-											</div>
-										</a>
-									</li>
-								))
-							}
-						</ul>
-					) : (
-						<p class="empty">你还没有发布过需求</p>
+			<section class="profile-card">
+				<div class="profile-head">
+					{authorToken && (
+						<img class="author-avatar" src={avatarUrl(authorToken, 64)} width={64} height={64} alt="我的头像" />
 					)}
-				</>
-			) : (
-				<div class="not-found">
-					<p>发布第一条需求后，这里会成为你的主页</p>
-					<p><a class="btn" href="/posts/new">去发布</a></p>
+					<div>
+						<h2>{nickname || '我的个人资料'}</h2>
+						<p class="field-note">{hasProfile ? '头像由身份自动生成' : '完善资料后，即可发布需求，发布时自动使用这里的昵称与联系方式'}</p>
+					</div>
 				</div>
+				<form method="POST" action={actions.updateProfile}>
+					<div class="form-group">
+						<label for="authorName">昵称</label>
+						<input id="authorName" name="authorName" required maxlength="30" value={nickname} placeholder="例如：阿哲" />
+					</div>
+					<div class="form-group">
+						<label>我的身份（可多选）</label>
+						<div class="role-checkboxes">
+							{Object.entries(ROLE_TYPES).map(([value, label]) => (
+								<label class="role-checkbox">
+									<input type="checkbox" name="roles" value={value} checked={myRoles.includes(value as RoleType)} />
+									<span>{label}</span>
+								</label>
+							))}
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="contact">联系方式</label>
+						<input id="contact" name="contact" required maxlength="200" value={contact} placeholder="QQ / 微信 / Discord / 邮箱……" />
+					</div>
+
+					{result?.error && (
+						<div class="error">
+							{result.error.message && <p>{result.error.message}</p>}
+							{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
+						</div>
+					)}
+
+					<button class="btn" type="submit">保存</button>
+				</form>
+			</section>
+
+			<h2>我的需求（{posts.length}）</h2>
+			{posts.length > 0 ? (
+				<ul class="post-list">
+					{
+						posts.map((post) => (
+							<li>
+								<a href={`/posts/${post.id}`}>
+									<h2>{post.title}</h2>
+									{post.description && <p class="post-excerpt">{post.description}</p>}
+									<div class="post-meta">
+										<span class="tags">
+											{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
+										</span>
+										<time>{formatDate(post.created_at)}</time>
+									</div>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			) : (
+				<p class="empty">{hasProfile ? '你还没有发布过需求' : '完善资料后，去发布你的第一个需求吧'}</p>
 			)}
 		</main>
 	</div>

@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro'
+import AuthorAvatar from '../../components/AuthorAvatar.astro'
 import { POST_SELECT, postFromRow, roleLabel, statusLabel, formatDate, type Post } from '../../lib/posts'
 import { env } from 'cloudflare:workers'
 
@@ -38,9 +39,11 @@ if (!post) {
 						<span class="tags">
 							{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
 						</span>
-						<span>发布人：{post.author_name}</span>
-						<span>{statusLabel(post.status)}</span>
-						<time>{formatDate(post.created_at)}</time>
+						<span class="meta-side">
+							<AuthorAvatar seed={post.author_token} name={post.author_name} href={`/authors/${post.author_id}`} size={28} />
+							<span>{statusLabel(post.status)}</span>
+							<time>{formatDate(post.created_at)}</time>
+						</span>
 					</div>
 					{post.description && <p class="description">{post.description}</p>}
 					<div class="role-requirements">

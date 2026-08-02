@@ -51,9 +51,9 @@ export const server = {
 			}
 
 			const profile = await db
-				.prepare('SELECT author_name, contact FROM profiles WHERE token = ?')
+				.prepare('SELECT author_id, author_name, contact FROM profiles WHERE token = ?')
 				.bind(authorToken)
-				.first<{ author_name: string; contact: string }>()
+				.first<{ author_id: string; author_name: string; contact: string }>()
 
 			if (!profile) {
 				throw new ActionError({
@@ -64,14 +64,15 @@ export const server = {
 
 			const result = await db
 				.prepare(
-					'INSERT INTO posts (title, description, contact, author_name, author_token) VALUES (?, ?, ?, ?, ?)'
+					'INSERT INTO posts (title, description, contact, author_name, author_token, author_id) VALUES (?, ?, ?, ?, ?, ?)'
 				)
 				.bind(
 					input.title,
 					input.description || '',
 					profile.contact,
 					profile.author_name,
-					authorToken
+					authorToken,
+					profile.author_id
 				)
 				.run()
 
@@ -98,24 +99,38 @@ export const server = {
 				z.string().min(1, '请填写你的昵称').max(30, '昵称最多 30 个字')
 			),
 			contact: text(1, '请填写联系方式', 200),
+			roles: z.array(z.enum(roleTypes)).default([]),
 		}),
 		handler: async (input, context) => {
-			const authorToken = context.cookies.get(AUTHOR_COOKIE)?.value
+			let authorToken = context.cookies.get(AUTHOR_COOKIE)?.value
 			if (!authorToken) {
-				throw new ActionError({ code: 'BAD_REQUEST', message: '身份未识别，请先发布一条需求' })
+				authorToken = crypto.randomUUID()
+				context.cookies.set(AUTHOR_COOKIE, authorToken, {
+					maxAge: 60 * 60 * 24 * 365,
+					path: '/',
+				})
 			}
 
 			const db = env.rim_guild_db
+			const existing = await db
+				.prepare('SELECT author_id FROM profiles WHERE token = ?')
+				.bind(authorToken)
+				.first<{ author_id: string }>()
+			const authorId = existing?.author_id || crypto.randomUUID().replaceAll('-', '').slice(0, 12)
+
+			const roles = input.roles.join(',')
 			await db
 				.prepare(
-					`INSERT INTO profiles (token, author_name, contact) VALUES (?, ?, ?)
-					ON CONFLICT (token) DO UPDATE SET author_name = excluded.author_name, contact = excluded.contact`
+					`INSERT INTO profiles (token, author_id, author_name, contact, roles) VALUES (?, ?, ?, ?, ?)
+					ON CONFLICT (token) DO UPDATE SET author_name = excluded.author_name, contact = excluded.contact, roles = excluded.roles`
 				)
-				.bind(authorToken, input.authorName, input.contact)
+				.bind(authorToken, authorId, input.authorName, input.contact, roles)
 				.run()
 			await db
-				.prepare('UPDATE posts SET author_name = ?, contact = ? WHERE author_token = ?')
-				.bind(input.authorName, input.contact, authorToken)
+				.prepare(
+					'UPDATE posts SET author_name = ?, contact = ?, author_id = ? WHERE author_token = ?'
+				)
+				.bind(input.authorName, input.contact, authorId, authorToken)
 				.run()
 
 			return { ok: true }

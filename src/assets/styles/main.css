@@ -196,6 +196,31 @@ a {
   margin: 0;
 }
 
+.author {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.author:hover {
+  color: var(--accent-strong);
+}
+
+.author-avatar {
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.meta-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .post-author {
   color: var(--text-dim);
   font-size: 0.85rem;
@@ -292,6 +317,22 @@ a {
   color: var(--text-dim);
   font-size: 0.85rem;
   margin: 0 0 0.5rem;
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-head h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+}
+
+.profile-head .field-note {
+  margin: 0;
 }
 
 .profile-card {
