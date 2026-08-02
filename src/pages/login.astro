@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { actions } from 'astro:actions'
+
+const loginResult = Astro.getActionResult(actions.login)
+const registerResult = Astro.getActionResult(actions.register)
+
+if ((loginResult && !loginResult.error) || (registerResult && !registerResult.error)) {
+	return Astro.redirect('/me')
+}
+---
+
+<Layout title="登录 · 边缘工会">
+	<main>
+		<div class="auth-columns">
+			<section class="auth-card">
+				<h2>登录</h2>
+				<p class="field-note">已有账号，直接登录（本地的匿名身份会自动合并进来）</p>
+				<form method="POST" action={actions.login}>
+					<div class="form-group">
+						<label for="login-email">邮箱</label>
+						<input id="login-email" name="email" type="email" required maxlength="200" placeholder="you@example.com" />
+					</div>
+					<div class="form-group">
+						<label for="login-password">密码</label>
+						<input id="login-password" name="password" type="password" required />
+					</div>
+
+					{loginResult?.error && (
+						<div class="error">
+							{loginResult.error.message && <p>{loginResult.error.message}</p>}
+							{loginResult.error.issues?.map((issue) => <p>{issue.message}</p>)}
+						</div>
+					)}
+
+					<button class="btn" type="submit">登录</button>
+				</form>
+			</section>
+
+			<section class="auth-card">
+				<h2>注册</h2>
+				<p class="field-note">注册后可在任何设备登录，帖子归到你的账号下</p>
+				<form method="POST" action={actions.register}>
+					<div class="form-group">
+						<label for="reg-email">邮箱</label>
+						<input id="reg-email" name="email" type="email" required maxlength="200" placeholder="you@example.com" />
+					</div>
+					<div class="form-group">
+						<label for="reg-password">密码</label>
+						<input id="reg-password" name="password" type="password" required minlength="8" placeholder="至少 8 位" />
+					</div>
+
+					{registerResult?.error && (
+						<div class="error">
+							{registerResult.error.message && <p>{registerResult.error.message}</p>}
+							{registerResult.error.issues?.map((issue) => <p>{issue.message}</p>)}
+						</div>
+					)}
+
+					<button class="btn" type="submit">注册</button>
+				</form>
+			</section>
+		</div>
+	</main>
+</Layout>

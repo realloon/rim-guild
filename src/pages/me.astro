@@ -15,25 +15,29 @@ import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
-const authorToken = Astro.cookies.get(AUTHOR_COOKIE)?.value
+const profileToken = Astro.locals.auth?.profileToken
 
 let posts: Post[] = []
 let nickname = ''
 let contact = ''
 let hasProfile = false
 let myRoles: RoleType[] = []
+let loggedEmail = ''
+let isLoggedIn = false
 
-if (authorToken) {
+if (profileToken) {
 	const profile = await db
-		.prepare('SELECT author_name, contact, roles FROM profiles WHERE token = ?')
-		.bind(authorToken)
-		.first<{ author_name: string; contact: string; roles: string }>()
+		.prepare('SELECT author_name, contact, roles, email FROM profiles WHERE token = ?')
+		.bind(profileToken)
+		.first<{ author_name: string; contact: string; roles: string; email: string }>()
 	hasProfile = !!profile
 	nickname = profile?.author_name ?? ''
 	contact = profile?.contact ?? ''
 	myRoles = profile?.roles
 		? (profile.roles.split(',').filter(Boolean) as RoleType[])
 		: []
+	isLoggedIn = !!profile?.email
+	loggedEmail = profile?.email ?? ''
 
 	const { results } = await db
 		.prepare(
@@ -42,7 +46,7 @@ if (authorToken) {
 			GROUP BY p.id
 			ORDER BY p.created_at DESC, p.id DESC`
 		)
-		.bind(authorToken)
+		.bind(profileToken)
 		.all()
 	posts = results.map(postFromRow)
 }
@@ -57,12 +61,27 @@ if (result && !result.error) {
 	<main>
 			<section class="profile-card">
 				<div class="profile-head">
-					{authorToken && (
-						<img class="author-avatar" src={avatarUrl(authorToken, 64)} width={64} height={64} alt="我的头像" />
+					{profileToken && (
+						<img class="author-avatar" src={avatarUrl(profileToken, 64)} width={64} height={64} alt="我的头像" />
 					)}
 					<div>
 						<h2>{nickname || '我的个人资料'}</h2>
 						<p class="field-note">{hasProfile ? '头像由身份自动生成' : '完善资料后，即可发布需求，发布时自动使用这里的昵称与联系方式'}</p>
+					</div>
+					<div class="profile-account">
+						{isLoggedIn ? (
+							<>
+								<span class="logged-email" title="已登录账号">{loggedEmail}</span>
+								<form method="POST" action={actions.logout}>
+									<button class="btn btn-ghost" type="submit">登出</button>
+								</form>
+							</>
+						) : (
+							<>
+								<span class="guest-label">未登录（本机身份）</span>
+								<a class="btn btn-ghost" href="/login">登录 / 注册</a>
+							</>
+						)}
 					</div>
 				</div>
 				<form method="POST" action={actions.updateProfile}>

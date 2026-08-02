@@ -98,6 +98,16 @@ a.header-profile:hover .header-profile-placeholder {
   display: none;
 }
 
+.header-login {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.header-login:hover {
+  color: var(--accent-strong);
+}
+
 .btn-ghost {
   background: none;
   border: 1px solid var(--border);
@@ -410,6 +420,43 @@ a.author:hover {
 
 .profile-head .field-note {
   margin: 0;
+}
+
+.profile-account {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.logged-email {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.guest-label {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.auth-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.auth-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem;
+}
+
+.auth-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
 }
 
 .profile-card {

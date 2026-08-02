@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
-import { AUTHOR_COOKIE, POST_SELECT, postFromRow, roleLabel, statusLabel, formatDate, type Post } from '../../lib/posts'
+import { POST_SELECT, postFromRow, roleLabel, statusLabel, formatDate, type Post } from '../../lib/posts'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
@@ -19,7 +19,7 @@ if (!post) {
 	Astro.response.status = 404
 }
 
-const isOwner = !!post && Astro.cookies.get(AUTHOR_COOKIE)?.value === post.author_token
+const isOwner = !!post && Astro.locals.auth?.profileToken === post.author_token
 
 const statusResult = Astro.getActionResult(actions.updatePostStatus)
 if (statusResult && !statusResult.error && post) {

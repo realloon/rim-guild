@@ -2,6 +2,14 @@ import { defineAction, ActionError } from 'astro:actions'
 import { z } from 'astro/zod'
 import { env } from 'cloudflare:workers'
 import { AUTHOR_COOKIE } from '../lib/posts'
+import {
+	SESSION_TTL_SECONDS,
+	createSession,
+	deleteSession,
+	generateSalt,
+	hashPassword,
+	verifyPassword,
+} from '../lib/auth'
 
 const roleTypes = ['artist', 'developer', 'writer', 'translator', 'other'] as const
 
@@ -41,8 +49,49 @@ function validateRolePairs(
 	}
 }
 
-async function assertOwner(postId: number, authorToken: string | undefined) {
-	if (!authorToken) {
+function setAuthCookie(
+	context: import('astro').APIContext,
+	sessionToken: string
+): void {
+	context.cookies.set(AUTHOR_COOKIE, sessionToken, {
+		maxAge: SESSION_TTL_SECONDS,
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax',
+		secure: import.meta.env.PROD,
+	})
+}
+
+/** 返回当前身份；无会话时创建 guest 身份并写 cookie */
+async function ensureIdentity(
+	context: import('astro').APIContext
+): Promise<{ profileToken: string; authorId: string }> {
+	const db = env.rim_guild_db
+
+	if (context.locals.auth) {
+		const row = await db
+			.prepare('SELECT author_id FROM profiles WHERE token = ?')
+			.bind(context.locals.auth.profileToken)
+			.first<{ author_id: string }>()
+		return { profileToken: context.locals.auth.profileToken, authorId: row!.author_id }
+	}
+
+	const profileToken = crypto.randomUUID()
+	const authorId = crypto.randomUUID().replaceAll('-', '').slice(0, 12)
+	await db
+		.prepare(
+			'INSERT INTO profiles (token, author_id, author_name, contact) VALUES (?, ?, ?, ?)'
+		)
+		.bind(profileToken, authorId, '', '')
+		.run()
+	const sessionToken = await createSession(db, profileToken)
+	setAuthCookie(context, sessionToken)
+	return { profileToken, authorId }
+}
+
+async function assertOwner(postId: number, context: import('astro').APIContext) {
+	const profileToken = context.locals.auth?.profileToken
+	if (!profileToken) {
 		throw new ActionError({ code: 'FORBIDDEN', message: '无权操作' })
 	}
 	const db = env.rim_guild_db
@@ -50,7 +99,7 @@ async function assertOwner(postId: number, authorToken: string | undefined) {
 		.prepare('SELECT author_token FROM posts WHERE id = ?')
 		.bind(postId)
 		.first<{ author_token: string }>()
-	if (!post || post.author_token !== authorToken) {
+	if (!post || post.author_token !== profileToken) {
 		throw new ActionError({ code: 'FORBIDDEN', message: '无权操作' })
 	}
 }
@@ -63,19 +112,11 @@ export const server = {
 			validateRolePairs(input.roleTypes, input.roleDescriptions)
 
 			const db = env.rim_guild_db
-
-			let authorToken = context.cookies.get(AUTHOR_COOKIE)?.value
-			if (!authorToken) {
-				authorToken = crypto.randomUUID()
-				context.cookies.set(AUTHOR_COOKIE, authorToken, {
-					maxAge: 60 * 60 * 24 * 365,
-					path: '/',
-				})
-			}
+			const { profileToken } = await ensureIdentity(context)
 
 			const profile = await db
 				.prepare('SELECT author_id, author_name, contact FROM profiles WHERE token = ?')
-				.bind(authorToken)
+				.bind(profileToken)
 				.first<{ author_id: string; author_name: string; contact: string }>()
 
 			if (!profile) {
@@ -94,7 +135,7 @@ export const server = {
 					input.description || '',
 					profile.contact,
 					profile.author_name,
-					authorToken,
+					profileToken,
 					profile.author_id
 				)
 				.run()
@@ -122,7 +163,7 @@ export const server = {
 		}),
 		handler: async (input, context) => {
 			validateRolePairs(input.roleTypes, input.roleDescriptions)
-			await assertOwner(input.postId, context.cookies.get(AUTHOR_COOKIE)?.value)
+			await assertOwner(input.postId, context)
 
 			const db = env.rim_guild_db
 			await db
@@ -150,7 +191,7 @@ export const server = {
 			status: z.enum(['open', 'closed']),
 		}),
 		handler: async (input, context) => {
-			await assertOwner(input.postId, context.cookies.get(AUTHOR_COOKIE)?.value)
+			await assertOwner(input.postId, context)
 
 			const db = env.rim_guild_db
 			await db
@@ -167,7 +208,7 @@ export const server = {
 			postId: z.number(),
 		}),
 		handler: async (input, context) => {
-			await assertOwner(input.postId, context.cookies.get(AUTHOR_COOKIE)?.value)
+			await assertOwner(input.postId, context)
 
 			const db = env.rim_guild_db
 			await db.batch([
@@ -189,21 +230,8 @@ export const server = {
 			roles: z.array(z.enum(roleTypes)).default([]),
 		}),
 		handler: async (input, context) => {
-			let authorToken = context.cookies.get(AUTHOR_COOKIE)?.value
-			if (!authorToken) {
-				authorToken = crypto.randomUUID()
-				context.cookies.set(AUTHOR_COOKIE, authorToken, {
-					maxAge: 60 * 60 * 24 * 365,
-					path: '/',
-				})
-			}
-
 			const db = env.rim_guild_db
-			const existing = await db
-				.prepare('SELECT author_id FROM profiles WHERE token = ?')
-				.bind(authorToken)
-				.first<{ author_id: string }>()
-			const authorId = existing?.author_id || crypto.randomUUID().replaceAll('-', '').slice(0, 12)
+			const { profileToken, authorId } = await ensureIdentity(context)
 
 			const roles = input.roles.join(',')
 			await db
@@ -211,15 +239,143 @@ export const server = {
 					`INSERT INTO profiles (token, author_id, author_name, contact, roles) VALUES (?, ?, ?, ?, ?)
 					ON CONFLICT (token) DO UPDATE SET author_name = excluded.author_name, contact = excluded.contact, roles = excluded.roles`
 				)
-				.bind(authorToken, authorId, input.authorName, input.contact, roles)
+				.bind(profileToken, authorId, input.authorName, input.contact, roles)
 				.run()
 			await db
 				.prepare(
 					'UPDATE posts SET author_name = ?, contact = ?, author_id = ? WHERE author_token = ?'
 				)
-				.bind(input.authorName, input.contact, authorId, authorToken)
+				.bind(input.authorName, input.contact, authorId, profileToken)
 				.run()
 
+			return { ok: true }
+		},
+	}),
+	register: defineAction({
+		accept: 'form',
+		input: z.object({
+			email: z.preprocess(
+				(v) => (v == null ? '' : String(v).trim().toLowerCase()),
+				z.string().max(200).regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '请输入有效的邮箱地址')
+			),
+			password: z.string().min(8, '密码至少 8 位'),
+		}),
+		handler: async (input, context) => {
+			const db = env.rim_guild_db
+
+			const emailProfile = await db
+				.prepare('SELECT token FROM profiles WHERE email = ?')
+				.bind(input.email)
+				.first<{ token: string }>()
+			if (emailProfile) {
+				throw new ActionError({ code: 'BAD_REQUEST', message: '该邮箱已注册，请直接登录' })
+			}
+
+			const salt = generateSalt()
+			const hash = await hashPassword(input.password, salt)
+
+			const currentAuth = context.locals.auth
+			if (currentAuth) {
+				const current = await db
+					.prepare('SELECT email FROM profiles WHERE token = ?')
+					.bind(currentAuth.profileToken)
+					.first<{ email: string }>()
+				if (current && current.email === '') {
+					// guest 身份原地升级为账号，会话沿用
+					await db
+						.prepare(
+							'UPDATE profiles SET email = ?, password_hash = ?, password_salt = ? WHERE token = ?'
+						)
+						.bind(input.email, hash, salt, currentAuth.profileToken)
+						.run()
+					return { ok: true }
+				}
+			}
+
+			// 新建账号（新 session 绑定）
+			const profileToken = crypto.randomUUID()
+			const authorId = crypto.randomUUID().replaceAll('-', '').slice(0, 12)
+			await db
+				.prepare(
+					'INSERT INTO profiles (token, author_id, author_name, email, password_hash, password_salt) VALUES (?, ?, ?, ?, ?, ?)'
+				)
+				.bind(profileToken, authorId, '', input.email, hash, salt)
+				.run()
+			const sessionToken = await createSession(db, profileToken)
+			setAuthCookie(context, sessionToken)
+
+			return { ok: true }
+		},
+	}),
+	login: defineAction({
+		accept: 'form',
+		input: z.object({
+			email: z.preprocess(
+				(v) => (v == null ? '' : String(v).trim().toLowerCase()),
+				z.string().max(200).regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '请输入有效的邮箱地址')
+			),
+			password: z.string().min(1, '请输入密码'),
+		}),
+		handler: async (input, context) => {
+			const db = env.rim_guild_db
+			const profile = await db
+				.prepare(
+					'SELECT token, author_id, author_name, password_hash, password_salt FROM profiles WHERE email = ?'
+				)
+				.bind(input.email)
+				.first<{
+					token: string
+					author_id: string
+					author_name: string
+					password_hash: string
+					password_salt: string
+				}>()
+
+			if (!profile || !profile.password_hash) {
+				throw new ActionError({ code: 'BAD_REQUEST', message: '邮箱或密码不正确' })
+			}
+			const valid = await verifyPassword(input.password, profile.password_salt, profile.password_hash)
+			if (!valid) {
+				throw new ActionError({ code: 'BAD_REQUEST', message: '邮箱或密码不正确' })
+			}
+
+			// 合并当前 guest 身份的帖子到登录账号
+			const currentAuth = context.locals.auth
+			if (currentAuth && currentAuth.profileToken !== profile.token) {
+				const guest = await db
+					.prepare('SELECT author_id, author_name, email FROM profiles WHERE token = ?')
+					.bind(currentAuth.profileToken)
+					.first<{ author_id: string; author_name: string; email: string }>()
+				if (guest && guest.email === '') {
+					const finalName = profile.author_name || guest.author_name
+					await db
+						.prepare(
+							'UPDATE posts SET author_token = ?, author_id = ?, author_name = ? WHERE author_token = ?'
+						)
+						.bind(profile.token, profile.author_id, finalName, currentAuth.profileToken)
+						.run()
+					await db.prepare('DELETE FROM profiles WHERE token = ?').bind(currentAuth.profileToken).run()
+					await deleteSession(db, currentAuth.sessionToken)
+				}
+			}
+
+			const sessionToken = await createSession(db, profile.token)
+			setAuthCookie(context, sessionToken)
+
+			return { ok: true }
+		},
+	}),
+	logout: defineAction({
+		accept: 'form',
+		handler: async (_input, context) => {
+			const currentAuth = context.locals.auth
+			if (currentAuth) {
+				await deleteSession(env.rim_guild_db, currentAuth.sessionToken)
+			}
+			context.cookies.set(AUTHOR_COOKIE, '', {
+				maxAge: 0,
+				path: '/',
+			})
 			return { ok: true }
 		},
 	}),
