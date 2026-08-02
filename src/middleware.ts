@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers'
 import { AUTHOR_COOKIE } from './lib/posts'
-import { SESSION_TTL_SECONDS, touchSession } from './lib/auth'
+import { clearSessionCookie, setSessionCookie, touchSession } from './lib/auth'
 
 export async function onRequest(
   context: import('astro').APIContext,
@@ -13,19 +13,10 @@ export async function onRequest(
     if (result) {
       context.locals.auth = { sessionToken, profileToken: result.profileToken }
       if (result.renewed) {
-        context.cookies.set(AUTHOR_COOKIE, sessionToken, {
-          maxAge: SESSION_TTL_SECONDS,
-          path: '/',
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: import.meta.env.PROD,
-        })
+        setSessionCookie(context, sessionToken)
       }
     } else {
-      context.cookies.set(AUTHOR_COOKIE, '', {
-        maxAge: 0,
-        path: '/',
-      })
+      clearSessionCookie(context)
     }
   }
 

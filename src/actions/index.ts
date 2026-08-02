@@ -2,36 +2,33 @@ import { defineAction, ActionError } from 'astro:actions'
 import type { ActionAPIContext } from 'astro:actions'
 import { z } from 'astro/zod'
 import { env } from 'cloudflare:workers'
-import { AUTHOR_COOKIE } from '../lib/posts'
+import { POST_TAGS, ROLE_TYPES } from '../lib/posts'
 import {
-  SESSION_TTL_SECONDS,
+  clearSessionCookie,
   createSession,
   deleteSession,
   generateSalt,
   hashPassword,
+  setSessionCookie,
   verifyPassword,
 } from '../lib/auth'
 
-const roleTypes = [
-  'artist',
-  'xml',
-  'csharp',
-  'writer',
-  'translator',
-  'other',
-] as const
-const postTags = ['weapon', 'race', 'framework'] as const
+const roleTypes = Object.keys(ROLE_TYPES) as [string, ...string[]]
+const postTags = Object.keys(POST_TAGS) as [string, ...string[]]
 
-const text = (min: number, message: string, max?: number) =>
-  z.preprocess(
-    v => (v == null ? '' : String(v).trim()),
-    max
-      ? z.string().min(min, message).max(max, message)
-      : z.string().min(min, message),
-  )
+const emailSchema = z.preprocess(
+  v => (v == null ? '' : String(v).trim().toLowerCase()),
+  z
+    .string()
+    .max(200)
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '请输入有效的邮箱地址'),
+)
 
 const postInput = {
-  title: text(2, '标题至少 2 个字', 80),
+  title: z.preprocess(
+    v => (v == null ? '' : String(v).trim()),
+    z.string().min(2, '标题至少 2 个字').max(80, '标题最多 80 个字'),
+  ),
   description: z.preprocess(
     v => (v == null ? '' : String(v).trim()),
     z.string().max(5000, '描述最多 5000 个字'),
@@ -72,16 +69,6 @@ function validateRolePairs(
       message: '招揽类型、需求与人数不匹配',
     })
   }
-}
-
-function setAuthCookie(context: ActionAPIContext, sessionToken: string) {
-  context.cookies.set(AUTHOR_COOKIE, sessionToken, {
-    maxAge: SESSION_TTL_SECONDS,
-    path: '/',
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: import.meta.env.PROD,
-  })
 }
 
 /** 当前登录用户 profile token；未登录抛错 */
@@ -292,11 +279,6 @@ export const server = {
       const db = env.rim_guild_db
       const profileToken = requireAuth(context)
 
-      const existing = await db
-        .prepare('SELECT author_id FROM profiles WHERE token = ?')
-        .bind(profileToken)
-        .first<{ author_id: string }>()
-
       const roles = input.roles.join(',')
       await db
         .prepare(
@@ -312,10 +294,8 @@ export const server = {
         )
         .run()
       await db
-        .prepare(
-          'UPDATE posts SET author_name = ?, author_id = ? WHERE author_token = ?',
-        )
-        .bind(input.authorName, existing!.author_id, profileToken)
+        .prepare('UPDATE posts SET author_name = ? WHERE author_token = ?')
+        .bind(input.authorName, profileToken)
         .run()
 
       return { ok: true }
@@ -324,13 +304,7 @@ export const server = {
   register: defineAction({
     accept: 'form',
     input: z.object({
-      email: z.preprocess(
-        v => (v == null ? '' : String(v).trim().toLowerCase()),
-        z
-          .string()
-          .max(200)
-          .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '请输入有效的邮箱地址'),
-      ),
+      email: emailSchema,
       password: z.string().min(8, '密码至少 8 位'),
     }),
     handler: async (input, context) => {
@@ -361,7 +335,7 @@ export const server = {
         .bind(profileToken, authorId, defaultName, input.email, hash, salt)
         .run()
       const sessionToken = await createSession(db, profileToken)
-      setAuthCookie(context, sessionToken)
+      setSessionCookie(context, sessionToken)
 
       return { ok: true }
     },
@@ -369,26 +343,18 @@ export const server = {
   login: defineAction({
     accept: 'form',
     input: z.object({
-      email: z.preprocess(
-        v => (v == null ? '' : String(v).trim().toLowerCase()),
-        z
-          .string()
-          .max(200)
-          .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '请输入有效的邮箱地址'),
-      ),
+      email: emailSchema,
       password: z.string().min(1, '请输入密码'),
     }),
     handler: async (input, context) => {
       const db = env.rim_guild_db
       const profile = await db
         .prepare(
-          'SELECT token, author_id, author_name, password_hash, password_salt FROM profiles WHERE email = ?',
+          'SELECT token, password_hash, password_salt FROM profiles WHERE email = ?',
         )
         .bind(input.email)
         .first<{
           token: string
-          author_id: string
-          author_name: string
           password_hash: string
           password_salt: string
         }>()
@@ -412,7 +378,7 @@ export const server = {
       }
 
       const sessionToken = await createSession(db, profile.token)
-      setAuthCookie(context, sessionToken)
+      setSessionCookie(context, sessionToken)
 
       return { ok: true }
     },
@@ -424,10 +390,7 @@ export const server = {
       if (currentAuth) {
         await deleteSession(env.rim_guild_db, currentAuth.sessionToken)
       }
-      context.cookies.set(AUTHOR_COOKIE, '', {
-        maxAge: 0,
-        path: '/',
-      })
+      clearSessionCookie(context)
       return { ok: true }
     },
   }),
@@ -503,7 +466,7 @@ export const server = {
         .bind(input.postId, input.content)
         .run()
 
-      return { id: input.postId }
+      return { ok: true }
     },
   }),
 }

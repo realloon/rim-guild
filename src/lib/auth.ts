@@ -2,6 +2,8 @@
 // 注册/登录：注册创建账号 → 登录签发 session cookie；登出删除 session
 // cookie（guild_author）即 session token，7 天滑动过期
 
+import { AUTHOR_COOKIE } from './posts'
+
 const ITERATIONS = 310_000
 const KEY_LEN = 32
 const SALT_BYTES = 16
@@ -51,27 +53,24 @@ export async function verifyPassword(
   return actual === expectedHash
 }
 
-export const PASSWORD_RULES = {
-  min: 8,
-  message: '密码至少 8 位',
-}
-
-export const EMAIL_RULES = {
-  max: 200,
-  pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  message: '请输入有效的邮箱地址',
-}
-
-export function normalizeEmail(email: string) {
-  return email.trim().toLowerCase()
-}
-
 // ---- 会话（7 天滑动过期） ----
 export const SESSION_TTL_SECONDS = 7 * 24 * 3600
 export const SESSION_RENEW_THRESHOLD_SECONDS = SESSION_TTL_SECONDS / 2
 
-export function sessionExpiresAt(now = Date.now()) {
-  return new Date(now + SESSION_TTL_SECONDS * 1000).toISOString()
+type CookieContext = { cookies: import('astro').AstroCookies }
+
+export function setSessionCookie(context: CookieContext, token: string) {
+  context.cookies.set(AUTHOR_COOKIE, token, {
+    maxAge: SESSION_TTL_SECONDS,
+    path: '/',
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: import.meta.env.PROD,
+  })
+}
+
+export function clearSessionCookie(context: CookieContext) {
+  context.cookies.set(AUTHOR_COOKIE, '', { maxAge: 0, path: '/' })
 }
 
 export async function createSession(db: D1Database, profileToken: string) {
@@ -80,7 +79,11 @@ export async function createSession(db: D1Database, profileToken: string) {
     .prepare(
       'INSERT INTO sessions (token, profile_token, expires_at) VALUES (?, ?, ?)',
     )
-    .bind(token, profileToken, sessionExpiresAt())
+    .bind(
+      token,
+      profileToken,
+      new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString(),
+    )
     .run()
   return token
 }
@@ -105,7 +108,11 @@ export async function touchSession(db: D1Database, token: string) {
       .prepare(
         'UPDATE sessions SET expires_at = ?, last_seen_at = ? WHERE token = ?',
       )
-      .bind(sessionExpiresAt(), new Date().toISOString(), token)
+      .bind(
+        new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString(),
+        new Date().toISOString(),
+        token,
+      )
       .run()
     return { profileToken: row.profile_token, renewed: true }
   }
