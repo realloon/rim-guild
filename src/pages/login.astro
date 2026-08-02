@@ -92,3 +92,33 @@ const result = mode === 'register' ? registerResult : loginResult
     </section>
   </main>
 </Layout>
+
+<style>
+  .auth-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem;
+  }
+
+  .auth-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+
+  .auth-single {
+    max-width: 360px;
+    margin: 1rem auto 0;
+    box-sizing: border-box;
+  }
+
+  .auth-switch {
+    margin: 1rem 0 0;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+
+  .auth-switch a {
+    color: var(--accent-strong);
+  }
+</style>

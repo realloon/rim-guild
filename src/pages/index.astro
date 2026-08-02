@@ -1,12 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import AuthorAvatar from '../components/AuthorAvatar.astro'
-import { ROLE_TYPES, POST_SELECT, postFromRow, roleLabel, formatDate, type Post, type RoleType } from '../lib/posts'
+import {
+  ROLE_TYPES,
+  POST_SELECT,
+  postFromRow,
+  roleLabel,
+  formatDate,
+  type Post,
+  type PostRow,
+  type RoleType,
+} from '../lib/posts'
 import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
 const roleParam = Astro.url.searchParams.get('role')
-const activeRole: RoleType | null = roleParam && roleParam in ROLE_TYPES ? (roleParam as RoleType) : null
+const activeRole: RoleType | null =
+  roleParam && roleParam in ROLE_TYPES ? (roleParam as RoleType) : null
 const q = (Astro.url.searchParams.get('q') ?? '').trim()
 
 const myProfileToken = Astro.locals.auth?.profileToken
@@ -14,16 +24,16 @@ const myProfileToken = Astro.locals.auth?.profileToken
 // 身份匹配推荐（登录且设置了身份时展示）
 let recommended: Post[] = []
 if (myProfileToken) {
-	const profile = await db
-		.prepare('SELECT roles FROM profiles WHERE token = ?')
-		.bind(myProfileToken)
-		.first<{ roles: string }>()
-	const myRoles = (profile?.roles ?? '').split(',').filter(Boolean)
-	if (myRoles.length > 0) {
-		const placeholders = myRoles.map(() => '?').join(',')
-		const { results: recResults } = await db
-			.prepare(
-				`${POST_SELECT}
+  const profile = await db
+    .prepare('SELECT roles FROM profiles WHERE token = ?')
+    .bind(myProfileToken)
+    .first<{ roles: string }>()
+  const myRoles = (profile?.roles ?? '').split(',').filter(Boolean)
+  if (myRoles.length > 0) {
+    const placeholders = myRoles.map(() => '?').join(',')
+    const { results: recResults } = await db
+      .prepare(
+        `${POST_SELECT}
 				WHERE p.author_token != ?
 				AND EXISTS (
 					SELECT 1 FROM post_roles pr2
@@ -31,130 +41,235 @@ if (myProfileToken) {
 				)
 				GROUP BY p.id
 				ORDER BY p.created_at DESC, p.id DESC
-				LIMIT 5`
-			)
-			.bind(myProfileToken, ...myRoles)
-			.all()
-		recommended = recResults.map(postFromRow)
-	}
+				LIMIT 5`,
+      )
+      .bind(myProfileToken, ...myRoles)
+      .all<PostRow>()
+    recommended = recResults.map(postFromRow)
+  }
 }
 
 // 主列表（类型筛选 + 关键词搜索叠加）
 const conditions = [
-	`EXISTS (
+  `EXISTS (
 		SELECT 1 FROM post_roles pr2
 		WHERE pr2.post_id = p.id AND pr2.status = 'open'
 	)`,
 ]
 const params: string[] = []
 if (activeRole) {
-	conditions.push(
-		`EXISTS (
+  conditions.push(
+    `EXISTS (
 			SELECT 1 FROM post_roles pr2
 			WHERE pr2.post_id = p.id AND pr2.role_type = ? AND pr2.status = 'open'
-		)`
-	)
-	params.push(activeRole)
+		)`,
+  )
+  params.push(activeRole)
 }
 if (q) {
-	const escaped = q.replace(/[%_]/g, (m) => `\\${m}`)
-	conditions.push(`(p.title LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')`)
-	params.push(`%${escaped}%`, `%${escaped}%`)
+  const escaped = q.replace(/[%_]/g, m => `\\${m}`)
+  conditions.push(
+    `(p.title LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')`,
+  )
+  params.push(`%${escaped}%`, `%${escaped}%`)
 }
 
 const { results } = await db
-	.prepare(
-		`${POST_SELECT}
+  .prepare(
+    `${POST_SELECT}
 		WHERE ${conditions.join('\n\t\tAND ')}
 		GROUP BY p.id
-		ORDER BY p.created_at DESC, p.id DESC`
-	)
-	.bind(...params)
-	.all()
+		ORDER BY p.created_at DESC, p.id DESC`,
+  )
+  .bind(...params)
+  .all<PostRow>()
 const posts: Post[] = results.map(postFromRow)
 ---
 
 <Layout title="边缘工会 · RimWorld 模组需求平台">
-	<main>
-		{recommended.length > 0 && (
-			<section class="recommended">
-				<h2>适合你的需求</h2>
-				<ul class="post-list">
-					{
-						recommended.map((post) => (
-							<li>
-								<a href={`/posts/${post.id}`}>
-									<h2>{post.title}</h2>
-									{post.description && <p class="post-excerpt">{post.description}</p>}
-									<div class="post-meta">
-										<span class="tags">
-											{post.roles
-												.filter((role) => role.status === 'open')
-												.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
-										</span>
-										<span class="meta-side">
-											<AuthorAvatar seed={post.author_token} name={post.author_name} href={`/authors/${post.author_id}`} size={28} />
-											<time>{formatDate(post.created_at)}</time>
-										</span>
-									</div>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		)}
+  <main>
+    {
+      recommended.length > 0 && (
+        <section class="recommended">
+          <h2>适合你的需求</h2>
+          <ul class="post-list">
+            {recommended.map(post => (
+              <li>
+                <a href={`/posts/${post.id}`}>
+                  <h2>{post.title}</h2>
+                  {post.description && (
+                    <p class="post-excerpt">{post.description}</p>
+                  )}
+                  <div class="post-meta">
+                    <span class="tags">
+                      {post.roles
+                        .filter(role => role.status === 'open')
+                        .map(role => (
+                          <span class="tag">{roleLabel(role.type)}</span>
+                        ))}
+                    </span>
+                    <span class="meta-side">
+                      <AuthorAvatar
+                        seed={post.author_token}
+                        name={post.author_name}
+                        href={`/authors/${post.author_id}`}
+                        size={28}
+                      />
+                      <time>{formatDate(post.created_at)}</time>
+                    </span>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
-		<form class="search-bar" method="GET" action="/">
-			{activeRole && <input type="hidden" name="role" value={activeRole} />}
-			<input type="search" name="q" value={q} placeholder="搜索项目标题或描述……" aria-label="搜索" />
-			<button class="btn btn-ghost" type="submit">搜索</button>
-		</form>
+    <form class="search-bar" method="GET" action="/">
+      {activeRole && <input type="hidden" name="role" value={activeRole} />}
+      <input
+        type="search"
+        name="q"
+        value={q}
+        placeholder="搜索项目标题或描述……"
+        aria-label="搜索"
+      />
+      <button class="btn btn-ghost" type="submit">搜索</button>
+    </form>
 
-		<nav class="role-filter" aria-label="按类型筛选">
-			<a href={q ? `/?q=${encodeURIComponent(q)}` : '/'} class={activeRole === null ? 'active' : ''}>全部</a>
-			{
-				Object.entries(ROLE_TYPES).map(([value, label]) => (
-					<a
-						href={q ? `/?role=${value}&q=${encodeURIComponent(q)}` : `/?role=${value}`}
-						class={activeRole === value ? 'active' : ''}
-					>
-						{label}
-					</a>
-				))
-			}
-		</nav>
+    <nav class="role-filter" aria-label="按类型筛选">
+      <a
+        href={q ? `/?q=${encodeURIComponent(q)}` : '/'}
+        class={activeRole === null ? 'active' : ''}>全部</a
+      >
+      {
+        Object.entries(ROLE_TYPES).map(([value, label]) => (
+          <a
+            href={
+              q
+                ? `/?role=${value}&q=${encodeURIComponent(q)}`
+                : `/?role=${value}`
+            }
+            class={activeRole === value ? 'active' : ''}
+          >
+            {label}
+          </a>
+        ))
+      }
+    </nav>
 
-		{posts.length > 0 ? (
-			<ul class="post-list">
-				{
-					posts.map((post) => (
-						<li>
-							<a href={`/posts/${post.id}`}>
-								<h2>{post.title}</h2>
-								{post.description && <p class="post-excerpt">{post.description}</p>}
-								<div class="post-meta">
-									<span class="tags">
-										{post.roles
-											.filter((role) => role.status === 'open')
-											.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
-									</span>
-									<span class="meta-side">
-										{(() => {
-											const closedCount = post.roles.filter((role) => role.status === 'closed').length
-											return closedCount > 0 && <span class="role-closed-count">已招到 {closedCount}/{post.roles.length}</span>
-										})()}
-										<AuthorAvatar seed={post.author_token} name={post.author_name} href={`/authors/${post.author_id}`} size={28} />
-										<time>{formatDate(post.created_at)}</time>
-									</span>
-								</div>
-							</a>
-						</li>
-					))
-				}
-			</ul>
-		) : (
-			<p class="empty">{q ? '没有找到匹配的需求' : '还没有需求，来发布第一条吧'}</p>
-		)}
-	</main>
+    {
+      posts.length > 0 ? (
+        <ul class="post-list">
+          {posts.map(post => (
+            <li>
+              <a href={`/posts/${post.id}`}>
+                <h2>{post.title}</h2>
+                {post.description && (
+                  <p class="post-excerpt">{post.description}</p>
+                )}
+                <div class="post-meta">
+                  <span class="tags">
+                    {post.roles
+                      .filter(role => role.status === 'open')
+                      .map(role => (
+                        <span class="tag">{roleLabel(role.type)}</span>
+                      ))}
+                  </span>
+                  <span class="meta-side">
+                    {(() => {
+                      const closedCount = post.roles.filter(
+                        role => role.status === 'closed',
+                      ).length
+                      return (
+                        closedCount > 0 && (
+                          <span class="role-closed-count">
+                            已招到 {closedCount}/{post.roles.length}
+                          </span>
+                        )
+                      )
+                    })()}
+                    <AuthorAvatar
+                      seed={post.author_token}
+                      name={post.author_name}
+                      href={`/authors/${post.author_id}`}
+                      size={28}
+                    />
+                    <time>{formatDate(post.created_at)}</time>
+                  </span>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="empty">
+          {q ? '没有找到匹配的需求' : '还没有需求，来发布第一条吧'}
+        </p>
+      )
+    }
+  </main>
 </Layout>
+
+<style>
+  .recommended {
+    margin-bottom: 1.5rem;
+  }
+
+  .recommended h2 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+    color: var(--accent-strong);
+  }
+
+  .search-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .search-bar input {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 0.55rem 0.8rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font: inherit;
+  }
+
+  .search-bar input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .role-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .role-filter a {
+    padding: 0.3rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+
+  .role-filter a:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+
+  .role-filter a.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1a1408;
+    font-weight: 600;
+  }
+</style>

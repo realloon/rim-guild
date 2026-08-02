@@ -4,8 +4,8 @@ import { avatarUrl } from '../lib/avatar'
 import { actions } from 'astro:actions'
 
 interface Props {
-	title?: string
-	back?: boolean
+  title?: string
+  back?: boolean
 }
 
 const { title = '边缘工会', back = false } = Astro.props
@@ -14,44 +14,181 @@ const profileToken = Astro.locals.auth?.profileToken ?? null
 
 <!doctype html>
 <html lang="zh-CN">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
-	</head>
-	<body>
-		<div class="container">
-			<header class="site-header">
-				<h1><a href="/">边缘工会</a></h1>
-				<div class="header-actions">
-					{back && <a class="btn btn-ghost" href="/">返回列表</a>}
-					<a class="btn" href={profileToken ? '/posts/new' : '/login?next=/posts/new'}>发布需求</a>
-					<button class="header-profile" type="button" popovertarget="profile-menu" title="菜单">
-						{profileToken ? (
-							<img class="author-avatar" src={avatarUrl(profileToken, 32)} width={32} height={32} alt="我的头像" />
-						) : (
-							<span class="header-profile-placeholder" aria-hidden="true"></span>
-						)}
-					</button>
-				</div>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="container">
+      <header class="site-header">
+        <h1><a href="/">边缘工会</a></h1>
+        <div class="header-actions">
+          {
+            back && (
+              <a class="btn btn-ghost" href="/">
+                返回列表
+              </a>
+            )
+          }
+          <a
+            class="btn"
+            href={profileToken ? '/posts/new' : '/login?next=/posts/new'}
+            >发布需求</a
+          >
+          <button
+            class="header-profile"
+            type="button"
+            popovertarget="profile-menu"
+            title="菜单"
+          >
+            {
+              profileToken ? (
+                <img
+                  class="author-avatar"
+                  src={avatarUrl(profileToken, 32)}
+                  width={32}
+                  height={32}
+                  alt="我的头像"
+                />
+              ) : (
+                <span class="header-profile-placeholder" aria-hidden="true" />
+              )
+            }
+          </button>
+        </div>
 
-				<div id="profile-menu" class="profile-menu" popover>
-					{profileToken ? (
-						<>
-							<a href="/me">我的主页</a>
-							<form method="POST" action={actions.logout}>
-								<button class="menu-item" type="submit">登出</button>
-							</form>
-						</>
-					) : (
-						<a href="/login?next=/me">登录</a>
-					)}
-				</div>
-			</header>
+        <div id="profile-menu" class="profile-menu" popover>
+          {
+            profileToken ? (
+              <>
+                <a href="/me">我的主页</a>
+                <form method="POST" action={actions.logout}>
+                  <button class="menu-item" type="submit">
+                    登出
+                  </button>
+                </form>
+              </>
+            ) : (
+              <a href="/login?next=/me">登录</a>
+            )
+          }
+        </div>
+      </header>
 
-			<slot />
-		</div>
-	</body>
+      <slot />
+    </div>
+  </body>
 </html>
+
+<style>
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .site-header h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+  }
+
+  .site-header h1 a {
+    text-decoration: none;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .header-profile {
+    display: block;
+    line-height: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    anchor-name: --profile-anchor;
+  }
+
+  .header-profile img {
+    box-sizing: border-box;
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+    border-radius: 50%;
+  }
+
+  .header-profile:hover img {
+    border-color: var(--accent);
+  }
+
+  .profile-menu {
+    position: fixed;
+    position-anchor: --profile-anchor;
+    position-area: bottom span-left;
+    top: 4px;
+    margin: 0;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    border-radius: 8px;
+    padding: 0.35rem;
+    min-width: 150px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+  }
+
+  .profile-menu::backdrop {
+    background: none;
+  }
+
+  .profile-menu a,
+  .profile-menu .menu-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.8rem;
+    border: none;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  .profile-menu a:hover,
+  .profile-menu .menu-item:hover {
+    background: var(--bg);
+    color: var(--accent-strong);
+  }
+
+  .header-profile-placeholder {
+    display: block;
+    width: 32px;
+    height: 32px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: var(--border);
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  a.header-profile:hover .header-profile-placeholder {
+    border-color: var(--accent);
+  }
+</style>

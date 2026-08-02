@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro'
 import PostForm from '../../../components/PostForm.astro'
-import { POST_SELECT, postFromRow, type Post } from '../../../lib/posts'
+import { POST_SELECT, postFromRow, type Post, type PostRow } from '../../../lib/posts'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
@@ -11,7 +11,7 @@ const { id } = Astro.params
 const row = await db
 	.prepare(`${POST_SELECT} WHERE p.id = ? GROUP BY p.id`)
 	.bind(Number(id))
-	.first()
+	.first<PostRow>()
 
 const post: Post | undefined = row ? postFromRow(row) : undefined
 const isOwner = !!post && Astro.locals.auth?.profileToken === post.author_token

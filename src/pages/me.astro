@@ -7,6 +7,7 @@ import {
   roleLabel,
   formatDate,
   type Post,
+  type PostRow,
   type RoleType,
 } from '../lib/posts'
 import { avatarUrl } from '../lib/avatar'
@@ -51,7 +52,7 @@ const { results } = await db
 		ORDER BY p.created_at DESC, p.id DESC`,
   )
   .bind(profileToken)
-  .all()
+  .all<PostRow>()
 const posts: Post[] = results.map(postFromRow)
 
 const { results: claimedRows } = await db
@@ -251,3 +252,15 @@ if (result && !result.error) {
     }
   </main>
 </Layout>
+
+<style>
+  .logged-email {
+    margin-left: auto;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .profile-head .field-note {
+    margin: 0;
+  }
+</style>

@@ -1,12 +1,13 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import {
-	POST_SELECT,
-	postFromRow,
-	roleLabel,
-	formatDate,
-	type Post,
-	type RoleType,
+  POST_SELECT,
+  postFromRow,
+  roleLabel,
+  formatDate,
+  type Post,
+  type PostRow,
+  type RoleType,
 } from '../../lib/posts'
 import { avatarUrl } from '../../lib/avatar'
 import { env } from 'cloudflare:workers'
@@ -15,88 +16,132 @@ const db = env.rim_guild_db
 const { id } = Astro.params
 
 const profile = await db
-	.prepare('SELECT token, author_name, qq, github, steam, roles FROM profiles WHERE author_id = ?')
-	.bind(id)
-	.first<{ token: string; author_name: string; qq: string; github: string; steam: string; roles: string }>()
+  .prepare(
+    'SELECT token, author_name, qq, github, steam, roles FROM profiles WHERE author_id = ?',
+  )
+  .bind(id)
+  .first<{
+    token: string
+    author_name: string
+    qq: string
+    github: string
+    steam: string
+    roles: string
+  }>()
 
 const authorRoles: RoleType[] = profile?.roles
-	? (profile.roles.split(',').filter(Boolean) as RoleType[])
-	: []
+  ? (profile.roles.split(',').filter(Boolean) as RoleType[])
+  : []
 
 let posts: Post[] = []
 if (profile) {
-	const { results } = await db
-		.prepare(
-			`${POST_SELECT}
+  const { results } = await db
+    .prepare(
+      `${POST_SELECT}
 			WHERE p.author_token = ?
 			GROUP BY p.id
-			ORDER BY p.created_at DESC, p.id DESC`
-		)
-		.bind(profile.token)
-		.all()
-	posts = results.map(postFromRow)
+			ORDER BY p.created_at DESC, p.id DESC`,
+    )
+    .bind(profile.token)
+    .all<PostRow>()
+  posts = results.map(postFromRow)
 }
 
 if (!profile) {
-	Astro.response.status = 404
+  Astro.response.status = 404
 }
 ---
 
-<Layout title={profile ? `${profile.author_name} · 边缘工会` : '作者不存在 · 边缘工会'} back>
-	<main>
-			{profile ? (
-				<>
-					<section class="profile-card">
-						<div class="profile-head">
-							<img class="author-avatar" src={avatarUrl(profile.token, 64)} width={64} height={64} alt={`${profile.author_name} 的头像`} />
-							<div>
-								<h2>{profile.author_name}</h2>
-								{authorRoles.length > 0 && (
-									<div class="tags">
-										{authorRoles.map((role) => <span class="tag">{roleLabel(role)}</span>)}
-									</div>
-								)}
-								{profile.qq && <p class="field-note">QQ：{profile.qq}</p>}
-								{profile.github && <p class="field-note">GitHub：{profile.github}</p>}
-								{profile.steam && <p class="field-note">Steam：{profile.steam}</p>}
-							</div>
-						</div>
-					</section>
+<Layout
+  title={profile
+    ? `${profile.author_name} · 边缘工会`
+    : '作者不存在 · 边缘工会'}
+  back
+>
+  <main>
+    {
+      profile ? (
+        <>
+          <section class="profile-card">
+            <div class="profile-head">
+              <img
+                class="author-avatar"
+                src={avatarUrl(profile.token, 64)}
+                width={64}
+                height={64}
+                alt={`${profile.author_name} 的头像`}
+              />
+              <div>
+                <h2>{profile.author_name}</h2>
+                {authorRoles.length > 0 && (
+                  <div class="tags">
+                    {authorRoles.map(role => (
+                      <span class="tag">{roleLabel(role)}</span>
+                    ))}
+                  </div>
+                )}
+                {profile.qq && <p class="field-note">QQ：{profile.qq}</p>}
+                {profile.github && (
+                  <p class="field-note">GitHub：{profile.github}</p>
+                )}
+                {profile.steam && (
+                  <p class="field-note">Steam：{profile.steam}</p>
+                )}
+              </div>
+            </div>
+          </section>
 
-					<h2>TA 的需求（{posts.length}）</h2>
-					{posts.length > 0 ? (
-						<ul class="post-list">
-							{
-								posts.map((post) => (
-									<li>
-										<a href={`/posts/${post.id}`}>
-											<h2>{post.title}</h2>
-											{post.description && <p class="post-excerpt">{post.description}</p>}
-											<div class="post-meta">
-												<span class="tags">
-													{post.roles
-														.filter((role) => role.status === 'open')
-														.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
-												</span>
-												<span class="meta-side">
-													{(() => {
-														const closedCount = post.roles.filter((role) => role.status === 'closed').length
-														return closedCount > 0 && <span class="role-closed-count">已招到 {closedCount}/{post.roles.length}</span>
-													})()}
-													<time>{formatDate(post.created_at)}</time>
-												</span>
-											</div>
-										</a>
-									</li>
-								))
-							}
-						</ul>
-					) : (
-						<p class="empty">TA 还没有发布过需求</p>
-					)}
-				</>
-			) : (
-				<p class="not-found">该作者不存在</p>
-			)}
-		</main>
+          <h2>TA 的需求（{posts.length}）</h2>
+          {posts.length > 0 ? (
+            <ul class="post-list">
+              {posts.map(post => (
+                <li>
+                  <a href={`/posts/${post.id}`}>
+                    <h2>{post.title}</h2>
+                    {post.description && (
+                      <p class="post-excerpt">{post.description}</p>
+                    )}
+                    <div class="post-meta">
+                      <span class="tags">
+                        {post.roles
+                          .filter(role => role.status === 'open')
+                          .map(role => (
+                            <span class="tag">{roleLabel(role.type)}</span>
+                          ))}
+                      </span>
+                      <span class="meta-side">
+                        {(() => {
+                          const closedCount = post.roles.filter(
+                            role => role.status === 'closed',
+                          ).length
+                          return (
+                            closedCount > 0 && (
+                              <span class="role-closed-count">
+                                已招到 {closedCount}/{post.roles.length}
+                              </span>
+                            )
+                          )
+                        })()}
+                        <time>{formatDate(post.created_at)}</time>
+                      </span>
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="empty">TA 还没有发布过需求</p>
+          )}
+        </>
+      ) : (
+        <p class="not-found">该作者不存在</p>
+      )
+    }
+  </main>
 </Layout>
+
+<style>
+  .profile-head .field-note {
+    margin: 0;
+  }
+</style>

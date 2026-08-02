@@ -9,6 +9,7 @@ import {
   tagLabel,
   formatDate,
   type Post,
+  type PostRow,
 } from '../../lib/posts'
 import { avatarUrl } from '../../lib/avatar'
 import { actions } from 'astro:actions'
@@ -20,7 +21,7 @@ const { id } = Astro.params
 const row = await db
   .prepare(`${POST_SELECT} WHERE p.id = ? GROUP BY p.id`)
   .bind(Number(id))
-  .first()
+  .first<PostRow>()
 
 const post: Post | undefined = row ? postFromRow(row) : undefined
 
@@ -98,6 +99,18 @@ for (const resp of responseRows) {
   responsesByRole.set(resp.role_type, list)
 }
 ---
+
+<script>
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-confirm]')
+  forms.forEach(form => {
+    form.addEventListener('submit', event => {
+      const message = form.dataset.confirm
+      if (!confirm(message)) {
+        event.preventDefault()
+      }
+    })
+  })
+</script>
 
 <Layout
   title={post ? `${post.title} · 边缘工会` : '需求不存在 · 边缘工会'}
@@ -317,14 +330,144 @@ for (const resp of responseRows) {
   </main>
 </Layout>
 
-<script>
-  const forms = document.querySelectorAll('[data-confirm]')
-  forms.forEach(form => {
-    form.addEventListener('submit', event => {
-      const message = (form as HTMLElement).dataset.confirm
-      if (!confirm(message)) {
-        event.preventDefault()
-      }
-    })
-  })
-</script>
+<style>
+  .post-detail h1 {
+    font-size: 1.4rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .post-detail .description {
+    white-space: pre-wrap;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .tag-muted {
+    color: var(--text-dim);
+    border-color: var(--border);
+  }
+
+  .role-requirements {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .role-requirement {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+  }
+
+  .role-requirement-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .role-requirement-head .status {
+    margin-left: auto;
+  }
+
+  .role-count-label {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .role-requirement form {
+    margin-top: 0.75rem;
+  }
+
+  .role-requirement p {
+    margin: 0.5rem 0 0;
+    white-space: pre-wrap;
+  }
+
+  .role-closed {
+    opacity: 0.6;
+  }
+
+  .response-avatars {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border);
+  }
+
+  .contact-box {
+    border: 1px dashed var(--accent);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    color: var(--accent-strong);
+  }
+
+  .contact-box strong {
+    display: block;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+
+  .contact-line {
+    color: var(--accent-strong);
+  }
+
+  .post-updates {
+    margin: 1.5rem 0;
+  }
+
+  .post-updates h2 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .post-updates form > textarea {
+    display: block;
+    margin-bottom: 1.1rem;
+  }
+
+  .update-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .update-list li {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+  }
+
+  .update-list p {
+    margin: 0 0 0.35rem;
+    white-space: pre-wrap;
+  }
+
+  .update-list time {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+
+  .post-owner-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1.5rem;
+  }
+</style>

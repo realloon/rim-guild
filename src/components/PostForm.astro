@@ -11,6 +11,58 @@ const action = post ? actions.updatePost : actions.createPost
 const submitLabel = post ? '保存修改' : '发布'
 ---
 
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-role-form]')
+  if (form) {
+    const pairs = form.querySelector<HTMLElement>('.role-pairs')!
+    const addBtn = form.querySelector<HTMLButtonElement>('.add-role')!
+
+    const makePair = () => {
+      const template = pairs.querySelector<HTMLElement>('.role-pair')!
+      const pair = template.cloneNode(true) as HTMLDivElement
+      const removeBtn = pair.querySelector<HTMLButtonElement>('.remove-role')!
+      removeBtn.hidden = false
+      const select = pair.querySelector('select')!
+      select.selectedIndex = 0
+      const descInput = pair.querySelector<HTMLInputElement>(
+        'input[name="roleDescriptions"]',
+      )!
+      descInput.value = ''
+      const countInput = pair.querySelector<HTMLInputElement>(
+        'input[name="roleCounts"]',
+      )!
+      countInput.value = '1'
+      return pair
+    }
+
+    addBtn.addEventListener('click', () => {
+      const pair = makePair()
+      pairs.appendChild(pair)
+    })
+
+    pairs.addEventListener('click', event => {
+      const btn = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        '.remove-role',
+      )
+      if (btn) {
+        const pair = btn.closest<HTMLElement>('.role-pair')!
+        if (pairs.querySelectorAll('.role-pair').length > 1) {
+          pair.remove()
+        } else {
+          const descInput = pair.querySelector<HTMLInputElement>(
+            'input[name="roleDescriptions"]',
+          )!
+          descInput.value = ''
+          const countInput = pair.querySelector<HTMLInputElement>(
+            'input[name="roleCounts"]',
+          )!
+          countInput.value = '1'
+        }
+      }
+    })
+  }
+</script>
+
 <form method="POST" action={action} data-role-form>
   {post && <input type="hidden" name="postId" value={post.id} />}
 
@@ -127,59 +179,67 @@ const submitLabel = post ? '保存修改' : '发布'
     <button class="add-role" type="button">+ 添加一项招揽</button>
   </fieldset>
 
-  <button class="btn" type="submit">{submitLabel}</button>
+  <button class="btn" type="submit">{submitLabel} </button>
 </form>
 
-<script>
-  const form = document.querySelector(
-    '[data-role-form]',
-  ) as HTMLFormElement | null
-  if (form) {
-    const pairs = form.querySelector('.role-pairs') as HTMLElement
-    const addBtn = form.querySelector('.add-role') as HTMLButtonElement
-
-    const makePair = (): HTMLDivElement => {
-      const template = pairs.querySelector('.role-pair') as HTMLElement
-      const pair = template.cloneNode(true) as HTMLElement
-      const removeBtn = pair.querySelector('.remove-role') as HTMLButtonElement
-      removeBtn.hidden = false
-      const select = pair.querySelector('select') as HTMLSelectElement
-      select.selectedIndex = 0
-      const descInput = pair.querySelector(
-        'input[name="roleDescriptions"]',
-      ) as HTMLInputElement
-      descInput.value = ''
-      const countInput = pair.querySelector(
-        'input[name="roleCounts"]',
-      ) as HTMLInputElement
-      countInput.value = '1'
-      return pair as HTMLDivElement
-    }
-
-    addBtn.addEventListener('click', () => {
-      const pair = makePair()
-      pairs.appendChild(pair)
-    })
-
-    pairs.addEventListener('click', event => {
-      const btn = (event.target as HTMLElement).closest(
-        '.remove-role',
-      ) as HTMLButtonElement | null
-      if (btn) {
-        const pair = btn.closest('.role-pair') as HTMLElement
-        if (pairs.querySelectorAll('.role-pair').length > 1) {
-          pair.remove()
-        } else {
-          const descInput = pair.querySelector(
-            'input[name="roleDescriptions"]',
-          ) as HTMLInputElement
-          descInput.value = ''
-          const countInput = pair.querySelector(
-            'input[name="roleCounts"]',
-          ) as HTMLInputElement
-          countInput.value = '1'
-        }
-      }
-    })
+<style>
+  .role-pairs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
-</script>
+
+  .role-pair {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .role-pair select {
+    flex-shrink: 0;
+    width: auto;
+    min-width: 6.5rem;
+  }
+
+  .role-pair input {
+    flex: 1;
+  }
+
+  .role-count {
+    flex: 0 0 auto;
+    width: 4.5rem !important;
+  }
+
+  .remove-role {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    box-sizing: border-box;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .remove-role:hover {
+    border-color: #e08b8b;
+    color: #e08b8b;
+  }
+
+  .add-role {
+    margin-top: 0.5rem;
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+  }
+
+  .add-role:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+</style>

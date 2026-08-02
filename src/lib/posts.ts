@@ -46,19 +46,9 @@ export interface Post {
 	created_at: string
 }
 
-interface PostRow {
-	id: number
-	title: string
-	description: string
+export type PostRow = Omit<Post, 'tags' | 'roles'> & {
 	tags: string
 	roles: string | null
-	author_name: string
-	author_token: string
-	author_id: string
-	author_qq: string
-	author_github: string
-	author_steam: string
-	created_at: string
 }
 
 export const AUTHOR_COOKIE = 'guild_author'
@@ -82,19 +72,19 @@ export function postFromRow(row: PostRow): Post {
 	}
 }
 
-export function roleLabel(role: RoleType): string {
+export function roleLabel(role: RoleType) {
 	return ROLE_TYPES[role] ?? role
 }
 
-export function tagLabel(tag: PostTag): string {
+export function tagLabel(tag: PostTag) {
 	return POST_TAGS[tag] ?? tag
 }
 
-export function roleStatusLabel(status: RoleStatus): string {
+export function roleStatusLabel(status: RoleStatus) {
 	return ROLE_STATUSES[status] ?? status
 }
 
-export function formatDate(iso: string): string {
+export function formatDate(iso: string) {
 	return new Date(iso + 'Z').toLocaleString('zh-CN', {
 		dateStyle: 'medium',
 		timeStyle: 'short',
