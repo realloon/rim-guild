@@ -10,6 +10,8 @@ interface Props {
 
 const { title = '边缘工会', back = false } = Astro.props
 const profileToken = Astro.locals.auth?.profileToken ?? null
+const isHome = Astro.url.pathname === '/'
+const isProfile = Astro.url.pathname === '/me'
 ---
 
 <!doctype html>
@@ -23,43 +25,79 @@ const profileToken = Astro.locals.auth?.profileToken ?? null
   </head>
   <body>
     <header class="site-header">
-      <h1><a href="/">边缘工会</a></h1>
-      <div class="header-actions">
-        {
-          back && (
-            <a class="btn btn-ghost" href="/">
-              返回列表
-            </a>
-          )
-        }
-        <a
-          class="btn"
-          href={profileToken ? '/posts/new' : '/login?next=/posts/new'}
-          >发布需求</a
-        >
-        <button
-          class="header-profile"
-          type="button"
-          popovertarget="profile-menu"
-          title="菜单"
-        >
+      <div class="site-header-inner">
+        <a class="brand" href="/" aria-label="边缘工会首页">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 36 36" fill="none">
+              <path d="M7 8.5h22M7 14.5h15M7 20.5h22M7 26.5h15" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" />
+              <path d="m25 14 4 4-4 4" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" />
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <strong>边缘工会</strong>
+            <small>RIMWORLD MOD GUILD</small>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="主导航">
+          <a class:list={{ active: isHome }} href="/">发现需求</a>
+          <a
+            class:list={{ active: isProfile }}
+            href={profileToken ? '/me' : '/login?next=/me'}
+            >我的主页</a
+          >
+        </nav>
+
+        <div class="header-actions">
           {
-            profileToken ? (
-              <img
-                class="author-avatar"
-                src={avatarUrl(profileToken, 32)}
-                width={32}
-                height={32}
-                alt="我的头像"
-              />
-            ) : (
-              <span class="header-profile-placeholder" aria-hidden="true" />
+            back && (
+              <a class="back-link header-back" href="/">
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M13 8H3m4-4-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" />
+                </svg>
+                <span>返回列表</span>
+              </a>
             )
           }
-        </button>
+          <a
+            class="btn btn-primary publish-link"
+            href={profileToken ? '/posts/new' : '/login?next=/posts/new'}
+          >
+            <span>发布需求</span>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
+            </svg>
+          </a>
+          <button
+            class="header-profile"
+            type="button"
+            popovertarget="profile-menu"
+            aria-label="打开账户菜单"
+          >
+            {
+              profileToken ? (
+                <img
+                  class="author-avatar"
+                  src={avatarUrl(profileToken, 36)}
+                  width={36}
+                  height={36}
+                  alt="我的头像"
+                />
+              ) : (
+                <span class="header-profile-placeholder" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5" />
+                    <path d="M4.5 17c.7-3 2.5-4.5 5.5-4.5s4.8 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                  </svg>
+                </span>
+              )
+            }
+          </button>
+        </div>
       </div>
 
       <div id="profile-menu" class="profile-menu" popover>
+        <span class="menu-label">ACCOUNT</span>
         {
           profileToken ? (
             <>
@@ -78,6 +116,11 @@ const profileToken = Astro.locals.auth?.profileToken ?? null
     </header>
 
     <slot />
+
+    <footer class="site-footer">
+      <span>边缘工会 / RimWorld Mod Guild</span>
+      <span>把创意交给下一位合作者。</span>
+    </footer>
   </body>
 </html>
 
@@ -86,101 +129,297 @@ const profileToken = Astro.locals.auth?.profileToken ?? null
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--bg);
+    width: 100%;
+    margin: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--header-bg);
+    backdrop-filter: blur(14px);
+  }
+
+  .site-header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
+    gap: 24px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 clamp(16px, 4vw, 72px);
+    min-height: 82px;
+  }
 
-    h1 {
-      margin: 0;
-      font-size: 1.3rem;
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+    color: var(--forest);
+    text-decoration: none;
+  }
 
-      a {
-        text-decoration: none;
-      }
-    }
+  .brand-mark {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--forest);
+    color: var(--forest);
+  }
+
+  .brand-mark svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand-copy {
+    display: grid;
+    gap: 2px;
+  }
+
+  .brand-copy strong {
+    font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", serif;
+    font-size: 1.12rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .brand-copy small {
+    color: var(--text-dim);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    line-height: 1;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-left: auto;
+  }
+
+  .site-nav a {
+    position: relative;
+    padding: 30px 0 27px;
+    color: var(--text-dim);
+    font-size: 0.83rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .site-nav a::after {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    content: "";
+    opacity: 0;
+    transform: scaleX(0.35);
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .site-nav a:hover,
+  .site-nav a.active {
+    color: var(--accent-strong);
+  }
+
+  .site-nav a.active::after,
+  .site-nav a:hover::after {
+    opacity: 1;
+    transform: scaleX(1);
   }
 
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+  }
+
+  .publish-link svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .header-back {
+    margin-right: 4px;
+    font-size: 0.78rem;
+  }
+
+  .header-back svg {
+    width: 16px;
+    height: 16px;
   }
 
   .header-profile {
-    display: block;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    padding: 1px;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-dim);
     line-height: 0;
-    padding: 0;
-    background: none;
-    border: none;
-    cursor: pointer;
+    place-items: center;
     anchor-name: --profile-anchor;
+    transition:
+      border-color 0.18s ease,
+      color 0.18s ease,
+      transform 0.18s ease;
+  }
 
-    img {
-      box-sizing: border-box;
-      border: 2px solid transparent;
-      transition: border-color 0.15s;
-      border-radius: 50%;
-    }
+  .header-profile:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+    transform: translateY(-1px);
+  }
 
-    &:hover {
-      img,
-      .header-profile-placeholder {
-        border-color: var(--accent);
-      }
-    }
+  .header-profile .author-avatar {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .header-profile-placeholder {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+  }
+
+  .header-profile-placeholder svg {
+    width: 20px;
+    height: 20px;
   }
 
   .profile-menu {
     position: fixed;
     position-anchor: --profile-anchor;
     position-area: bottom span-left;
-    top: 4px;
+    top: 10px;
+    z-index: 30;
+    min-width: 178px;
     margin: 0;
-    border: 1px solid var(--border);
-    background: var(--bg-raised);
-    border-radius: 8px;
     padding: 8px;
-    min-width: 150px;
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    background: var(--bg-raised);
+    box-shadow: var(--shadow);
+  }
 
-    &::backdrop {
-      background: none;
+  .profile-menu::backdrop {
+    background: transparent;
+  }
+
+  .menu-label {
+    display: block;
+    padding: 7px 11px 5px;
+    color: var(--text-dim);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.61rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .profile-menu a,
+  .profile-menu .menu-item {
+    display: block;
+    width: 100%;
+    padding: 10px 11px;
+    border: 0;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.84rem;
+    text-align: left;
+    text-decoration: none;
+  }
+
+  .profile-menu a:hover,
+  .profile-menu .menu-item:hover {
+    background: var(--bg-soft);
+    color: var(--accent-strong);
+  }
+
+  .site-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    width: calc(100% - clamp(32px, 8vw, 144px));
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 20px 0 28px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 800px) {
+    .site-header-inner {
+      min-height: 72px;
     }
 
-    a,
-    .menu-item {
-      display: block;
-      width: 100%;
-      padding: 8px 12px;
-      border: none;
-      background: none;
-      color: var(--text);
-      font: inherit;
-      text-align: left;
-      text-decoration: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-sizing: border-box;
+    .site-nav {
+      display: none;
+    }
 
-      &:hover {
-        background: var(--bg);
-        color: var(--accent-strong);
-      }
+    .site-header .btn {
+      min-height: 38px;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+    }
+
+    .header-back span {
+      display: none;
+    }
+
+    .header-back {
+      margin-right: 0;
     }
   }
 
-  .header-profile-placeholder {
-    display: block;
-    width: 32px;
-    height: 32px;
-    box-sizing: border-box;
-    border-radius: 50%;
-    background: var(--border);
-    border: 2px solid transparent;
-    transition: border-color 0.15s;
+  @media (max-width: 520px) {
+    .brand-copy small {
+      display: none;
+    }
+
+    .brand-copy strong {
+      font-size: 1rem;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+    }
+
+    .brand-mark svg {
+      width: 27px;
+      height: 27px;
+    }
+
+    .publish-link span {
+      display: none;
+    }
+
+    .publish-link {
+      width: 38px;
+      min-height: 38px !important;
+      padding: 0 !important;
+    }
+
+    .site-footer {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
   }
 </style>

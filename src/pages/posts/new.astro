@@ -16,10 +16,29 @@ if (result && !result.error) {
 ---
 
 <Layout title="发布需求 · 边缘工会">
-  <main>
-    <h2>发布项目需求</h2>
-    <PostForm />
+  <main class="editor-page">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">START A PROJECT / 001</p>
+        <h1>发布项目需求</h1>
+        <p>把项目背景、需要的角色和当前进度写清楚，合作者才能从第一眼判断自己是否适合加入。</p>
+      </div>
+      <span class="page-index">OPEN<br />CALL</span>
+    </div>
 
-    <ErrorBox error={result?.error} />
+    <section class="editor-card">
+      <PostForm />
+      <ErrorBox error={result?.error} />
+    </section>
   </main>
 </Layout>
+
+<style>
+  .editor-card {
+    padding: clamp(22px, 5vw, 46px);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--forest);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow);
+  }
+</style>

@@ -42,12 +42,21 @@ if (result && !result.error && post) {
     {
       post ? (
         isOwner ? (
-          <>
-            <h2>编辑项目需求</h2>
-            <PostForm post={post} />
+          <div class="editor-page">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">EDIT PROJECT / {String(post.id).padStart(2, '0')}</p>
+                <h1>编辑项目需求</h1>
+                <p>更新项目说明、招揽角色或人数，让所有正在关注这条需求的人看到最新状态。</p>
+              </div>
+              <span class="page-index">REV<br />02</span>
+            </div>
 
-            <ErrorBox error={result?.error} />
-          </>
+            <section class="editor-card">
+              <PostForm post={post} />
+              <ErrorBox error={result?.error} />
+            </section>
+          </div>
         ) : (
           <p class="not-found">你没有权限编辑这条需求</p>
         )
@@ -57,3 +66,21 @@ if (result && !result.error && post) {
     }
   </main>
 </Layout>
+
+<style>
+  main {
+    padding-top: clamp(36px, 6vw, 76px);
+  }
+
+  .editor-page {
+    padding-top: 0;
+  }
+
+  .editor-card {
+    padding: clamp(22px, 5vw, 46px);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--forest);
+    background: var(--bg-raised);
+    box-shadow: var(--shadow);
+  }
+</style>

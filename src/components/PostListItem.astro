@@ -13,29 +13,46 @@ const closedCount = post.roles.length - openRoles.length
 ---
 
 <li>
-  <a href={`/posts/${post.id}`}>
-    <h2>{post.title}</h2>
-    {post.description && <p class="post-excerpt">{post.description}</p>}
-    <div class="post-meta">
-      <span class="tags">
-        {openRoles.map(role => <span class="tag">{roleLabel(role.type)}</span>)}
-      </span>
-      <span class="meta-side">
+  <a class="post-card-link" href={`/posts/${post.id}`}>
+    <div class="post-card-top">
+      <span class="post-card-type">
         {
-          showClosedCount && closedCount > 0 && (
-            <span class="role-closed-count">
-              已招到 {closedCount}/{post.roles.length}
-            </span>
+          openRoles.length > 0 ? (
+            <>
+              <span class="live-dot"></span>
+              开放招募
+            </>
+          ) : (
+            <>
+              <span class="closed-dot"></span>
+              招募已结束
+            </>
           )
         }
-        <AuthorAvatar
-          seed={post.author_token}
-          name={post.author_name}
-          href={`/authors/${post.author_id}`}
-          size={28}
-        />
-        <time>{formatDate(post.created_at)}</time>
       </span>
+      {
+        showClosedCount && closedCount > 0 && (
+          <span class="role-closed-count">
+            已招到 {closedCount}/{post.roles.length}
+          </span>
+        )
+      }
     </div>
+    <h2>{post.title}</h2>
+    {post.description && <p class="post-excerpt">{post.description}</p>}
   </a>
+  <div class="post-card-footer">
+    <span class="tags">
+      {openRoles.map(role => <span class="tag">{roleLabel(role.type)}</span>)}
+    </span>
+    <span class="meta-side">
+      <AuthorAvatar
+        seed={post.author_token}
+        name={post.author_name}
+        href={`/authors/${post.author_id}`}
+        size={28}
+      />
+      <time>{formatDate(post.created_at)}</time>
+    </span>
+  </div>
 </li>

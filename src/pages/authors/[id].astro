@@ -63,35 +63,60 @@ if (!profile) {
       profile ? (
         <>
           <section class="profile-card">
-            <div class="profile-head">
-              <img
-                class="author-avatar"
-                src={avatarUrl(profile.token, 64)}
-                width={64}
-                height={64}
-                alt={`${profile.author_name} 的头像`}
-              />
-              <div>
-                <h2>{profile.author_name}</h2>
-                {authorRoles.length > 0 && (
-                  <div class="tags">
-                    {authorRoles.map(role => (
-                      <span class="tag">{roleLabel(role)}</span>
-                    ))}
+            <div class="profile-hero">
+              <div class="profile-identity">
+                <img
+                  class="author-avatar"
+                  src={avatarUrl(profile.token, 72)}
+                  width={72}
+                  height={72}
+                  alt={`${profile.author_name} 的头像`}
+                />
+                <div>
+                  <p class="eyebrow">AUTHOR PROFILE</p>
+                  <h1>{profile.author_name}</h1>
+                  {authorRoles.length > 0 && (
+                    <div class="tags">
+                      {authorRoles.map(role => (
+                        <span class="tag">{roleLabel(role)}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <span class="profile-badge">CREATOR</span>
+            </div>
+            {(profile.qq || profile.github || profile.steam) && (
+              <div class="profile-contacts">
+                {profile.qq && (
+                  <div class="profile-contact-item">
+                    <strong>QQ</strong>
+                    <span>{profile.qq}</span>
                   </div>
                 )}
-                {profile.qq && <p class="field-note">QQ：{profile.qq}</p>}
                 {profile.github && (
-                  <p class="field-note">GitHub：{profile.github}</p>
+                  <div class="profile-contact-item">
+                    <strong>GITHUB</strong>
+                    <span>{profile.github}</span>
+                  </div>
                 )}
                 {profile.steam && (
-                  <p class="field-note">Steam：{profile.steam}</p>
+                  <div class="profile-contact-item">
+                    <strong>STEAM</strong>
+                    <span>{profile.steam}</span>
+                  </div>
                 )}
               </div>
-            </div>
+            )}
           </section>
 
-          <h2>TA 的需求（{posts.length}）</h2>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">PUBLISHED CALLS</p>
+              <h2>TA 的需求</h2>
+            </div>
+            <span class="section-count">{posts.length} 条记录</span>
+          </div>
           {posts.length > 0 ? (
             <ul class="post-list">
               {posts.map(post => (
@@ -108,9 +133,3 @@ if (!profile) {
     }
   </main>
 </Layout>
-
-<style>
-  .profile-head .field-note {
-    margin: 0;
-  }
-</style>

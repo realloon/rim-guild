@@ -85,12 +85,71 @@ const posts: Post[] = results.map(postFromRow)
 ---
 
 <Layout title="边缘工会 · RimWorld 模组需求平台">
-  <main>
+  <main class="home-page">
+    <section class="home-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">RIMWORLD / MOD MAKER NETWORK</p>
+        <h1>让每一份模组需求，<em>找到合适的搭档。</em></h1>
+        <p class="hero-lede">
+          发布需求，寻找画师、开发者和其他合作者。边缘工会把还在草稿里的想法，带到真正的制作现场。
+        </p>
+        <div class="hero-actions">
+          <a
+            class="btn"
+            href={myProfileToken ? '/posts/new' : '/login?next=/posts/new'}
+          >
+            发布需求
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
+            </svg>
+          </a>
+          <a class="text-link" href="#board">
+            浏览开放需求
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <aside class="hero-note" aria-label="开放需求概览">
+        <div class="note-topline">
+          <span>FIELD NOTE / 001</span>
+          <span class="note-status"><span class="live-dot"></span>ACTIVE</span>
+        </div>
+        <div class="hero-mark" aria-hidden="true">
+          <svg viewBox="0 0 150 150" fill="none">
+            <circle cx="75" cy="75" r="54" stroke="currentColor" stroke-width="1" />
+            <circle cx="75" cy="75" r="39" stroke="currentColor" stroke-width="1" stroke-dasharray="3 6" />
+            <path d="M75 27v96M27 75h96" stroke="currentColor" stroke-width="1" stroke-dasharray="2 7" />
+            <path d="m75 46 11 18 21 4-15 15 3 21-20-10-20 10 3-21-15-15 21-4 11-18Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2" />
+          </svg>
+        </div>
+        <p>一个清晰的岗位，往往就是一个模组项目真正开始的地方。</p>
+        <dl>
+          <div>
+            <dt>公开招募</dt>
+            <dd>{posts.length}</dd>
+          </div>
+          <div>
+            <dt>协作类型</dt>
+            <dd>{Object.keys(ROLE_TYPES).length}</dd>
+          </div>
+        </dl>
+      </aside>
+    </section>
+
     {
       recommended.length > 0 && (
-        <section>
-          <h2>适合你的需求</h2>
-          <ul class="post-list">
+        <section class="featured-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">MATCHED FOR YOU</p>
+              <h2>适合你的需求</h2>
+            </div>
+            <span class="section-count">基于你的身份偏好</span>
+          </div>
+          <ul class="post-list featured-list">
             {recommended.map(post => (
               <PostListItem post={post} showClosedCount={false} />
             ))}
@@ -99,113 +158,420 @@ const posts: Post[] = results.map(postFromRow)
       )
     }
 
-    <form method="GET" action="/">
-      {activeRole && <input type="hidden" name="role" value={activeRole} />}
-      <input
-        type="search"
-        name="q"
-        value={q}
-        placeholder="搜索项目标题或描述……"
-        aria-label="搜索"
-      />
-      <button class="btn btn-ghost" type="submit">搜索</button>
-    </form>
+    <section class="board-section" id="board">
+      <div class="section-heading board-heading">
+        <div>
+          <p class="eyebrow">THE OPEN BOARD</p>
+          <h2>最新需求</h2>
+        </div>
+        <span class="section-count">
+          {q ? `搜索“${q}”` : `${posts.length} 条开放招募`}
+        </span>
+      </div>
 
-    <nav aria-label="按类型筛选">
-      <a
-        href={q ? `/?q=${encodeURIComponent(q)}` : '/'}
-        class={activeRole === null ? 'active' : ''}>全部</a
-      >
-      {
-        Object.entries(ROLE_TYPES).map(([value, label]) => (
+      <form class="search-form" method="GET" action="/">
+        {activeRole && <input type="hidden" name="role" value={activeRole} />}
+        <label class="search-input" for="post-search">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5" />
+            <path d="m13 13 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
+          </svg>
+          <span class="sr-only">搜索项目标题或描述</span>
+          <input
+            id="post-search"
+            type="search"
+            name="q"
+            value={q}
+            placeholder="搜索项目标题或描述……"
+            aria-label="搜索项目标题或描述"
+          />
+        </label>
+        <button class="btn" type="submit">
+          搜索
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" />
+          </svg>
+        </button>
+      </form>
+
+      <nav class="filter-nav" aria-label="按类型筛选">
+        <span class="filter-label">按岗位筛选</span>
+        <div class="filter-links">
           <a
-            href={
-              q
-                ? `/?role=${value}&q=${encodeURIComponent(q)}`
-                : `/?role=${value}`
-            }
-            class={activeRole === value ? 'active' : ''}
+            href={q ? `/?q=${encodeURIComponent(q)}` : '/'}
+            class:list={{ active: activeRole === null }}
+            >全部</a
           >
-            {label}
-          </a>
-        ))
-      }
-    </nav>
+          {
+            Object.entries(ROLE_TYPES).map(([value, label]) => (
+              <a
+                href={
+                  q
+                    ? `/?role=${value}&q=${encodeURIComponent(q)}`
+                    : `/?role=${value}`
+                }
+                class:list={{ active: activeRole === value }}
+              >
+                {label}
+              </a>
+            ))
+          }
+        </div>
+      </nav>
 
-    {
-      posts.length > 0 ? (
-        <ul class="post-list">
-          {posts.map(post => (
-            <PostListItem post={post} />
-          ))}
-        </ul>
-      ) : (
-        <p class="empty">
-          {q ? '没有找到匹配的需求' : '还没有需求，来发布第一条吧'}
-        </p>
-      )
-    }
+      {
+        posts.length > 0 ? (
+          <ul class="post-list">
+            {posts.map(post => (
+              <PostListItem post={post} />
+            ))}
+          </ul>
+        ) : (
+          <div class="empty-state">
+            <span>{q ? 'NO MATCH / 404' : 'FIRST CALL / 001'}</span>
+            <p>{q ? '没有找到匹配的需求' : '还没有需求，来发布第一条吧'}</p>
+            {q && <a class="text-link" href={activeRole ? `/?role=${activeRole}` : '/'}>清除搜索</a>}
+          </div>
+        )
+      }
+    </section>
   </main>
 </Layout>
 
 <style>
-  section {
-    margin-bottom: 24px;
-
-    h2 {
-      font-size: 1rem;
-      margin: 0 0 8px;
-      color: var(--accent-strong);
-    }
+  .home-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.7fr);
+    gap: clamp(36px, 8vw, 120px);
+    align-items: center;
+    min-height: 500px;
+    padding: 26px 0 72px;
+    border-bottom: 1px solid var(--border);
   }
 
-  form {
+  .hero-copy h1 {
+    max-width: 760px;
+    margin: 0;
+    color: var(--forest);
+    font-size: clamp(2.7rem, 6.2vw, 6.6rem);
+    font-weight: 500;
+    line-height: 0.98;
+  }
+
+  .hero-copy h1 em {
+    display: block;
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  .hero-lede {
+    max-width: 580px;
+    margin: 30px 0 0;
+    color: var(--text-dim);
+    font-size: 1rem;
+  }
+
+  .hero-actions {
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-
-    input {
-      flex: 1;
-      box-sizing: border-box;
-      padding: 8px 12px;
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font: inherit;
-
-      &:focus {
-        outline: none;
-        border-color: var(--accent);
-      }
-    }
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-top: 30px;
   }
 
-  nav {
+  .hero-actions .btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .hero-note {
+    position: relative;
+    min-height: 360px;
+    padding: 20px;
+    border: 1px solid var(--forest);
+    background: var(--hero-note-surface);
+    box-shadow: 11px 11px 0 var(--shadow-small-color);
+    transform: rotate(1.3deg);
+  }
+
+  .hero-note::before,
+  .hero-note::after {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-color: var(--accent);
+    content: "";
+  }
+
+  .hero-note::before {
+    top: -6px;
+    left: -6px;
+    border-top: 2px solid;
+    border-left: 2px solid;
+  }
+
+  .hero-note::after {
+    right: -6px;
+    bottom: -6px;
+    border-right: 2px solid;
+    border-bottom: 2px solid;
+  }
+
+  .note-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--text-dim);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .note-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--success);
+  }
+
+  .hero-mark {
+    display: grid;
+    margin: 24px auto 16px;
+    color: var(--forest);
+    place-items: center;
+  }
+
+  .hero-mark svg {
+    width: min(100%, 190px);
+    height: auto;
+  }
+
+  .hero-note > p {
+    margin: 0 0 20px;
+    color: var(--forest);
+    font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", serif;
+    font-size: 1rem;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  .hero-note dl {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 0;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+  }
+
+  .hero-note dl div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .hero-note dt {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+  }
+
+  .hero-note dd {
+    margin: 0;
+    color: var(--accent-strong);
+    font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", serif;
+    font-size: 1.5rem;
+  }
+
+  .featured-section {
+    margin: 54px 0 72px;
+    padding-top: 21px;
+    border-top: 2px solid var(--forest);
+  }
+
+  .featured-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board-section {
+    scroll-margin-top: 110px;
+  }
+
+  .board-heading {
+    margin-bottom: 24px;
+  }
+
+  .search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .search-input {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    background: var(--bg-raised);
+    color: var(--text-dim);
+    box-shadow: inset 0 1px 2px var(--control-shadow-color);
+  }
+
+  .search-input:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
+  }
+
+  .search-input svg {
+    width: 19px;
+    height: 19px;
+    flex: 0 0 auto;
+  }
+
+  .search-input input {
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .search-input input:focus {
+    border: 0;
+    box-shadow: none;
+  }
+
+  .search-form > .btn {
+    min-width: 100px;
+  }
+
+  .search-form > .btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .filter-nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-label {
+    flex: 0 0 auto;
+    color: var(--text-dim);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .filter-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 24px;
+    gap: 7px;
+  }
 
-    a {
-      padding: 4px 16px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 0.85rem;
+  .filter-links a {
+    padding: 5px 11px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition:
+      border-color 0.18s ease,
+      background 0.18s ease,
+      color 0.18s ease;
+  }
 
-      &:hover {
-        border-color: var(--accent);
-        color: var(--accent-strong);
-      }
+  .filter-links a:hover {
+    border-color: var(--border-strong);
+    color: var(--accent-strong);
+  }
 
-      &.active {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #1a1408;
-        font-weight: 600;
-      }
+  .filter-links a.active {
+    border-color: var(--forest);
+    background: var(--forest);
+    color: var(--on-forest);
+  }
+
+  .empty-state {
+    display: grid;
+    min-height: 230px;
+    padding: 42px 24px;
+    border: 1px dashed var(--border-strong);
+    place-items: center;
+    text-align: center;
+  }
+
+  .empty-state > span {
+    color: var(--accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .empty-state p {
+    margin: 8px 0 10px;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 900px) {
+    .home-hero {
+      grid-template-columns: minmax(0, 1fr) minmax(230px, 0.65fr);
+      gap: 38px;
+    }
+
+    .featured-list {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .home-hero {
+      display: block;
+      min-height: auto;
+      padding-top: 12px;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(2.7rem, 14vw, 5rem);
+    }
+
+    .hero-note {
+      max-width: 360px;
+      margin: 50px auto 0;
+      transform: rotate(0.8deg);
+    }
+
+    .filter-nav {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+
+  @media (max-width: 460px) {
+    .search-form {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .search-form > .btn {
+      width: 100%;
     }
   }
 </style>
