@@ -26,18 +26,15 @@ const profileToken = Astro.locals.auth?.profileToken ?? null
 				<h1><a href="/">边缘工会</a></h1>
 				<div class="header-actions">
 					{back && <a class="btn btn-ghost" href="/">返回列表</a>}
-					<a class="btn" href="/posts/new">发布需求</a>
+					<a class="btn" href={profileToken ? '/posts/new' : '/login?next=/posts/new'}>发布需求</a>
 					{profileToken ? (
 						<a class="header-profile" href="/me" title="我的主页">
 							<img class="author-avatar" src={avatarUrl(profileToken, 32)} width={32} height={32} alt="我的头像" />
 						</a>
 					) : (
-						<>
-							<a class="header-login" href="/login">登录</a>
-							<a class="header-profile" href="/me" title="我的主页">
-								<span class="header-profile-placeholder" aria-hidden="true"></span>
-							</a>
-						</>
+						<a class="header-profile" href="/login?next=/me" title="登录">
+							<span class="header-profile-placeholder" aria-hidden="true"></span>
+						</a>
 					)}
 				</div>
 			</header>

@@ -98,16 +98,6 @@ a.header-profile:hover .header-profile-placeholder {
   display: none;
 }
 
-.header-login {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  text-decoration: none;
-}
-
-.header-login:hover {
-  color: var(--accent-strong);
-}
-
 .btn-ghost {
   background: none;
   border: 1px solid var(--border);
@@ -445,6 +435,21 @@ a.author:hover {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-top: 1rem;
+}
+
+.auth-single {
+  max-width: 360px;
+  margin: 1rem auto 0;
+}
+
+.auth-switch {
+  margin: 1rem 0 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.auth-switch a {
+  color: var(--accent-strong);
 }
 
 .auth-card {
