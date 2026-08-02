@@ -1,0 +1,12 @@
+:root {
+  color-scheme: light dark;
+
+  font-family: system-ui, ui-sans-serif, sans-serif;
+  text-autospace: normal;
+
+  scroll-behavior: smooth;
+
+  @media (prefers-color-scheme: dark) {
+    -webkit-font-smoothing: antialiased;
+  }
+}
