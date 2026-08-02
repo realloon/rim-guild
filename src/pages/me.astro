@@ -116,7 +116,7 @@ if (result && !result.error) {
             src={avatarUrl(profileToken, 72)}
             width={72}
             height={72}
-            alt="我的头像"
+            alt=""
           />
           <div>
             <h1>{nickname}</h1>
@@ -139,7 +139,7 @@ if (result && !result.error) {
           />
         </label>
         <CheckboxGroup
-          legend="我的身份（可多选）"
+          legend="创作者身份"
           name="roles"
           options={ROLE_TYPES}
           checked={myRoles}
@@ -188,11 +188,9 @@ if (result && !result.error) {
 
         <section class="profile-section" id="posts">
         <div class="section-heading">
-          <div>
           <h2>我的需求</h2>
+          <span class="section-count">{posts.length} 条记录</span>
         </div>
-        <span class="section-count">{posts.length} 条记录</span>
-      </div>
       {
         posts.length > 0 ? (
           <ul class="post-list">
@@ -208,11 +206,9 @@ if (result && !result.error) {
 
         <section class="profile-section" id="claims">
         <div class="section-heading">
-          <div>
           <h2>我的认领</h2>
+          <span class="section-count">{claimedRows.length} 条记录</span>
         </div>
-        <span class="section-count">{claimedRows.length} 条记录</span>
-      </div>
       {
         claimedRows.length > 0 ? (
             <ul class="post-list">
@@ -270,7 +266,7 @@ if (result && !result.error) {
 
   .profile-index {
     position: sticky;
-    top: 88px;
+    top: calc(var(--site-header-height) + var(--main-padding-top));
     align-self: start;
   }
 
@@ -306,7 +302,7 @@ if (result && !result.error) {
   }
 
   .profile-content > :is(.profile-card, .profile-section) {
-    scroll-margin-top: 88px;
+    scroll-margin-top: calc(var(--site-header-height) + var(--main-padding-top));
   }
 
   .contact-fields {
@@ -330,31 +326,7 @@ if (result && !result.error) {
     }
 
     .profile-index {
-      position: static;
-      margin-bottom: 28px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .profile-index nav {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      border-left: 0;
-    }
-
-    .profile-index a {
-      flex: 0 0 auto;
-      display: flex;
-      gap: 7px;
-      padding: 7px 10px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--bg-raised);
-    }
-
-    .profile-index a:hover {
-      border-color: var(--accent);
+      display: none;
     }
 
     .contact-fields {

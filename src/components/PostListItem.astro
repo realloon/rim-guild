@@ -4,10 +4,9 @@ import { roleLabel, formatDate, type Post } from '../lib/posts'
 
 interface Props {
   post: Post
-  showClosedCount?: boolean
 }
 
-const { post, showClosedCount = true } = Astro.props
+const { post } = Astro.props
 const openRoles = post.roles.filter(role => role.status === 'open')
 const closedCount = post.roles.length - openRoles.length
 ---
@@ -31,13 +30,11 @@ const closedCount = post.roles.length - openRoles.length
         }
         <time class="post-card-date">{formatDate(post.created_at)}</time>
       </span>
-      {
-        showClosedCount && closedCount > 0 && (
+        {closedCount > 0 && (
           <span class="role-closed-count">
             已招到 {closedCount}/{post.roles.length}
           </span>
-        )
-      }
+        )}
     </div>
     <h2>{post.title}</h2>
     {post.description && <p class="post-excerpt">{post.description}</p>}

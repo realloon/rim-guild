@@ -45,6 +45,7 @@
   --contact-border: light-dark(#d29b86, #a96b58);
   --contact-bg: light-dark(#f9e8df, #3a2927);
   --contact-divider: light-dark(rgb(210 155 134 / 0.4), rgb(169 107 88 / 0.42));
+  --site-header-height: 64px;
   --shadow: 0 18px 40px var(--shadow-color);
   --shadow-small: 0 7px 18px var(--shadow-small-color);
   text-autospace: normal;
@@ -81,10 +82,11 @@ textarea {
 }
 
 main {
+  --main-padding-top: clamp(36px, 6vw, 76px);
   width: calc(100% - clamp(32px, 8vw, 144px));
   max-width: 1160px;
   margin: 0 auto;
-  padding: clamp(36px, 6vw, 76px) 0 96px;
+  padding: var(--main-padding-top) 0 96px;
 }
 
 a {
@@ -284,12 +286,11 @@ form {
   margin: 0;
 }
 
-form :is(
+  form :is(
     input:not([type="hidden"]):not([type="checkbox"]),
     select,
     textarea
   ) {
-  box-sizing: border-box;
   width: 100%;
   min-height: 46px;
   padding: 10px 13px;
@@ -649,17 +650,10 @@ form select {
   border-top: 1px dashed var(--card-divider);
 }
 
-.post-meta,
 .tags,
 .meta-side {
   display: flex;
   align-items: center;
-}
-
-.post-meta {
-  gap: 12px;
-  color: var(--text-dim);
-  font-size: 0.8rem;
 }
 
 .tags {
@@ -866,7 +860,7 @@ time {
 
 @media (max-width: 700px) {
   main {
-    padding-top: 32px;
+    --main-padding-top: 32px;
     padding-bottom: 64px;
   }
 

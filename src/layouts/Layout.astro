@@ -75,7 +75,7 @@ const isHome = Astro.url.pathname === '/'
                   src={avatarUrl(profileToken, 36)}
                   width={36}
                   height={36}
-                  alt="我的头像"
+                  alt=""
                 />
               ) : (
                 <span class="header-profile-placeholder" aria-hidden="true">
@@ -127,8 +127,8 @@ const isHome = Astro.url.pathname === '/'
     z-index: 10;
     width: 100%;
     margin: 0;
-    border-bottom: 1px solid var(--border);
     background: var(--header-bg);
+    box-shadow: 0 8px 18px var(--bg);
     backdrop-filter: blur(14px);
   }
 
@@ -140,7 +140,7 @@ const isHome = Astro.url.pathname === '/'
     max-width: 1440px;
     margin: 0 auto;
     padding: 0 clamp(16px, 4vw, 72px);
-    min-height: 64px;
+    min-height: var(--site-header-height);
   }
 
   .brand {
@@ -351,10 +351,6 @@ const isHome = Astro.url.pathname === '/'
   }
 
   @media (max-width: 800px) {
-    .site-header-inner {
-      min-height: 64px;
-    }
-
     .site-nav {
       display: none;
     }

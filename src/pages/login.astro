@@ -45,9 +45,7 @@ const result = mode === 'register' ? registerResult : loginResult
     </section>
 
     <section class="auth-card">
-      <div class="auth-card-heading">
-        <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
-      </div>
+      <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
       <p class="auth-note">
         {mode === 'register'
           ? '创建账号后，你可以发布项目、认领岗位并维护个人资料。'
@@ -192,7 +190,7 @@ const result = mode === 'register' ? registerResult : loginResult
     box-shadow: var(--shadow);
   }
 
-  .auth-card-heading h2 {
+  .auth-card h2 {
     margin: 0;
     color: var(--forest);
     font-size: 2rem;
