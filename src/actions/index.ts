@@ -11,7 +11,8 @@ import {
 	verifyPassword,
 } from '../lib/auth'
 
-const roleTypes = ['artist', 'developer', 'writer', 'translator', 'other'] as const
+const roleTypes = ['artist', 'xml', 'csharp', 'writer', 'translator', 'other'] as const
+const postTags = ['weapon', 'race', 'framework'] as const
 
 const text = (min: number, message: string, max?: number) =>
 	z.preprocess(
@@ -25,6 +26,7 @@ const postInput = {
 		(v) => (v == null ? '' : String(v).trim()),
 		z.string().max(5000, '描述最多 5000 个字')
 	),
+	tags: z.array(z.enum(postTags)).default([]),
 	roleTypes: z.array(z.enum(roleTypes)),
 	roleDescriptions: z.array(
 		z.preprocess(
@@ -32,19 +34,23 @@ const postInput = {
 			z.string().min(1, '每类需求请填写具体内容')
 		)
 	),
+	roleCounts: z.array(
+		z.preprocess((v) => (v == null ? 1 : Number(v)), z.number().int().min(1).max(99))
+	),
 }
 
 function validateRolePairs(
 	roleTypes: string[],
-	roleDescriptions: string[]
+	roleDescriptions: string[],
+	roleCounts: number[]
 ): void {
 	if (roleTypes.length === 0) {
 		throw new ActionError({ code: 'BAD_REQUEST', message: '请至少添加一项招揽需求' })
 	}
-	if (roleTypes.length !== roleDescriptions.length) {
+	if (roleTypes.length !== roleDescriptions.length || roleTypes.length !== roleCounts.length) {
 		throw new ActionError({
 			code: 'BAD_REQUEST',
-			message: '招揽类型与需求数量不匹配',
+			message: '招揽类型、需求与人数不匹配',
 		})
 	}
 }
@@ -62,31 +68,13 @@ function setAuthCookie(
 	})
 }
 
-/** 返回当前身份；无会话时创建 guest 身份并写 cookie */
-async function ensureIdentity(
-	context: import('astro').APIContext
-): Promise<{ profileToken: string; authorId: string }> {
-	const db = env.rim_guild_db
-
-	if (context.locals.auth) {
-		const row = await db
-			.prepare('SELECT author_id FROM profiles WHERE token = ?')
-			.bind(context.locals.auth.profileToken)
-			.first<{ author_id: string }>()
-		return { profileToken: context.locals.auth.profileToken, authorId: row!.author_id }
+/** 当前登录用户 profile token；未登录抛错 */
+function requireAuth(context: import('astro').APIContext): string {
+	const profileToken = context.locals.auth?.profileToken
+	if (!profileToken) {
+		throw new ActionError({ code: 'UNAUTHORIZED', message: '请先登录' })
 	}
-
-	const profileToken = crypto.randomUUID()
-	const authorId = crypto.randomUUID().replaceAll('-', '').slice(0, 12)
-	await db
-		.prepare(
-			'INSERT INTO profiles (token, author_id, author_name, contact) VALUES (?, ?, ?, ?)'
-		)
-		.bind(profileToken, authorId, '', '')
-		.run()
-	const sessionToken = await createSession(db, profileToken)
-	setAuthCookie(context, sessionToken)
-	return { profileToken, authorId }
+	return profileToken
 }
 
 async function assertOwner(postId: number, context: import('astro').APIContext) {
@@ -109,31 +97,28 @@ export const server = {
 		accept: 'form',
 		input: z.object(postInput),
 		handler: async (input, context) => {
-			validateRolePairs(input.roleTypes, input.roleDescriptions)
+			validateRolePairs(input.roleTypes, input.roleDescriptions, input.roleCounts)
 
 			const db = env.rim_guild_db
-			const { profileToken } = await ensureIdentity(context)
+			const profileToken = requireAuth(context)
 
 			const profile = await db
-				.prepare('SELECT author_id, author_name, contact FROM profiles WHERE token = ?')
+				.prepare('SELECT author_id, author_name FROM profiles WHERE token = ?')
 				.bind(profileToken)
-				.first<{ author_id: string; author_name: string; contact: string }>()
+				.first<{ author_id: string; author_name: string }>()
 
 			if (!profile) {
-				throw new ActionError({
-					code: 'BAD_REQUEST',
-					message: '请先到「我的主页」完善昵称与联系方式',
-				})
+				throw new ActionError({ code: 'BAD_REQUEST', message: '请先完善个人资料' })
 			}
 
 			const result = await db
 				.prepare(
-					'INSERT INTO posts (title, description, contact, author_name, author_token, author_id) VALUES (?, ?, ?, ?, ?, ?)'
+					'INSERT INTO posts (title, description, tags, author_name, author_token, author_id) VALUES (?, ?, ?, ?, ?, ?)'
 				)
 				.bind(
 					input.title,
 					input.description || '',
-					profile.contact,
+					input.tags.join(','),
 					profile.author_name,
 					profileToken,
 					profile.author_id
@@ -146,9 +131,9 @@ export const server = {
 				input.roleTypes.map((role, i) =>
 					db
 						.prepare(
-							'INSERT INTO post_roles (post_id, role_type, description) VALUES (?, ?, ?)'
+							'INSERT INTO post_roles (post_id, role_type, description, count) VALUES (?, ?, ?, ?)'
 						)
-						.bind(postId, role, input.roleDescriptions[i])
+						.bind(postId, role, input.roleDescriptions[i], input.roleCounts[i])
 				)
 			)
 
@@ -162,32 +147,57 @@ export const server = {
 			...postInput,
 		}),
 		handler: async (input, context) => {
-			validateRolePairs(input.roleTypes, input.roleDescriptions)
+			validateRolePairs(input.roleTypes, input.roleDescriptions, input.roleCounts)
 			await assertOwner(input.postId, context)
 
 			const db = env.rim_guild_db
-			await db
-				.prepare('UPDATE posts SET title = ?, description = ? WHERE id = ?')
-				.bind(input.title, input.description || '', input.postId)
-				.run()
+			const existingRoles = await db
+				.prepare('SELECT role_type, status FROM post_roles WHERE post_id = ?')
+				.bind(input.postId)
+				.all<{ role_type: string; status: string }>()
+			const existingStatus = new Map(
+				existingRoles.results.map((r) => [r.role_type, r.status])
+			)
+			const deletedRoles = existingRoles.results.filter(
+				(r) => !input.roleTypes.includes(r.role_type as (typeof roleTypes)[number])
+			)
+
 			await db.batch([
-				db.prepare('DELETE FROM post_roles WHERE post_id = ?').bind(input.postId),
+				db.prepare('UPDATE posts SET title = ?, description = ?, tags = ? WHERE id = ?').bind(
+					input.title,
+					input.description || '',
+					input.tags.join(','),
+					input.postId
+				),
 				...input.roleTypes.map((role, i) =>
 					db
 						.prepare(
-							'INSERT INTO post_roles (post_id, role_type, description) VALUES (?, ?, ?)'
+							`INSERT INTO post_roles (post_id, role_type, description, count, status) VALUES (?, ?, ?, ?, ?)
+							ON CONFLICT (post_id, role_type) DO UPDATE SET description = excluded.description, count = excluded.count`
 						)
-						.bind(input.postId, role, input.roleDescriptions[i])
+						.bind(
+							input.postId,
+							role,
+							input.roleDescriptions[i],
+							input.roleCounts[i],
+							existingStatus.get(role) ?? 'open'
+						)
+				),
+				...deletedRoles.map((r) =>
+					db
+						.prepare('DELETE FROM post_roles WHERE post_id = ? AND role_type = ?')
+						.bind(input.postId, r.role_type)
 				),
 			])
 
 			return { id: input.postId }
 		},
 	}),
-	updatePostStatus: defineAction({
+	updateRoleStatus: defineAction({
 		accept: 'form',
 		input: z.object({
 			postId: z.number(),
+			roleType: z.enum(roleTypes),
 			status: z.enum(['open', 'closed']),
 		}),
 		handler: async (input, context) => {
@@ -195,8 +205,8 @@ export const server = {
 
 			const db = env.rim_guild_db
 			await db
-				.prepare('UPDATE posts SET status = ? WHERE id = ?')
-				.bind(input.status, input.postId)
+				.prepare('UPDATE post_roles SET status = ? WHERE post_id = ? AND role_type = ?')
+				.bind(input.status, input.postId, input.roleType)
 				.run()
 
 			return { id: input.postId }
@@ -226,26 +236,30 @@ export const server = {
 				(v) => (v == null ? '' : String(v).trim()),
 				z.string().min(1, '请填写你的昵称').max(30, '昵称最多 30 个字')
 			),
-			contact: text(1, '请填写联系方式', 200),
+			qq: z.preprocess((v) => (v == null ? '' : String(v).trim()), z.string().max(50)),
+			github: z.preprocess((v) => (v == null ? '' : String(v).trim()), z.string().max(100)),
+			steam: z.preprocess((v) => (v == null ? '' : String(v).trim()), z.string().max(100)),
 			roles: z.array(z.enum(roleTypes)).default([]),
 		}),
 		handler: async (input, context) => {
 			const db = env.rim_guild_db
-			const { profileToken, authorId } = await ensureIdentity(context)
+			const profileToken = requireAuth(context)
+
+			const existing = await db
+				.prepare('SELECT author_id FROM profiles WHERE token = ?')
+				.bind(profileToken)
+				.first<{ author_id: string }>()
 
 			const roles = input.roles.join(',')
 			await db
 				.prepare(
-					`INSERT INTO profiles (token, author_id, author_name, contact, roles) VALUES (?, ?, ?, ?, ?)
-					ON CONFLICT (token) DO UPDATE SET author_name = excluded.author_name, contact = excluded.contact, roles = excluded.roles`
+					'UPDATE profiles SET author_name = ?, qq = ?, github = ?, steam = ?, roles = ? WHERE token = ?'
 				)
-				.bind(profileToken, authorId, input.authorName, input.contact, roles)
+				.bind(input.authorName, input.qq, input.github, input.steam, roles, profileToken)
 				.run()
 			await db
-				.prepare(
-					'UPDATE posts SET author_name = ?, contact = ?, author_id = ? WHERE author_token = ?'
-				)
-				.bind(input.authorName, input.contact, authorId, profileToken)
+				.prepare('UPDATE posts SET author_name = ?, author_id = ? WHERE author_token = ?')
+				.bind(input.authorName, existing!.author_id, profileToken)
 				.run()
 
 			return { ok: true }
@@ -273,24 +287,7 @@ export const server = {
 
 			const salt = generateSalt()
 			const hash = await hashPassword(input.password, salt)
-
-			const currentAuth = context.locals.auth
-			if (currentAuth) {
-				const current = await db
-					.prepare('SELECT email FROM profiles WHERE token = ?')
-					.bind(currentAuth.profileToken)
-					.first<{ email: string }>()
-				if (current && current.email === '') {
-					// guest 身份原地升级为账号，会话沿用
-					await db
-						.prepare(
-							'UPDATE profiles SET email = ?, password_hash = ?, password_salt = ? WHERE token = ?'
-						)
-						.bind(input.email, hash, salt, currentAuth.profileToken)
-						.run()
-					return { ok: true }
-				}
-			}
+			const defaultName = input.email.split('@')[0]
 
 			// 新建账号（新 session 绑定）
 			const profileToken = crypto.randomUUID()
@@ -299,7 +296,7 @@ export const server = {
 				.prepare(
 					'INSERT INTO profiles (token, author_id, author_name, email, password_hash, password_salt) VALUES (?, ?, ?, ?, ?, ?)'
 				)
-				.bind(profileToken, authorId, '', input.email, hash, salt)
+				.bind(profileToken, authorId, defaultName, input.email, hash, salt)
 				.run()
 			const sessionToken = await createSession(db, profileToken)
 			setAuthCookie(context, sessionToken)
@@ -339,26 +336,6 @@ export const server = {
 				throw new ActionError({ code: 'BAD_REQUEST', message: '邮箱或密码不正确' })
 			}
 
-			// 合并当前 guest 身份的帖子到登录账号
-			const currentAuth = context.locals.auth
-			if (currentAuth && currentAuth.profileToken !== profile.token) {
-				const guest = await db
-					.prepare('SELECT author_id, author_name, email FROM profiles WHERE token = ?')
-					.bind(currentAuth.profileToken)
-					.first<{ author_id: string; author_name: string; email: string }>()
-				if (guest && guest.email === '') {
-					const finalName = profile.author_name || guest.author_name
-					await db
-						.prepare(
-							'UPDATE posts SET author_token = ?, author_id = ?, author_name = ? WHERE author_token = ?'
-						)
-						.bind(profile.token, profile.author_id, finalName, currentAuth.profileToken)
-						.run()
-					await db.prepare('DELETE FROM profiles WHERE token = ?').bind(currentAuth.profileToken).run()
-					await deleteSession(db, currentAuth.sessionToken)
-				}
-			}
-
 			const sessionToken = await createSession(db, profile.token)
 			setAuthCookie(context, sessionToken)
 
@@ -377,6 +354,78 @@ export const server = {
 				path: '/',
 			})
 			return { ok: true }
+		},
+	}),
+	registerInterest: defineAction({
+		accept: 'form',
+		input: z.object({
+			postId: z.number(),
+			roleType: z.enum(roleTypes),
+		}),
+		handler: async (input, context) => {
+			const db = env.rim_guild_db
+			const profileToken = requireAuth(context)
+
+			const post = await db
+				.prepare('SELECT author_token FROM posts WHERE id = ?')
+				.bind(input.postId)
+				.first<{ author_token: string }>()
+			if (!post) {
+				throw new ActionError({ code: 'NOT_FOUND', message: '该需求不存在' })
+			}
+			if (post.author_token === profileToken) {
+				throw new ActionError({ code: 'BAD_REQUEST', message: '不能认领自己发布的需求' })
+			}
+
+			await db
+				.prepare(
+					'INSERT OR IGNORE INTO responses (post_id, role_type, profile_token) VALUES (?, ?, ?)'
+				)
+				.bind(input.postId, input.roleType, profileToken)
+				.run()
+
+			return { ok: true }
+		},
+	}),
+	cancelInterest: defineAction({
+		accept: 'form',
+		input: z.object({
+			postId: z.number(),
+			roleType: z.enum(roleTypes),
+		}),
+		handler: async (input, context) => {
+			const db = env.rim_guild_db
+			const profileToken = requireAuth(context)
+
+			await db
+				.prepare(
+					'DELETE FROM responses WHERE post_id = ? AND role_type = ? AND profile_token = ?'
+				)
+				.bind(input.postId, input.roleType, profileToken)
+				.run()
+
+			return { ok: true }
+		},
+	}),
+	addPostUpdate: defineAction({
+		accept: 'form',
+		input: z.object({
+			postId: z.number(),
+			content: z.preprocess(
+				(v) => (v == null ? '' : String(v).trim()),
+				z.string().min(1, '请输入更新内容').max(1000, '更新内容最多 1000 个字')
+			),
+		}),
+		handler: async (input, context) => {
+			await assertOwner(input.postId, context)
+
+			const db = env.rim_guild_db
+			await db
+				.prepare('INSERT INTO post_updates (post_id, content) VALUES (?, ?)')
+				.bind(input.postId, input.content)
+				.run()
+
+			return { id: input.postId }
 		},
 	}),
 }

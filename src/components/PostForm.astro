@@ -1,6 +1,6 @@
 ---
 import { actions } from 'astro:actions'
-import { ROLE_TYPES, type Post } from '../lib/posts'
+import { POST_TAGS, ROLE_TYPES, type Post, type PostTag } from '../lib/posts'
 
 interface Props {
 	post?: Post
@@ -23,6 +23,18 @@ const submitLabel = post ? '保存修改' : '发布'
 		<textarea id="description" name="description" maxlength="5000" placeholder="介绍你的模组项目：玩法、规模、进度、工期与报酬……">{post?.description}</textarea>
 	</div>
 
+	<div class="form-group">
+		<label>项目标签（可多选）</label>
+		<div class="role-checkboxes">
+			{Object.entries(POST_TAGS).map(([value, label]) => (
+				<label class="role-checkbox">
+					<input type="checkbox" name="tags" value={value} checked={post?.tags.includes(value as PostTag)} />
+					<span>{label}</span>
+				</label>
+			))}
+		</div>
+	</div>
+
 	<fieldset class="form-group">
 		<legend>招揽需求</legend>
 		<div class="role-pairs">
@@ -35,6 +47,7 @@ const submitLabel = post ? '保存修改' : '发布'
 							))}
 						</select>
 						<input name="roleDescriptions" required value={role.description} placeholder="面向该类型的具体需求……" maxlength="2000" />
+						<input class="role-count" name="roleCounts" type="number" min="1" max="99" value={role.count} title="需要人数" />
 						<button class="remove-role" type="button" title="移除" hidden={i === 0 && post.roles.length === 1}>×</button>
 					</div>
 				))
@@ -46,6 +59,7 @@ const submitLabel = post ? '保存修改' : '发布'
 						))}
 					</select>
 					<input name="roleDescriptions" required placeholder="面向该类型的具体需求……" maxlength="2000" />
+					<input class="role-count" name="roleCounts" type="number" min="1" max="99" value="1" title="需要人数" />
 					<button class="remove-role" type="button" title="移除" hidden>×</button>
 				</div>
 			)}
@@ -54,11 +68,8 @@ const submitLabel = post ? '保存修改' : '发布'
 	</fieldset>
 
 	<div class="form-group">
-		<label>联系方式</label>
-		<p class="field-note">使用「我的主页」中保存的联系方式</p>
+		<button class="btn" type="submit">{submitLabel}</button>
 	</div>
-
-	<button class="btn" type="submit">{submitLabel}</button>
 </form>
 
 <script>
@@ -74,8 +85,10 @@ const submitLabel = post ? '保存修改' : '发布'
 			removeBtn.hidden = false
 			const select = pair.querySelector('select') as HTMLSelectElement
 			select.selectedIndex = 0
-			const input = pair.querySelector('input') as HTMLInputElement
-			input.value = ''
+			const descInput = pair.querySelector('input[name="roleDescriptions"]') as HTMLInputElement
+			descInput.value = ''
+			const countInput = pair.querySelector('input[name="roleCounts"]') as HTMLInputElement
+			countInput.value = '1'
 			return pair as HTMLDivElement
 		}
 
@@ -91,8 +104,10 @@ const submitLabel = post ? '保存修改' : '发布'
 				if (pairs.querySelectorAll('.role-pair').length > 1) {
 					pair.remove()
 				} else {
-					const input = pair.querySelector('input') as HTMLInputElement
-					input.value = ''
+					const descInput = pair.querySelector('input[name="roleDescriptions"]') as HTMLInputElement
+					descInput.value = ''
+					const countInput = pair.querySelector('input[name="roleCounts"]') as HTMLInputElement
+					countInput.value = '1'
 				}
 			}
 		})

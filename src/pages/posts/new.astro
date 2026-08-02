@@ -3,6 +3,10 @@ import Layout from '../../layouts/Layout.astro'
 import PostForm from '../../components/PostForm.astro'
 import { actions } from 'astro:actions'
 
+if (!Astro.locals.auth) {
+	return Astro.redirect('/login?next=/posts/new')
+}
+
 const result = Astro.getActionResult(actions.createPost)
 
 if (result && !result.error) {

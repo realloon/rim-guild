@@ -7,51 +7,90 @@ import { env } from 'cloudflare:workers'
 const db = env.rim_guild_db
 const roleParam = Astro.url.searchParams.get('role')
 const activeRole: RoleType | null = roleParam && roleParam in ROLE_TYPES ? (roleParam as RoleType) : null
+const q = (Astro.url.searchParams.get('q') ?? '').trim()
 
-const sql = activeRole
-	? `${POST_SELECT}
-		WHERE p.status = 'open'
-		AND EXISTS (
-			SELECT 1 FROM post_roles pr2 WHERE pr2.post_id = p.id AND pr2.role_type = ?
-		)
-		GROUP BY p.id
-		ORDER BY p.created_at DESC, p.id DESC`
-	: `${POST_SELECT}
-		WHERE p.status = 'open'
-		GROUP BY p.id
-		ORDER BY p.created_at DESC, p.id DESC`
+const myProfileToken = Astro.locals.auth?.profileToken
+
+// 身份匹配推荐（登录且设置了身份时展示）
+let recommended: Post[] = []
+if (myProfileToken) {
+	const profile = await db
+		.prepare('SELECT roles FROM profiles WHERE token = ?')
+		.bind(myProfileToken)
+		.first<{ roles: string }>()
+	const myRoles = (profile?.roles ?? '').split(',').filter(Boolean)
+	if (myRoles.length > 0) {
+		const placeholders = myRoles.map(() => '?').join(',')
+		const { results: recResults } = await db
+			.prepare(
+				`${POST_SELECT}
+				WHERE p.author_token != ?
+				AND EXISTS (
+					SELECT 1 FROM post_roles pr2
+					WHERE pr2.post_id = p.id AND pr2.role_type IN (${placeholders}) AND pr2.status = 'open'
+				)
+				GROUP BY p.id
+				ORDER BY p.created_at DESC, p.id DESC
+				LIMIT 5`
+			)
+			.bind(myProfileToken, ...myRoles)
+			.all()
+		recommended = recResults.map(postFromRow)
+	}
+}
+
+// 主列表（类型筛选 + 关键词搜索叠加）
+const conditions = [
+	`EXISTS (
+		SELECT 1 FROM post_roles pr2
+		WHERE pr2.post_id = p.id AND pr2.status = 'open'
+	)`,
+]
+const params: string[] = []
+if (activeRole) {
+	conditions.push(
+		`EXISTS (
+			SELECT 1 FROM post_roles pr2
+			WHERE pr2.post_id = p.id AND pr2.role_type = ? AND pr2.status = 'open'
+		)`
+	)
+	params.push(activeRole)
+}
+if (q) {
+	const escaped = q.replace(/[%_]/g, (m) => `\\${m}`)
+	conditions.push(`(p.title LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')`)
+	params.push(`%${escaped}%`, `%${escaped}%`)
+}
 
 const { results } = await db
-	.prepare(sql)
-	.bind(...(activeRole ? [activeRole] : []))
+	.prepare(
+		`${POST_SELECT}
+		WHERE ${conditions.join('\n\t\tAND ')}
+		GROUP BY p.id
+		ORDER BY p.created_at DESC, p.id DESC`
+	)
+	.bind(...params)
 	.all()
 const posts: Post[] = results.map(postFromRow)
 ---
 
 <Layout title="边缘工会 · RimWorld 模组需求平台">
 	<main>
-		<nav class="role-filter" aria-label="按类型筛选">
-			<a href="/" class={activeRole === null ? 'active' : ''}>全部</a>
-			{
-				Object.entries(ROLE_TYPES).map(([value, label]) => (
-					<a href={`/?role=${value}`} class={activeRole === value ? 'active' : ''}>
-						{label}
-					</a>
-				))
-			}
-		</nav>
-
-		{results.length > 0 ? (
+		{recommended.length > 0 && (
+			<section class="recommended">
+				<h2>适合你的需求</h2>
 				<ul class="post-list">
 					{
-						posts.map((post) => (
+						recommended.map((post) => (
 							<li>
 								<a href={`/posts/${post.id}`}>
 									<h2>{post.title}</h2>
 									{post.description && <p class="post-excerpt">{post.description}</p>}
 									<div class="post-meta">
 										<span class="tags">
-											{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
+											{post.roles
+												.filter((role) => role.status === 'open')
+												.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
 										</span>
 										<span class="meta-side">
 											<AuthorAvatar seed={post.author_token} name={post.author_name} href={`/authors/${post.author_id}`} size={28} />
@@ -63,8 +102,59 @@ const posts: Post[] = results.map(postFromRow)
 						))
 					}
 				</ul>
-			) : (
-				<p class="empty">{activeRole ? '该类型下还没有需求' : '还没有需求，来发布第一条吧'}</p>
-			)}
-		</main>
+			</section>
+		)}
+
+		<form class="search-bar" method="GET" action="/">
+			{activeRole && <input type="hidden" name="role" value={activeRole} />}
+			<input type="search" name="q" value={q} placeholder="搜索项目标题或描述……" aria-label="搜索" />
+			<button class="btn btn-ghost" type="submit">搜索</button>
+		</form>
+
+		<nav class="role-filter" aria-label="按类型筛选">
+			<a href={q ? `/?q=${encodeURIComponent(q)}` : '/'} class={activeRole === null ? 'active' : ''}>全部</a>
+			{
+				Object.entries(ROLE_TYPES).map(([value, label]) => (
+					<a
+						href={q ? `/?role=${value}&q=${encodeURIComponent(q)}` : `/?role=${value}`}
+						class={activeRole === value ? 'active' : ''}
+					>
+						{label}
+					</a>
+				))
+			}
+		</nav>
+
+		{posts.length > 0 ? (
+			<ul class="post-list">
+				{
+					posts.map((post) => (
+						<li>
+							<a href={`/posts/${post.id}`}>
+								<h2>{post.title}</h2>
+								{post.description && <p class="post-excerpt">{post.description}</p>}
+								<div class="post-meta">
+									<span class="tags">
+										{post.roles
+											.filter((role) => role.status === 'open')
+											.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
+									</span>
+									<span class="meta-side">
+										{(() => {
+											const closedCount = post.roles.filter((role) => role.status === 'closed').length
+											return closedCount > 0 && <span class="role-closed-count">已招到 {closedCount}/{post.roles.length}</span>
+										})()}
+										<AuthorAvatar seed={post.author_token} name={post.author_name} href={`/authors/${post.author_id}`} size={28} />
+										<time>{formatDate(post.created_at)}</time>
+									</span>
+								</div>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		) : (
+			<p class="empty">{q ? '没有找到匹配的需求' : '还没有需求，来发布第一条吧'}</p>
+		)}
+	</main>
 </Layout>

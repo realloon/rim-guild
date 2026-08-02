@@ -15,9 +15,9 @@ const db = env.rim_guild_db
 const { id } = Astro.params
 
 const profile = await db
-	.prepare('SELECT token, author_name, contact, roles FROM profiles WHERE author_id = ?')
+	.prepare('SELECT token, author_name, qq, github, steam, roles FROM profiles WHERE author_id = ?')
 	.bind(id)
-	.first<{ token: string; author_name: string; contact: string; roles: string }>()
+	.first<{ token: string; author_name: string; qq: string; github: string; steam: string; roles: string }>()
 
 const authorRoles: RoleType[] = profile?.roles
 	? (profile.roles.split(',').filter(Boolean) as RoleType[])
@@ -56,7 +56,9 @@ if (!profile) {
 										{authorRoles.map((role) => <span class="tag">{roleLabel(role)}</span>)}
 									</div>
 								)}
-								<p class="field-note">{profile.contact}</p>
+								{profile.qq && <p class="field-note">QQ：{profile.qq}</p>}
+								{profile.github && <p class="field-note">GitHub：{profile.github}</p>}
+								{profile.steam && <p class="field-note">Steam：{profile.steam}</p>}
 							</div>
 						</div>
 					</section>
@@ -66,16 +68,21 @@ if (!profile) {
 						<ul class="post-list">
 							{
 								posts.map((post) => (
-									<li class={post.status === 'closed' ? 'post-closed' : ''}>
+									<li>
 										<a href={`/posts/${post.id}`}>
 											<h2>{post.title}</h2>
 											{post.description && <p class="post-excerpt">{post.description}</p>}
 											<div class="post-meta">
 												<span class="tags">
-													{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
+													{post.roles
+														.filter((role) => role.status === 'open')
+														.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
 												</span>
 												<span class="meta-side">
-													{post.status === 'closed' && <span class="status status-closed">已招到</span>}
+													{(() => {
+														const closedCount = post.roles.filter((role) => role.status === 'closed').length
+														return closedCount > 0 && <span class="role-closed-count">已招到 {closedCount}/{post.roles.length}</span>
+													})()}
 													<time>{formatDate(post.created_at)}</time>
 												</span>
 											</div>

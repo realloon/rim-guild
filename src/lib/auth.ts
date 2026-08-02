@@ -1,7 +1,6 @@
 // 账号密码：PBKDF2-SHA256 哈希（WebCrypto，Workers 原生支持）
-// 注册/登录流程：
-//   guest cookie（token）→ 注册/登录 → cookie 绑定为账号 profile（token 不变）
-//   登出 → 生成新 guest token 解除绑定，账号仍保留
+// 注册/登录：注册创建账号 → 登录签发 session cookie；登出删除 session
+// cookie（guild_author）即 session token，7 天滑动过期
 
 const ITERATIONS = 310_000
 const KEY_LEN = 32

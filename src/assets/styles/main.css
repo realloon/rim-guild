@@ -172,6 +172,37 @@ a.header-profile:hover .header-profile-placeholder {
   background: var(--accent-strong);
 }
 
+.recommended {
+  margin-bottom: 1.5rem;
+}
+
+.recommended h2 {
+  font-size: 1rem;
+  margin: 0 0 0.75rem;
+  color: var(--accent-strong);
+}
+
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 0.55rem 0.8rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .role-filter {
   display: flex;
   flex-wrap: wrap;
@@ -232,10 +263,6 @@ a.header-profile:hover .header-profile-placeholder {
   color: var(--accent-strong);
 }
 
-.post-closed {
-  opacity: 0.55;
-}
-
 .status {
   font-size: 0.8rem;
   padding: 0.1rem 0.55rem;
@@ -251,6 +278,41 @@ a.header-profile:hover .header-profile-placeholder {
 .status-closed {
   color: var(--text-dim);
   border: 1px solid var(--border);
+}
+
+.post-updates {
+  margin: 1.5rem 0;
+}
+
+.post-updates h2 {
+  font-size: 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.update-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.update-list li {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+}
+
+.update-list p {
+  margin: 0 0 0.35rem;
+  white-space: pre-wrap;
+}
+
+.update-list time {
+  color: var(--text-dim);
+  font-size: 0.8rem;
 }
 
 .post-owner-actions {
@@ -399,6 +461,10 @@ a.author:hover {
   display: block;
   color: var(--text);
   margin-bottom: 0.25rem;
+}
+
+.contact-line {
+  color: var(--accent-strong);
 }
 
 .form-group {
@@ -589,6 +655,18 @@ fieldset.form-group legend {
   padding: 0 0.3rem;
 }
 
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.tag-muted {
+  color: var(--text-dim);
+  border-color: var(--border);
+}
+
 .role-requirements {
   display: flex;
   flex-direction: column;
@@ -601,6 +679,67 @@ fieldset.form-group legend {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.9rem 1.1rem;
+}
+
+.role-requirement-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.role-requirement-head .status {
+  margin-left: auto;
+}
+
+.role-count-label {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.role-count {
+  flex: 0 0 auto;
+  width: 4.5rem !important;
+}
+
+.role-requirement form {
+  margin-top: 0.75rem;
+}
+
+.response-list {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
+
+.response-list .field-note {
+  margin: 0 0 0.4rem;
+}
+
+.response-avatars {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.registered-label {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.role-closed {
+  opacity: 0.6;
+}
+
+.btn-sm {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.role-closed-count {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .role-requirement p {

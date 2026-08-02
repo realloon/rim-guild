@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import {
-	AUTHOR_COOKIE,
 	POST_SELECT,
 	ROLE_TYPES,
 	postFromRow,
@@ -17,39 +16,63 @@ import { env } from 'cloudflare:workers'
 const db = env.rim_guild_db
 const profileToken = Astro.locals.auth?.profileToken
 
-let posts: Post[] = []
-let nickname = ''
-let contact = ''
-let hasProfile = false
-let myRoles: RoleType[] = []
-let loggedEmail = ''
-let isLoggedIn = false
-
-if (profileToken) {
-	const profile = await db
-		.prepare('SELECT author_name, contact, roles, email FROM profiles WHERE token = ?')
-		.bind(profileToken)
-		.first<{ author_name: string; contact: string; roles: string; email: string }>()
-	hasProfile = !!profile
-	nickname = profile?.author_name ?? ''
-	contact = profile?.contact ?? ''
-	myRoles = profile?.roles
-		? (profile.roles.split(',').filter(Boolean) as RoleType[])
-		: []
-	isLoggedIn = !!profile?.email
-	loggedEmail = profile?.email ?? ''
-
-	const { results } = await db
-		.prepare(
-			`${POST_SELECT}
-			WHERE p.author_token = ?
-			GROUP BY p.id
-			ORDER BY p.created_at DESC, p.id DESC`
-		)
-		.bind(profileToken)
-		.all()
-	posts = results.map(postFromRow)
+if (!profileToken) {
+	return Astro.redirect('/login?next=/me')
 }
+
+const profile = await db
+	.prepare('SELECT author_name, qq, github, steam, roles, email FROM profiles WHERE token = ?')
+	.bind(profileToken)
+	.first<{
+		author_name: string
+		qq: string
+		github: string
+		steam: string
+		roles: string
+		email: string
+	}>()
+
+const nickname = profile?.author_name ?? ''
+const myQq = profile?.qq ?? ''
+const myGithub = profile?.github ?? ''
+const mySteam = profile?.steam ?? ''
+const loggedEmail = profile?.email ?? ''
+const myRoles = profile?.roles
+	? (profile.roles.split(',').filter(Boolean) as RoleType[])
+	: []
+
+const { results } = await db
+	.prepare(
+		`${POST_SELECT}
+		WHERE p.author_token = ?
+		GROUP BY p.id
+		ORDER BY p.created_at DESC, p.id DESC`
+	)
+	.bind(profileToken)
+	.all()
+const posts: Post[] = results.map(postFromRow)
+
+const { results: claimedRows } = await db
+	.prepare(
+		`SELECT p.id AS post_id, p.title AS post_title, p.author_name, r.role_type, r.created_at,
+			pr.status AS role_status, pr.count, pr.description
+		FROM responses r
+		JOIN posts p ON p.id = r.post_id
+		LEFT JOIN post_roles pr ON pr.post_id = r.post_id AND pr.role_type = r.role_type
+		WHERE r.profile_token = ?
+		ORDER BY r.created_at DESC`
+	)
+	.bind(profileToken)
+	.all<{
+		post_id: number
+		post_title: string
+		author_name: string
+		role_type: string
+		created_at: string
+		role_status: string
+		count: number
+		description: string
+	}>()
 
 const result = Astro.getActionResult(actions.updateProfile)
 if (result && !result.error) {
@@ -61,27 +84,12 @@ if (result && !result.error) {
 	<main>
 			<section class="profile-card">
 				<div class="profile-head">
-					{profileToken && (
-						<img class="author-avatar" src={avatarUrl(profileToken, 64)} width={64} height={64} alt="我的头像" />
-					)}
+					<img class="author-avatar" src={avatarUrl(profileToken, 64)} width={64} height={64} alt="我的头像" />
 					<div>
-						<h2>{nickname || '我的个人资料'}</h2>
-						<p class="field-note">{hasProfile ? '头像由身份自动生成' : '完善资料后，即可发布需求，发布时自动使用这里的昵称与联系方式'}</p>
+						<h2>{nickname}</h2>
 					</div>
 					<div class="profile-account">
-						{isLoggedIn ? (
-							<>
-								<span class="logged-email" title="已登录账号">{loggedEmail}</span>
-								<form method="POST" action={actions.logout}>
-									<button class="btn btn-ghost" type="submit">登出</button>
-								</form>
-							</>
-						) : (
-							<>
-								<span class="guest-label">未登录（本机身份）</span>
-								<a class="btn btn-ghost" href="/login">登录 / 注册</a>
-							</>
-						)}
+						<span class="logged-email" title="已登录账号">{loggedEmail}</span>
 					</div>
 				</div>
 				<form method="POST" action={actions.updateProfile}>
@@ -100,10 +108,21 @@ if (result && !result.error) {
 							))}
 						</div>
 					</div>
-					<div class="form-group">
-						<label for="contact">联系方式</label>
-						<input id="contact" name="contact" required maxlength="200" value={contact} placeholder="QQ / 微信 / Discord / 邮箱……" />
-					</div>
+					<fieldset class="form-group">
+						<legend>联系方式</legend>
+						<div class="form-group">
+							<label for="qq">QQ 号</label>
+							<input id="qq" name="qq" maxlength="50" value={myQq} placeholder="选填" />
+						</div>
+						<div class="form-group">
+							<label for="github">GitHub 账号</label>
+							<input id="github" name="github" maxlength="100" value={myGithub} placeholder="选填" />
+						</div>
+						<div class="form-group">
+							<label for="steam">Steam 账号</label>
+							<input id="steam" name="steam" maxlength="100" value={mySteam} placeholder="选填" />
+						</div>
+					</fieldset>
 
 					{result?.error && (
 						<div class="error">
@@ -121,16 +140,21 @@ if (result && !result.error) {
 				<ul class="post-list">
 					{
 						posts.map((post) => (
-							<li class={post.status === 'closed' ? 'post-closed' : ''}>
+							<li>
 								<a href={`/posts/${post.id}`}>
 									<h2>{post.title}</h2>
 									{post.description && <p class="post-excerpt">{post.description}</p>}
 									<div class="post-meta">
 										<span class="tags">
-											{post.roles.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
+											{post.roles
+												.filter((role) => role.status === 'open')
+												.map((role) => <span class="tag">{roleLabel(role.type)}</span>)}
 										</span>
 										<span class="meta-side">
-											{post.status === 'closed' && <span class="status status-closed">已招到</span>}
+											{(() => {
+												const closedCount = post.roles.filter((role) => role.status === 'closed').length
+												return closedCount > 0 && <span class="role-closed-count">已招到 {closedCount}/{post.roles.length}</span>
+											})()}
 											<time>{formatDate(post.created_at)}</time>
 										</span>
 									</div>
@@ -140,7 +164,36 @@ if (result && !result.error) {
 					}
 				</ul>
 			) : (
-				<p class="empty">{hasProfile ? '你还没有发布过需求' : '完善资料后，去发布你的第一个需求吧'}</p>
+				<p class="empty">你还没有发布过需求</p>
+			)}
+
+			<h2>我的认领（{claimedRows.length}）</h2>
+			{claimedRows.length > 0 ? (
+				<ul class="post-list">
+					{
+						claimedRows.map((claim) => (
+							<li>
+								<a href={`/posts/${claim.post_id}`}>
+									<h2>{claim.post_title}</h2>
+									<div class="post-meta">
+										<span class="tags">
+											<span class="tag">{roleLabel(claim.role_type as RoleType)}</span>
+											<span class={`status status-${claim.role_status}`}>
+												{claim.role_status === 'open' ? '招聘中' : '已招到'}
+											</span>
+										</span>
+										<span class="meta-side">
+											<span>{claim.author_name}</span>
+											<time>{formatDate(claim.created_at)}</time>
+										</span>
+									</div>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			) : (
+				<p class="empty">你还没有认领过需求</p>
 			)}
 		</main>
 </Layout>
