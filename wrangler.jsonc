@@ -10,5 +10,12 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "rim_guild_db",
+			"database_name": "rim-guild-db",
+			"database_id": "5fd6f6b6-12bf-416a-a28d-bfc5a41fc018"
+		}
+	]
 }

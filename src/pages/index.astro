@@ -1,7 +1,39 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import { roleLabel, formatDate, type Post } from '../lib/posts'
+import { env } from 'cloudflare:workers'
+
+const db = env.rim_guild_db
+const { results } = await db
+	.prepare('SELECT * FROM posts ORDER BY created_at DESC, id DESC')
+	.all<Post>()
 ---
 
-<Layout title="边缘工会">
-  <h1>边缘工会</h1>
+<Layout title="边缘工会 · RimWorld 模组需求平台">
+	<div class="container">
+		<header class="site-header">
+			<h1><a href="/">边缘工会</a></h1>
+			<a class="btn" href="/posts/new">发布需求</a>
+		</header>
+
+		<main>
+			{results.length > 0 ? (
+				<ul class="post-list">
+					{
+						results.map((post) => (
+							<li>
+								<a href={`/posts/${post.id}`}>
+									<span class="tag">{roleLabel(post.role_type)}</span>
+									<h2>{post.title}</h2>
+									<time>{formatDate(post.created_at)}</time>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			) : (
+				<p class="empty">还没有需求，来发布第一条吧</p>
+			)}
+		</main>
+	</div>
 </Layout>

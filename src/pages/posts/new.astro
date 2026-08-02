@@ -1,0 +1,54 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { actions } from 'astro:actions'
+import { ROLE_TYPES } from '../../lib/posts'
+
+const result = Astro.getActionResult(actions.createPost)
+
+if (result && !result.error) {
+	return Astro.redirect(`/posts/${result.data.id}`)
+}
+---
+
+<Layout title="发布需求 · 边缘工会">
+	<div class="container">
+		<header class="site-header">
+			<h1><a href="/">边缘工会</a></h1>
+			<a class="btn" href="/">返回列表</a>
+		</header>
+
+		<main>
+			<h2>发布需求</h2>
+			<form method="POST" action={actions.createPost}>
+				<div class="form-group">
+					<label for="title">标题</label>
+					<input id="title" name="title" required maxlength="80" placeholder="例如：寻找像素画师为武器模组补全贴图" />
+				</div>
+				<div class="form-group">
+					<label for="roleType">招揽类型</label>
+					<select id="roleType" name="roleType" required>
+						{Object.entries(ROLE_TYPES).map(([value, label]) => (
+							<option value={value}>{label}</option>
+						))}
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="description">需求描述</label>
+					<textarea id="description" name="description" required maxlength="5000" placeholder="介绍你的模组、需要的工作内容、工期与报酬……"></textarea>
+				</div>
+				<div class="form-group">
+					<label for="contact">联系方式</label>
+					<input id="contact" name="contact" required maxlength="200" placeholder="QQ / 微信 / Discord / 邮箱……" />
+				</div>
+
+				{result?.error && (
+					<div class="error">
+						{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
+					</div>
+				)}
+
+				<button class="btn" type="submit">发布</button>
+			</form>
+		</main>
+	</div>
+</Layout>
