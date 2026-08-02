@@ -2,13 +2,13 @@
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
 import {
-	POST_SELECT,
-	postFromRow,
-	roleLabel,
-	roleStatusLabel,
-	tagLabel,
-	formatDate,
-	type Post,
+  POST_SELECT,
+  postFromRow,
+  roleLabel,
+  roleStatusLabel,
+  tagLabel,
+  formatDate,
+  type Post,
 } from '../../lib/posts'
 import { avatarUrl } from '../../lib/avatar'
 import { actions } from 'astro:actions'
@@ -18,14 +18,14 @@ const db = env.rim_guild_db
 const { id } = Astro.params
 
 const row = await db
-	.prepare(`${POST_SELECT} WHERE p.id = ? GROUP BY p.id`)
-	.bind(Number(id))
-	.first()
+  .prepare(`${POST_SELECT} WHERE p.id = ? GROUP BY p.id`)
+  .bind(Number(id))
+  .first()
 
 const post: Post | undefined = row ? postFromRow(row) : undefined
 
 if (!post) {
-	Astro.response.status = 404
+  Astro.response.status = 404
 }
 
 const isOwner = !!post && Astro.locals.auth?.profileToken === post.author_token
@@ -33,232 +33,298 @@ const myProfileToken = Astro.locals.auth?.profileToken ?? null
 
 const roleStatusResult = Astro.getActionResult(actions.updateRoleStatus)
 if (roleStatusResult && !roleStatusResult.error && post) {
-	return Astro.redirect(`/posts/${post.id}`)
+  return Astro.redirect(`/posts/${post.id}`)
 }
 const interestResult = Astro.getActionResult(actions.registerInterest)
 if (interestResult && !interestResult.error && post) {
-	return Astro.redirect(`/posts/${post.id}`)
+  return Astro.redirect(`/posts/${post.id}`)
 }
 const cancelResult = Astro.getActionResult(actions.cancelInterest)
 if (cancelResult && !cancelResult.error && post) {
-	return Astro.redirect(`/posts/${post.id}`)
+  return Astro.redirect(`/posts/${post.id}`)
 }
 const deleteResult = Astro.getActionResult(actions.deletePost)
 if (deleteResult && !deleteResult.error) {
-	return Astro.redirect('/me')
+  return Astro.redirect('/me')
 }
 const updateResult = Astro.getActionResult(actions.addPostUpdate)
 if (updateResult && !updateResult.error && post) {
-	return Astro.redirect(`/posts/${post.id}`)
+  return Astro.redirect(`/posts/${post.id}`)
 }
 
 let updateRows: { id: number; content: string; created_at: string }[] = []
 let responseRows: {
-	post_id: number
-	role_type: string
-	profile_token: string
-	created_at: string
-	author_name: string
-	author_id: string
+  post_id: number
+  role_type: string
+  profile_token: string
+  created_at: string
+  author_name: string
+  author_id: string
 }[] = []
 
 if (post) {
-	const { results: updates } = await db
-		.prepare(
-			'SELECT id, content, created_at FROM post_updates WHERE post_id = ? ORDER BY created_at DESC, id DESC'
-		)
-		.bind(post.id)
-		.all<{ id: number; content: string; created_at: string }>()
-	updateRows = updates
+  const { results: updates } = await db
+    .prepare(
+      'SELECT id, content, created_at FROM post_updates WHERE post_id = ? ORDER BY created_at DESC, id DESC',
+    )
+    .bind(post.id)
+    .all<{ id: number; content: string; created_at: string }>()
+  updateRows = updates
 
-	const { results: responses } = await db
-		.prepare(
-			`SELECT r.post_id, r.role_type, r.profile_token, r.created_at, p.author_name, p.author_id
+  const { results: responses } = await db
+    .prepare(
+      `SELECT r.post_id, r.role_type, r.profile_token, r.created_at, p.author_name, p.author_id
 			FROM responses r
 			JOIN profiles p ON p.token = r.profile_token
 			WHERE r.post_id = ?
-			ORDER BY r.created_at ASC`
-		)
-		.bind(post.id)
-		.all<{
-			post_id: number
-			role_type: string
-			profile_token: string
-			created_at: string
-			author_name: string
-			author_id: string
-		}>()
-	responseRows = responses
+			ORDER BY r.created_at ASC`,
+    )
+    .bind(post.id)
+    .all<{
+      post_id: number
+      role_type: string
+      profile_token: string
+      created_at: string
+      author_name: string
+      author_id: string
+    }>()
+  responseRows = responses
 }
 
 const responsesByRole = new Map<string, typeof responseRows>()
 for (const resp of responseRows) {
-	const list = responsesByRole.get(resp.role_type) ?? []
-	list.push(resp)
-	responsesByRole.set(resp.role_type, list)
+  const list = responsesByRole.get(resp.role_type) ?? []
+  list.push(resp)
+  responsesByRole.set(resp.role_type, list)
 }
 ---
 
-<Layout title={post ? `${post.title} · 边缘工会` : '需求不存在 · 边缘工会'} back>
-	<main>
-			{post ? (
-				<article class="post-detail">
-					<h1>{post.title}</h1>
-					<div class="post-meta">
-						<span class="meta-side">
-							<AuthorAvatar seed={post.author_token} name={post.author_name} href={`/authors/${post.author_id}`} size={28} />
-							<time>{formatDate(post.created_at)}</time>
-						</span>
-					</div>
-					{post.description && <p class="description">{post.description}</p>}
-					{post.tags.length > 0 && (
-						<div class="post-tags">
-							{post.tags.map((tag) => <span class="tag tag-muted">{tagLabel(tag)}</span>)}
-						</div>
-					)}
-					<div class="role-requirements">
-						{post.roles.map((role) => {
-							const responses = responsesByRole.get(role.type) ?? []
-							const registered = responses.some((r) => r.profile_token === myProfileToken)
-							return (
-								<div class={`role-requirement ${role.status === 'closed' ? 'role-closed' : ''}`}>
-									<div class="role-requirement-head">
-										<span class="tag">{roleLabel(role.type)}</span>
-										<span class="role-count-label">
-											共需 {role.count} 人{responses.length > 0 ? `，${responses.length} 人已认领` : ''}
-										</span>
-										<span class={`status status-${role.status}`}>{roleStatusLabel(role.status)}</span>
-									</div>
-									<p>{role.description}</p>
+<Layout
+  title={post ? `${post.title} · 边缘工会` : '需求不存在 · 边缘工会'}
+  back
+>
+  <main>
+    {
+      post ? (
+        <article class="post-detail">
+          <h1>{post.title}</h1>
+          <div class="post-meta">
+            <AuthorAvatar
+              seed={post.author_token}
+              name={post.author_name}
+              href={`/authors/${post.author_id}`}
+              size={28}
+            />
+            <time>{formatDate(post.created_at)}</time>
+          </div>
+          {post.description && <p class="description">{post.description}</p>}
+          {post.tags.length > 0 && (
+            <div class="post-tags">
+              {post.tags.map(tag => (
+                <span class="tag tag-muted">{tagLabel(tag)}</span>
+              ))}
+            </div>
+          )}
+          <div class="role-requirements">
+            {post.roles.map(role => {
+              const responses = responsesByRole.get(role.type) ?? []
+              const registered = responses.some(
+                r => r.profile_token === myProfileToken,
+              )
+              return (
+                <div
+                  class={`role-requirement ${role.status === 'closed' ? 'role-closed' : ''}`}
+                >
+                  <div class="role-requirement-head">
+                    <span class="tag">{roleLabel(role.type)}</span>
+                    <span class="role-count-label">
+                      共需 {role.count} 人
+                      {responses.length > 0
+                        ? `，${responses.length} 人已认领`
+                        : ''}
+                    </span>
+                    <span class={`status status-${role.status}`}>
+                      {roleStatusLabel(role.status)}
+                    </span>
+                  </div>
+                  <p>{role.description}</p>
 
-									{responses.length > 0 && (
-										<div class="response-list">
-											<div class="response-avatars">
-												{responses.map((resp) => (
-													<a class="author" href={`/authors/${resp.author_id}`}>
-														<img class="author-avatar" src={avatarUrl(resp.profile_token, 28)} width={28} height={28} alt={`${resp.author_name} 的头像`} title={resp.author_name} />
-													</a>
-												))}
-											</div>
-										</div>
-									)}
+                  {responses.length > 0 && (
+                    <div class="response-avatars">
+                      {responses.map(resp => (
+                        <a class="author" href={`/authors/${resp.author_id}`}>
+                          <img
+                            class="author-avatar"
+                            src={avatarUrl(resp.profile_token, 28)}
+                            width={28}
+                            height={28}
+                            alt={`${resp.author_name} 的头像`}
+                            title={resp.author_name}
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  )}
 
-									{isOwner ? (
-										<form method="POST" action={actions.updateRoleStatus}>
-											<input type="hidden" name="postId" value={post.id} />
-											<input type="hidden" name="roleType" value={role.type} />
-											<input type="hidden" name="status" value={role.status === 'open' ? 'closed' : 'open'} />
-											<button class="btn btn-ghost btn-sm" type="submit">
-												{role.status === 'open' ? '停止招募' : '重新开放'}
-											</button>
-										</form>
-									) : role.status === 'open' ? (
-										!myProfileToken ? (
-											<a class="btn btn-sm" href={`/login?next=/posts/${post.id}`}>登录后认领</a>
-										) : registered ? (
-											<form method="POST" action={actions.cancelInterest}>
-												<input type="hidden" name="postId" value={post.id} />
-												<input type="hidden" name="roleType" value={role.type} />
-												<button class="btn btn-ghost btn-sm" type="submit">取消认领</button>
-											</form>
-										) : (
-											<form method="POST" action={actions.registerInterest}>
-												<input type="hidden" name="postId" value={post.id} />
-												<input type="hidden" name="roleType" value={role.type} />
-												<button class="btn btn-sm" type="submit">认领</button>
-											</form>
-										)
-									) : null}
-								</div>
-							)
-						})}
-					</div>
-					<div class="contact-box">
-						<strong>发布者联系方式</strong>
-						{post.author_qq && <div class="contact-line">QQ：{post.author_qq}</div>}
-						{post.author_github && <div class="contact-line">GitHub：{post.author_github}</div>}
-						{post.author_steam && <div class="contact-line">Steam：{post.author_steam}</div>}
-						{!post.author_qq && !post.author_github && !post.author_steam && (
-							<div class="contact-line">未填写</div>
-						)}
-					</div>
+                  {isOwner ? (
+                    <form method="POST" action={actions.updateRoleStatus}>
+                      <input type="hidden" name="postId" value={post.id} />
+                      <input type="hidden" name="roleType" value={role.type} />
+                      <input
+                        type="hidden"
+                        name="status"
+                        value={role.status === 'open' ? 'closed' : 'open'}
+                      />
+                      <button class="btn btn-ghost btn-sm" type="submit">
+                        {role.status === 'open' ? '停止招募' : '重新开放'}
+                      </button>
+                    </form>
+                  ) : role.status === 'open' ? (
+                    !myProfileToken ? (
+                      <a
+                        class="btn btn-sm"
+                        href={`/login?next=/posts/${post.id}`}
+                      >
+                        登录后认领
+                      </a>
+                    ) : registered ? (
+                      <form method="POST" action={actions.cancelInterest}>
+                        <input type="hidden" name="postId" value={post.id} />
+                        <input
+                          type="hidden"
+                          name="roleType"
+                          value={role.type}
+                        />
+                        <button class="btn btn-ghost btn-sm" type="submit">
+                          取消认领
+                        </button>
+                      </form>
+                    ) : (
+                      <form method="POST" action={actions.registerInterest}>
+                        <input type="hidden" name="postId" value={post.id} />
+                        <input
+                          type="hidden"
+                          name="roleType"
+                          value={role.type}
+                        />
+                        <button class="btn btn-sm" type="submit">
+                          认领
+                        </button>
+                      </form>
+                    )
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+          <div class="contact-box">
+            <strong>发布者联系方式</strong>
+            {post.author_qq && (
+              <div class="contact-line">QQ：{post.author_qq}</div>
+            )}
+            {post.author_github && (
+              <div class="contact-line">GitHub：{post.author_github}</div>
+            )}
+            {post.author_steam && (
+              <div class="contact-line">Steam：{post.author_steam}</div>
+            )}
+            {!post.author_qq && !post.author_github && !post.author_steam && (
+              <div class="contact-line">未填写</div>
+            )}
+          </div>
 
-					<section class="post-updates">
-						<h2>项目更新</h2>
-						{updateRows.length > 0 ? (
-							<ul class="update-list">
-								{updateRows.map((update) => (
-									<li>
-										<p>{update.content}</p>
-										<time>{formatDate(update.created_at)}</time>
-									</li>
-								))}
-							</ul>
-						) : (
-							<p class="field-note">还没有更新</p>
-						)}
-						{isOwner && (
-							<form method="POST" action={actions.addPostUpdate}>
-								<input type="hidden" name="postId" value={post.id} />
-								<div class="form-group">
-									<textarea name="content" required maxlength="1000" placeholder="发布项目进展，例如：画师已加入，还在找开发者……"></textarea>
-								</div>
-								{updateResult?.error && (
-									<div class="error">
-										{updateResult.error.message && <p>{updateResult.error.message}</p>}
-										{updateResult.error.issues?.map((issue) => <p>{issue.message}</p>)}
-									</div>
-								)}
-								<button class="btn btn-sm" type="submit">发布更新</button>
-							</form>
-						)}
-					</section>
+          <section class="post-updates">
+            <h2>项目更新</h2>
+            {updateRows.length > 0 ? (
+              <ul class="update-list">
+                {updateRows.map(update => (
+                  <li>
+                    <p>{update.content}</p>
+                    <time>{formatDate(update.created_at)}</time>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="field-note">还没有更新</p>
+            )}
+            {isOwner && (
+              <form method="POST" action={actions.addPostUpdate}>
+                <input type="hidden" name="postId" value={post.id} />
+                <textarea
+                  name="content"
+                  required
+                  maxlength="1000"
+                  placeholder="发布项目进展，例如：画师已加入，还在找开发者……"
+                />
+                {updateResult?.error && (
+                  <div class="error">
+                    {updateResult.error.message && (
+                      <p>{updateResult.error.message}</p>
+                    )}
+                    {updateResult.error.issues?.map(issue => (
+                      <p>{issue.message}</p>
+                    ))}
+                  </div>
+                )}
+                <button class="btn btn-sm" type="submit">
+                  发布更新
+                </button>
+              </form>
+            )}
+          </section>
 
-					{isOwner && (
-						<div class="post-owner-actions">
-							<a class="btn btn-ghost" href={`/posts/${post.id}/edit`}>编辑</a>
-							<form method="POST" action={actions.deletePost} data-confirm="确定删除这条需求吗？删除后不可恢复。">
-								<input type="hidden" name="postId" value={post.id} />
-								<button class="btn btn-danger" type="submit">删除</button>
-							</form>
-						</div>
-					)}
+          {isOwner && (
+            <div class="post-owner-actions">
+              <a class="btn btn-ghost" href={`/posts/${post.id}/edit`}>
+                编辑
+              </a>
+              <form
+                method="POST"
+                action={actions.deletePost}
+                data-confirm="确定删除这条需求吗？删除后不可恢复。"
+              >
+                <input type="hidden" name="postId" value={post.id} />
+                <button class="btn btn-danger" type="submit">
+                  删除
+                </button>
+              </form>
+            </div>
+          )}
 
-					{(roleStatusResult?.error ||
-						deleteResult?.error ||
-						interestResult?.error ||
-						cancelResult?.error) && (
-						<div class="error">
-							{(
-								roleStatusResult?.error?.message ??
-								deleteResult?.error?.message ??
-								interestResult?.error?.message ??
-								cancelResult?.error?.message
-							) && (
-								<p>
-									{roleStatusResult?.error?.message ??
-										deleteResult?.error?.message ??
-										interestResult?.error?.message ??
-										cancelResult?.error?.message}
-								</p>
-							)}
-						</div>
-					)}
-				</article>
-			) : (
-				<p class="not-found">该需求不存在或已被删除</p>
-			)}
-		</main>
+          {(roleStatusResult?.error ||
+            deleteResult?.error ||
+            interestResult?.error ||
+            cancelResult?.error) && (
+            <div class="error">
+              {(roleStatusResult?.error?.message ??
+                deleteResult?.error?.message ??
+                interestResult?.error?.message ??
+                cancelResult?.error?.message) && (
+                <p>
+                  {roleStatusResult?.error?.message ??
+                    deleteResult?.error?.message ??
+                    interestResult?.error?.message ??
+                    cancelResult?.error?.message}
+                </p>
+              )}
+            </div>
+          )}
+        </article>
+      ) : (
+        <p class="not-found">该需求不存在或已被删除</p>
+      )
+    }
+  </main>
 </Layout>
 
 <script>
-	const forms = document.querySelectorAll('[data-confirm]')
-	forms.forEach((form) => {
-		form.addEventListener('submit', (event) => {
-			const message = (form as HTMLElement).dataset.confirm
-			if (!confirm(message)) {
-				event.preventDefault()
-			}
-		})
-	})
+  const forms = document.querySelectorAll('[data-confirm]')
+  forms.forEach(form => {
+    form.addEventListener('submit', event => {
+      const message = (form as HTMLElement).dataset.confirm
+      if (!confirm(message)) {
+        event.preventDefault()
+      }
+    })
+  })
 </script>

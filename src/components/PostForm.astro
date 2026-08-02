@@ -3,7 +3,7 @@ import { actions } from 'astro:actions'
 import { POST_TAGS, ROLE_TYPES, type Post, type PostTag } from '../lib/posts'
 
 interface Props {
-	post?: Post
+  post?: Post
 }
 
 const { post } = Astro.props
@@ -12,104 +12,174 @@ const submitLabel = post ? '保存修改' : '发布'
 ---
 
 <form method="POST" action={action} data-role-form>
-	{post && <input type="hidden" name="postId" value={post.id} />}
+  {post && <input type="hidden" name="postId" value={post.id} />}
 
-	<div class="form-group">
-		<label for="title">项目标题</label>
-		<input id="title" name="title" required maxlength="80" value={post?.title} placeholder="例如：为武器扩展模组招募成员" />
-	</div>
-	<div class="form-group">
-		<label for="description">项目描述（可选）</label>
-		<textarea id="description" name="description" maxlength="5000" placeholder="介绍你的模组项目：玩法、规模、进度、工期与报酬……">{post?.description}</textarea>
-	</div>
+  <label class="form-field" for="title">
+    项目标题
+    <input
+      id="title"
+      name="title"
+      required
+      maxlength="80"
+      value={post?.title}
+      placeholder="例如：为武器扩展模组招募成员"
+    />
+  </label>
+  <label class="form-field" for="description">
+    项目描述（可选）
+    <textarea
+      id="description"
+      name="description"
+      maxlength="5000"
+      placeholder="介绍你的模组项目：玩法、规模、进度、工期与报酬……"
+      >{post?.description}</textarea
+    >
+  </label>
 
-	<div class="form-group">
-		<label>项目标签（可多选）</label>
-		<div class="role-checkboxes">
-			{Object.entries(POST_TAGS).map(([value, label]) => (
-				<label class="role-checkbox">
-					<input type="checkbox" name="tags" value={value} checked={post?.tags.includes(value as PostTag)} />
-					<span>{label}</span>
-				</label>
-			))}
-		</div>
-	</div>
+  <fieldset class="form-options">
+    <legend>项目标签（可多选）</legend>
+    <div class="role-checkboxes">
+      {
+        Object.entries(POST_TAGS).map(([value, label]) => (
+          <label class="role-checkbox">
+            <input
+              type="checkbox"
+              name="tags"
+              value={value}
+              checked={post?.tags.includes(value as PostTag)}
+            />
+            {label}
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
 
-	<fieldset class="form-group">
-		<legend>招揽需求</legend>
-		<div class="role-pairs">
-			{post ? (
-				post.roles.map((role, i) => (
-					<div class="role-pair">
-						<select name="roleTypes" required>
-							{Object.entries(ROLE_TYPES).map(([value, label]) => (
-								<option value={value} selected={role.type === value}>{label}</option>
-							))}
-						</select>
-						<input name="roleDescriptions" required value={role.description} placeholder="面向该类型的具体需求……" maxlength="2000" />
-						<input class="role-count" name="roleCounts" type="number" min="1" max="99" value={role.count} title="需要人数" />
-						<button class="remove-role" type="button" title="移除" hidden={i === 0 && post.roles.length === 1}>×</button>
-					</div>
-				))
-			) : (
-				<div class="role-pair">
-					<select name="roleTypes" required>
-						{Object.entries(ROLE_TYPES).map(([value, label]) => (
-							<option value={value}>{label}</option>
-						))}
-					</select>
-					<input name="roleDescriptions" required placeholder="面向该类型的具体需求……" maxlength="2000" />
-					<input class="role-count" name="roleCounts" type="number" min="1" max="99" value="1" title="需要人数" />
-					<button class="remove-role" type="button" title="移除" hidden>×</button>
-				</div>
-			)}
-		</div>
-		<button class="add-role" type="button">+ 添加一项招揽</button>
-	</fieldset>
+  <fieldset class="form-section">
+    <legend>招揽需求</legend>
+    <div class="role-pairs">
+      {
+        post ? (
+          post.roles.map((role, i) => (
+            <div class="role-pair">
+              <select name="roleTypes" required>
+                {Object.entries(ROLE_TYPES).map(([value, label]) => (
+                  <option value={value} selected={role.type === value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <input
+                name="roleDescriptions"
+                required
+                value={role.description}
+                placeholder="面向该类型的具体需求……"
+                maxlength="2000"
+              />
+              <input
+                class="role-count"
+                name="roleCounts"
+                type="number"
+                min="1"
+                max="99"
+                value={role.count}
+                title="需要人数"
+              />
+              <button
+                class="remove-role"
+                type="button"
+                title="移除"
+                hidden={i === 0 && post.roles.length === 1}
+              >
+                ×
+              </button>
+            </div>
+          ))
+        ) : (
+          <div class="role-pair">
+            <select name="roleTypes" required>
+              {Object.entries(ROLE_TYPES).map(([value, label]) => (
+                <option value={value}>{label}</option>
+              ))}
+            </select>
+            <input
+              name="roleDescriptions"
+              required
+              placeholder="面向该类型的具体需求……"
+              maxlength="2000"
+            />
+            <input
+              class="role-count"
+              name="roleCounts"
+              type="number"
+              min="1"
+              max="99"
+              value="1"
+              title="需要人数"
+            />
+            <button class="remove-role" type="button" title="移除" hidden>
+              ×
+            </button>
+          </div>
+        )
+      }
+    </div>
+    <button class="add-role" type="button">+ 添加一项招揽</button>
+  </fieldset>
 
-	<div class="form-group">
-		<button class="btn" type="submit">{submitLabel}</button>
-	</div>
+  <button class="btn" type="submit">{submitLabel}</button>
 </form>
 
 <script>
-	const form = document.querySelector('[data-role-form]') as HTMLFormElement | null
-	if (form) {
-		const pairs = form.querySelector('.role-pairs') as HTMLElement
-		const addBtn = form.querySelector('.add-role') as HTMLButtonElement
+  const form = document.querySelector(
+    '[data-role-form]',
+  ) as HTMLFormElement | null
+  if (form) {
+    const pairs = form.querySelector('.role-pairs') as HTMLElement
+    const addBtn = form.querySelector('.add-role') as HTMLButtonElement
 
-		const makePair = (): HTMLDivElement => {
-			const template = pairs.querySelector('.role-pair') as HTMLElement
-			const pair = template.cloneNode(true) as HTMLElement
-			const removeBtn = pair.querySelector('.remove-role') as HTMLButtonElement
-			removeBtn.hidden = false
-			const select = pair.querySelector('select') as HTMLSelectElement
-			select.selectedIndex = 0
-			const descInput = pair.querySelector('input[name="roleDescriptions"]') as HTMLInputElement
-			descInput.value = ''
-			const countInput = pair.querySelector('input[name="roleCounts"]') as HTMLInputElement
-			countInput.value = '1'
-			return pair as HTMLDivElement
-		}
+    const makePair = (): HTMLDivElement => {
+      const template = pairs.querySelector('.role-pair') as HTMLElement
+      const pair = template.cloneNode(true) as HTMLElement
+      const removeBtn = pair.querySelector('.remove-role') as HTMLButtonElement
+      removeBtn.hidden = false
+      const select = pair.querySelector('select') as HTMLSelectElement
+      select.selectedIndex = 0
+      const descInput = pair.querySelector(
+        'input[name="roleDescriptions"]',
+      ) as HTMLInputElement
+      descInput.value = ''
+      const countInput = pair.querySelector(
+        'input[name="roleCounts"]',
+      ) as HTMLInputElement
+      countInput.value = '1'
+      return pair as HTMLDivElement
+    }
 
-		addBtn.addEventListener('click', () => {
-			const pair = makePair()
-			pairs.appendChild(pair)
-		})
+    addBtn.addEventListener('click', () => {
+      const pair = makePair()
+      pairs.appendChild(pair)
+    })
 
-		pairs.addEventListener('click', (event) => {
-			const btn = (event.target as HTMLElement).closest('.remove-role') as HTMLButtonElement | null
-			if (btn) {
-				const pair = btn.closest('.role-pair') as HTMLElement
-				if (pairs.querySelectorAll('.role-pair').length > 1) {
-					pair.remove()
-				} else {
-					const descInput = pair.querySelector('input[name="roleDescriptions"]') as HTMLInputElement
-					descInput.value = ''
-					const countInput = pair.querySelector('input[name="roleCounts"]') as HTMLInputElement
-					countInput.value = '1'
-				}
-			}
-		})
-	}
+    pairs.addEventListener('click', event => {
+      const btn = (event.target as HTMLElement).closest(
+        '.remove-role',
+      ) as HTMLButtonElement | null
+      if (btn) {
+        const pair = btn.closest('.role-pair') as HTMLElement
+        if (pairs.querySelectorAll('.role-pair').length > 1) {
+          pair.remove()
+        } else {
+          const descInput = pair.querySelector(
+            'input[name="roleDescriptions"]',
+          ) as HTMLInputElement
+          descInput.value = ''
+          const countInput = pair.querySelector(
+            'input[name="roleCounts"]',
+          ) as HTMLInputElement
+          countInput.value = '1'
+        }
+      }
+    })
+  }
 </script>

@@ -1,5 +1,4 @@
 :root {
-  color-scheme: dark;
   --bg: #12151a;
   --bg-raised: #1b2028;
   --border: #2c3340;
@@ -7,21 +6,19 @@
   --text-dim: #8a93a3;
   --accent: #c9a15a;
   --accent-strong: #e0b56e;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    'PingFang SC',
-    'Microsoft YaHei',
-    sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+
+  text-autospace: normal;
+  font-family: system-ui, ui-sans-serif, sans-serif;
+
+  scrollbar-gutter: stable both-edges;
 }
 
 * {
   box-sizing: border-box;
-}
-
-html {
-  scrollbar-gutter: stable both-edges;
 }
 
 body {
@@ -467,20 +464,19 @@ a.author:hover {
   color: var(--accent-strong);
 }
 
-.form-group {
-  margin-bottom: 1.1rem;
-}
-
-.form-group label {
+.form-field {
   display: block;
-  margin-bottom: 0.35rem;
+  margin-bottom: 1.1rem;
   color: var(--text-dim);
   font-size: 0.9rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.form-field > :is(input, select, textarea) {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+form :is(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
   width: 100%;
   padding: 0.6rem 0.8rem;
   background: var(--bg-raised);
@@ -490,16 +486,24 @@ a.author:hover {
   font: inherit;
 }
 
-.form-group textarea {
+form textarea {
   min-height: 180px;
   resize: vertical;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+form
+  :is(
+    input:not([type='hidden']):not([type='checkbox']),
+    select,
+    textarea
+  ):focus {
   outline: none;
   border-color: var(--accent);
+}
+
+.post-updates form > textarea {
+  display: block;
+  margin-bottom: 1.1rem;
 }
 
 .field-note {
@@ -524,15 +528,8 @@ a.author:hover {
   margin: 0;
 }
 
-.profile-account {
-  margin-left: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.5rem;
-}
-
 .logged-email {
+  margin-left: auto;
   color: var(--text-dim);
   font-size: 0.85rem;
 }
@@ -643,13 +640,27 @@ a.author:hover {
   color: var(--accent-strong);
 }
 
-fieldset.form-group {
+.form-options {
+  margin: 0 0 1.1rem;
+  padding: 0;
+  border: 0;
+}
+
+.form-options legend {
+  margin-bottom: 0.35rem;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+.form-section {
+  margin: 0 0 1.1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.9rem 1rem;
 }
 
-fieldset.form-group legend {
+.form-section legend {
   color: var(--text-dim);
   font-size: 0.9rem;
   padding: 0 0.3rem;
@@ -705,19 +716,12 @@ fieldset.form-group legend {
   margin-top: 0.75rem;
 }
 
-.response-list {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px dashed var(--border);
-}
-
-.response-list .field-note {
-  margin: 0 0 0.4rem;
-}
-
 .response-avatars {
   display: flex;
   gap: 0.35rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
 }
 
 .registered-label {

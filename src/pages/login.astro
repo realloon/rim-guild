@@ -3,57 +3,92 @@ import Layout from '../layouts/Layout.astro'
 import { actions } from 'astro:actions'
 
 const next = Astro.url.searchParams.get('next')
-const redirectTo = next && next.startsWith('/') && !next.startsWith('//') ? next : '/me'
+const redirectTo =
+  next && next.startsWith('/') && !next.startsWith('//') ? next : '/me'
 
-const mode = Astro.url.searchParams.get('mode') === 'register' ? 'register' : 'login'
+const mode =
+  Astro.url.searchParams.get('mode') === 'register' ? 'register' : 'login'
 const action = mode === 'register' ? actions.register : actions.login
 
 const loginResult = Astro.getActionResult(actions.login)
 const registerResult = Astro.getActionResult(actions.register)
 
-if ((loginResult && !loginResult.error) || (registerResult && !registerResult.error)) {
-	return Astro.redirect(redirectTo)
+if (
+  (loginResult && !loginResult.error) ||
+  (registerResult && !registerResult.error)
+) {
+  return Astro.redirect(redirectTo)
 }
 
 const result = mode === 'register' ? registerResult : loginResult
 ---
 
 <Layout title={mode === 'register' ? '注册 · 边缘工会' : '登录 · 边缘工会'}>
-	<main>
-		<section class="auth-card auth-single">
-			<h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
+  <main>
+    <section class="auth-card auth-single">
+      <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
 
-			<form method="POST" action={action}>
-				<div class="form-group">
-					<label for="email">邮箱</label>
-					<input id="email" name="email" type="email" required maxlength="200" placeholder="you@example.com" />
-				</div>
-				<div class="form-group">
-					<label for="password">密码</label>
-					<input id="password" name="password" type="password" required minlength={mode === 'register' ? 8 : undefined} placeholder={mode === 'register' ? '至少 8 位' : undefined} />
-				</div>
+      <form method="POST" action={action}>
+        <label class="form-field" for="email">
+          邮箱
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            maxlength="200"
+            placeholder="you@example.com"
+          />
+        </label>
+        <label class="form-field" for="password">
+          密码
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            minlength={mode === 'register' ? 8 : undefined}
+            placeholder={mode === 'register' ? '至少 8 位' : undefined}
+          />
+        </label>
 
-				{result?.error && (
-					<div class="error">
-						{result.error.message && <p>{result.error.message}</p>}
-						{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
-					</div>
-				)}
+        {
+          result?.error && (
+            <div class="error">
+              {result.error.message && <p>{result.error.message}</p>}
+              {result.error.issues?.map(issue => (
+                <p>{issue.message}</p>
+              ))}
+            </div>
+          )
+        }
 
-				<button class="btn" type="submit">{mode === 'register' ? '注册' : '登录'}</button>
-			</form>
+        <button class="btn" type="submit"
+          >{mode === 'register' ? '注册' : '登录'}</button
+        >
+      </form>
 
-			<p class="auth-switch">
-				{mode === 'register' ? (
-					<>
-						已有账号？<a href={`/login?next=${encodeURIComponent(redirectTo)}`}>去登录</a>
-					</>
-				) : (
-					<>
-						没有账号？<a href={`/login?mode=register&next=${encodeURIComponent(redirectTo)}`}>去注册</a>
-					</>
-				)}
-			</p>
-		</section>
-	</main>
+      <p class="auth-switch">
+        {
+          mode === 'register' ? (
+            <>
+              已有账号？
+              <a href={`/login?next=${encodeURIComponent(redirectTo)}`}>
+                去登录
+              </a>
+            </>
+          ) : (
+            <>
+              没有账号？
+              <a
+                href={`/login?mode=register&next=${encodeURIComponent(redirectTo)}`}
+              >
+                去注册
+              </a>
+            </>
+          )
+        }
+      </p>
+    </section>
+  </main>
 </Layout>
