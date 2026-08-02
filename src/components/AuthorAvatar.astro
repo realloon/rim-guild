@@ -12,6 +12,7 @@ const { seed, name, href, size = 40 } = Astro.props
 ---
 
 <a class="author" href={href}>
+  {name}
   <img
     class="author-avatar"
     src={avatarUrl(seed, size)}
@@ -19,5 +20,4 @@ const { seed, name, href, size = 40 } = Astro.props
     height={size}
     alt=""
   />
-  {name}
 </a>

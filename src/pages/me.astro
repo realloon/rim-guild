@@ -109,147 +109,155 @@ if (result && !result.error) {
 
       <div class="profile-content">
         <section class="profile-card" id="profile">
-      <div class="profile-hero">
-        <div class="profile-identity">
-          <img
-            class="author-avatar"
-            src={avatarUrl(profileToken, 72)}
-            width={72}
-            height={72}
-            alt=""
-          />
-          <div>
-            <h1>{nickname}</h1>
-            <span class="profile-email" title="已登录账号">{loggedEmail}</span>
+          <div class="profile-hero">
+            <div class="profile-identity">
+              <img
+                class="author-avatar"
+                src={avatarUrl(profileToken, 72)}
+                width={72}
+                height={72}
+                alt=""
+              />
+              <div>
+                <h1>{nickname}</h1>
+                <span class="profile-email" title="已登录账号"
+                  >{loggedEmail}</span
+                >
+              </div>
+            </div>
+            <span class="profile-badge">已登录成员</span>
           </div>
-        </div>
-        <span class="profile-badge">已登录成员</span>
-      </div>
 
-      <form class="profile-form" method="POST" action={actions.updateProfile}>
-        <label class="form-field" for="authorName">
-          昵称
-          <input
-            id="authorName"
-            name="authorName"
-            required
-            maxlength="30"
-            value={nickname}
-            placeholder="例如：阿哲"
-          />
-        </label>
-        <CheckboxGroup
-          legend="创作者身份"
-          name="roles"
-          options={ROLE_TYPES}
-          checked={myRoles}
-        />
-        <fieldset class="form-section">
-          <legend>联系方式</legend>
-          <div class="contact-fields">
-            <label class="form-field" for="qq">
-              QQ 号
+          <form
+            class="profile-form"
+            method="POST"
+            action={actions.updateProfile}
+          >
+            <label class="form-field" for="authorName">
+              昵称
               <input
-                id="qq"
-                name="qq"
-                maxlength="50"
-                value={myQq}
-                placeholder="选填"
+                id="authorName"
+                name="authorName"
+                required
+                maxlength="30"
+                value={nickname}
+                placeholder="例如：阿哲"
               />
             </label>
-            <label class="form-field" for="github">
-              GitHub 账号
-              <input
-                id="github"
-                name="github"
-                maxlength="100"
-                value={myGithub}
-                placeholder="选填"
-              />
-            </label>
-            <label class="form-field" for="steam">
-              Steam 账号
-              <input
-                id="steam"
-                name="steam"
-                maxlength="100"
-                value={mySteam}
-                placeholder="选填"
-              />
-            </label>
-          </div>
-        </fieldset>
+            <CheckboxGroup
+              legend="创作者身份"
+              name="roles"
+              options={ROLE_TYPES}
+              checked={myRoles}
+            />
+            <fieldset class="form-section">
+              <legend>联系方式</legend>
+              <div class="contact-fields">
+                <label class="form-field" for="qq">
+                  QQ
+                  <input
+                    id="qq"
+                    name="qq"
+                    maxlength="50"
+                    value={myQq}
+                    placeholder="选填"
+                  />
+                </label>
+                <label class="form-field" for="github">
+                  GitHub
+                  <input
+                    id="github"
+                    name="github"
+                    maxlength="100"
+                    value={myGithub}
+                    placeholder="选填"
+                  />
+                </label>
+                <label class="form-field" for="steam">
+                  Steam
+                  <input
+                    id="steam"
+                    name="steam"
+                    maxlength="100"
+                    value={mySteam}
+                    placeholder="选填"
+                  />
+                </label>
+              </div>
+            </fieldset>
 
-        <ErrorBox error={result?.error} />
+            <ErrorBox error={result?.error} />
 
-        <button class="btn" type="submit">保存资料</button>
-      </form>
+            <button class="btn" type="submit">保存资料</button>
+          </form>
         </section>
 
         <section class="profile-section" id="posts">
-        <div class="section-heading">
-          <h2>我的需求</h2>
-          <span class="section-count">{posts.length} 条记录</span>
-        </div>
-      {
-        posts.length > 0 ? (
-          <ul class="post-list">
-            {posts.map(post => (
-              <PostListItem post={post} />
-            ))}
-          </ul>
-        ) : (
-          <p class="empty">你还没有发布过需求</p>
-        )
-      }
+          <div class="section-heading">
+            <h2>我的需求</h2>
+            <span class="section-count">{posts.length} 条记录</span>
+          </div>
+          {
+            posts.length > 0 ? (
+              <ul class="post-list">
+                {posts.map(post => (
+                  <PostListItem post={post} />
+                ))}
+              </ul>
+            ) : (
+              <p class="empty">你还没有发布过需求</p>
+            )
+          }
         </section>
 
         <section class="profile-section" id="claims">
-        <div class="section-heading">
-          <h2>我的认领</h2>
-          <span class="section-count">{claimedRows.length} 条记录</span>
-        </div>
-      {
-        claimedRows.length > 0 ? (
-            <ul class="post-list">
-            {claimedRows.map(claim => (
-              <li>
-                <a class="post-card-link" href={`/posts/${claim.post_id}`}>
-                  <div class="post-card-top">
-                    <span class="post-card-type">
-                      <span
-                        class={`quest-pin quest-pin-${claim.role_status}`}
-                        aria-hidden="true"
-                      ></span>
-                      我的认领
-                    </span>
-                    <span class={`status status-${claim.role_status}`}>
-                      {roleStatusLabel(claim.role_status as 'open' | 'closed')}
-                    </span>
-                  </div>
-                  <h2>{claim.post_title}</h2>
-                  {claim.description && (
-                    <p class="post-excerpt">{claim.description}</p>
-                  )}
-                </a>
-                <div class="post-card-footer">
-                  <span class="tags">
-                    <span class="tag">
-                      {roleLabel(claim.role_type as RoleType)}
-                    </span>
-                  </span>
-                  <span class="meta-side">
-                    <span class="author-name">{claim.author_name}</span>
-                    <time>{formatDate(claim.created_at)}</time>
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="empty">你还没有认领过需求</p>
-        )
-      }
+          <div class="section-heading">
+            <h2>我的认领</h2>
+            <span class="section-count">{claimedRows.length} 条记录</span>
+          </div>
+          {
+            claimedRows.length > 0 ? (
+              <ul class="post-list">
+                {claimedRows.map(claim => (
+                  <li>
+                    <a class="post-card-link" href={`/posts/${claim.post_id}`}>
+                      <div class="post-card-top">
+                        <span class="post-card-type">
+                          <span
+                            class={`quest-pin quest-pin-${claim.role_status}`}
+                            aria-hidden="true"
+                          />
+                          我的认领
+                        </span>
+                        <span class={`status status-${claim.role_status}`}>
+                          {roleStatusLabel(
+                            claim.role_status as 'open' | 'closed',
+                          )}
+                        </span>
+                      </div>
+                      <h2>{claim.post_title}</h2>
+                      {claim.description && (
+                        <p class="post-excerpt">{claim.description}</p>
+                      )}
+                    </a>
+                    <div class="post-card-footer">
+                      <span class="tags">
+                        <span class="tag">
+                          {roleLabel(claim.role_type as RoleType)}
+                        </span>
+                      </span>
+                      <span class="meta-side">
+                        <span class="author-name">{claim.author_name}</span>
+                        <time>{formatDate(claim.created_at)}</time>
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="empty">你还没有认领过需求</p>
+            )
+          }
         </section>
       </div>
     </div>
@@ -290,7 +298,8 @@ if (result && !result.error) {
 
   .profile-index a span {
     color: var(--accent);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.63rem;
     font-weight: 700;
   }
@@ -302,13 +311,25 @@ if (result && !result.error) {
   }
 
   .profile-content > :is(.profile-card, .profile-section) {
-    scroll-margin-top: calc(var(--site-header-height) + var(--main-padding-top));
+    scroll-margin-top: calc(
+      var(--site-header-height) + var(--main-padding-top)
+    );
   }
 
   .contact-fields {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 14px;
+  }
+
+  .profile-form .form-section {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .profile-form .form-section legend {
+    margin-bottom: 18px;
   }
 
   .contact-fields .form-field {
@@ -327,10 +348,6 @@ if (result && !result.error) {
 
     .profile-index {
       display: none;
-    }
-
-    .contact-fields {
-      grid-template-columns: 1fr;
     }
   }
 </style>

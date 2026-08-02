@@ -123,7 +123,7 @@ p {
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+  text-wrap: nowrap;
   border: 0;
 }
 
@@ -258,6 +258,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
   color: var(--accent-strong);
   font-size: 0.88rem;
   font-weight: 700;
@@ -297,7 +298,7 @@ form {
   border: 1px solid var(--border-strong);
   border-radius: 3px;
   outline: 0;
-  background: var(--bg-raised);
+  background-color: var(--bg-raised);
   box-shadow: inset 0 1px 2px var(--control-shadow-color);
   color: var(--text);
   font-size: 0.93rem;
@@ -318,7 +319,7 @@ form :is(
     textarea
   ):focus {
   border-color: var(--accent);
-  background: var(--input-focus-bg);
+  background-color: var(--input-focus-bg);
   box-shadow: 0 0 0 3px var(--focus-ring-color);
 }
 
@@ -329,7 +330,17 @@ form textarea {
 }
 
 form select {
-  appearance: auto;
+  appearance: none;
+  cursor: pointer;
+  padding-right: 42px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-dim) 50%),
+    linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+  background-position:
+    calc(100% - 17px) 50%,
+    calc(100% - 12px) 50%;
+  background-repeat: no-repeat;
+  background-size: 5px 5px;
 }
 
 .form-field {
@@ -536,7 +547,7 @@ form select {
 
 .post-card-link {
   display: block;
-  padding: 20px 24px 0;
+  padding: 0 24px;
   text-decoration: none;
 }
 
@@ -558,6 +569,7 @@ form select {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+  padding: 20px 24px 0;
   margin-bottom: 11px;
 }
 
@@ -571,6 +583,13 @@ form select {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.post-card-top-meta {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
 }
 
 .post-card-date {
@@ -620,14 +639,6 @@ form select {
     0 1px 3px var(--shadow-small-color);
 }
 
-.live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 0 3px var(--forest-soft);
-}
-
 .post-excerpt {
   display: -webkit-box;
   margin: 0 0 15px;
@@ -643,8 +654,6 @@ form select {
 .post-card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   min-height: 52px;
   padding: 11px 24px 13px;
   border-top: 1px dashed var(--card-divider);
@@ -670,12 +679,6 @@ form select {
 time {
   color: var(--text-dim);
   font-size: 0.76rem;
-  white-space: nowrap;
-}
-
-.role-closed-count {
-  color: var(--text-dim);
-  font-size: 0.74rem;
   white-space: nowrap;
 }
 
@@ -875,14 +878,14 @@ time {
   }
 
   .post-card-link {
-    padding-left: 20px;
+    padding: 0 20px;
   }
 
   .post-card-footer {
     align-items: flex-start;
     flex-direction: column;
     gap: 11px;
-    padding-left: 20px;
+    padding: 11px 20px 13px;
   }
 
   .profile-hero {

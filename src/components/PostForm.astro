@@ -25,8 +25,8 @@ const submitLabel = post ? '保存修改' : '发布'
       removeBtn.hidden = false
       const select = pair.querySelector('select')!
       select.selectedIndex = 0
-      const descInput = pair.querySelector<HTMLInputElement>(
-        'input[name="roleDescriptions"]',
+      const descInput = pair.querySelector<HTMLTextAreaElement>(
+        'textarea[name="roleDescriptions"]',
       )!
       descInput.value = ''
       const countInput = pair.querySelector<HTMLInputElement>(
@@ -50,8 +50,8 @@ const submitLabel = post ? '保存修改' : '发布'
         if (pairs.querySelectorAll('.role-pair').length > 1) {
           pair.remove()
         } else {
-          const descInput = pair.querySelector<HTMLInputElement>(
-            'input[name="roleDescriptions"]',
+          const descInput = pair.querySelector<HTMLTextAreaElement>(
+            'textarea[name="roleDescriptions"]',
           )!
           descInput.value = ''
           const countInput = pair.querySelector<HTMLInputElement>(
@@ -111,14 +111,15 @@ const submitLabel = post ? '保存修改' : '发布'
                   </option>
                 ))}
               </select>
-              <input
+              <textarea
                 name="roleDescriptions"
                 required
                 aria-label="岗位说明"
-                value={role.description}
                 placeholder="面向该类型的具体需求……"
                 maxlength="2000"
-              />
+                rows="2"
+                >{role.description}</textarea
+              >
               <input
                 class="role-count"
                 name="roleCounts"
@@ -147,13 +148,14 @@ const submitLabel = post ? '保存修改' : '发布'
                 <option value={value}>{label}</option>
               ))}
             </select>
-            <input
+            <textarea
               name="roleDescriptions"
               required
               aria-label="岗位说明"
               placeholder="面向该类型的具体需求……"
               maxlength="2000"
-            />
+              rows="2"
+            ></textarea>
             <input
               class="role-count"
               name="roleCounts"
@@ -201,48 +203,83 @@ const submitLabel = post ? '保存修改' : '发布'
   .role-pairs {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    counter-reset: role-pair;
+    gap: 0;
   }
 
   .role-pair {
-    position: relative;
     display: grid;
     grid-template-columns: 132px minmax(0, 1fr) 76px 38px;
+    grid-template-rows: auto auto;
     gap: 8px;
     align-items: center;
-    counter-increment: role-pair;
-
-    &::before {
-      position: absolute;
-      top: 50%;
-      left: -42px;
-      color: var(--accent);
-      content: "0" counter(role-pair);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.64rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      transform: translateY(-50%);
-    }
+    padding-bottom: 16px;
 
     select,
-    input {
+    input,
+    textarea {
       min-width: 0;
+    }
+
+    select {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    textarea[name="roleDescriptions"] {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      min-height: 72px;
     }
   }
 
+  .role-pair + .role-pair {
+    padding-top: 16px;
+  }
+
+  .role-pair:last-child {
+    padding-bottom: 0;
+  }
+
+  form > .form-section {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  form > .form-section legend {
+    margin-bottom: 16px;
+  }
+
+  .role-pair :is(select, textarea, .role-count) {
+    border: 0;
+    border-bottom: 1px solid var(--border-strong);
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .role-pair :is(select, textarea, .role-count):focus {
+    border: 0;
+    border-bottom: 1px solid var(--accent);
+    background-color: transparent;
+    box-shadow: none;
+  }
+
   .role-count {
+    grid-column: 3;
+    grid-row: 1;
     width: 76px !important;
   }
 
   .remove-role {
+    grid-column: 4;
+    grid-row: 1;
     width: 32px;
     height: 32px;
     padding: 0;
     background: none;
-    border: 1px solid var(--border);
-    border-radius: 3px;
+    border: 0;
+    border-radius: 0;
     color: var(--text-dim);
     font-size: 1rem;
     line-height: 1;
@@ -255,9 +292,9 @@ const submitLabel = post ? '保存修改' : '发布'
 
   .add-role {
     margin-top: 12px;
-    padding: 7px 14px;
-    border: 1px dashed var(--border-strong);
-    border-radius: 3px;
+    padding: 7px 0;
+    border: 0;
+    border-radius: 0;
     background: transparent;
     color: var(--text-dim);
     font-size: 0.8rem;
@@ -289,14 +326,8 @@ const submitLabel = post ? '保存修改' : '发布'
       padding-left: 28px;
     }
 
-    .role-pair::before {
-      top: 17px;
-      left: 0;
-      transform: none;
-    }
-
     .role-pair select,
-    .role-pair input[name="roleDescriptions"] {
+    .role-pair textarea[name="roleDescriptions"] {
       grid-column: 1 / -1;
     }
 
