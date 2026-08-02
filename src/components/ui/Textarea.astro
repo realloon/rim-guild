@@ -1,0 +1,42 @@
+---
+const attrs = Astro.props
+---
+
+<textarea {...attrs} data-auto-resize><slot /></textarea>
+
+<script>
+  const resize = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'auto'
+    textarea.style.overflowY = 'hidden'
+
+    const maxHeight = Number.parseFloat(getComputedStyle(textarea).maxHeight)
+    const height = Math.min(textarea.scrollHeight, maxHeight)
+    textarea.style.height = `${height}px`
+    textarea.style.overflowY =
+      textarea.scrollHeight > height ? 'auto' : 'hidden'
+  }
+
+  const setup = () => {
+    document
+      .querySelectorAll<HTMLTextAreaElement>(
+        'textarea[data-auto-resize]:not([data-auto-resize-ready])',
+      )
+      .forEach(textarea => {
+        textarea.dataset.autoResizeReady = 'true'
+        textarea.addEventListener('input', () => resize(textarea))
+        resize(textarea)
+      })
+  }
+
+  setup()
+  document.addEventListener('astro:page-load', setup)
+</script>
+
+<style>
+  textarea[data-auto-resize] {
+    min-height: calc(3.4em + 20px);
+    max-height: calc(10.2em + 20px);
+    overflow-y: hidden;
+    resize: none;
+  }
+</style>

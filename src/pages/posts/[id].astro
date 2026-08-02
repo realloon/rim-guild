@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
 import ErrorBox from '../../components/ui/ErrorBox.astro'
+import Textarea from '../../components/ui/Textarea.astro'
 import {
   POST_SELECT,
   postFromRow,
@@ -186,7 +187,10 @@ for (const resp of responseRows) {
                             <span class="response-label">已加入</span>
                             <div class="response-avatars">
                               {responses.map(resp => (
-                                <a class="author" href={`/authors/${resp.author_id}`}>
+                                <a
+                                  class="author"
+                                  href={`/authors/${resp.author_id}`}
+                                >
                                   <img
                                     class="author-avatar"
                                     src={avatarUrl(resp.profile_token, 30)}
@@ -203,16 +207,34 @@ for (const resp of responseRows) {
 
                         <div class="role-actions">
                           {isOwner ? (
-                            <form method="POST" action={actions.updateRoleStatus}>
-                              <input type="hidden" name="postId" value={post.id} />
-                              <input type="hidden" name="roleType" value={role.type} />
+                            <form
+                              method="POST"
+                              action={actions.updateRoleStatus}
+                            >
+                              <input
+                                type="hidden"
+                                name="postId"
+                                value={post.id}
+                              />
+                              <input
+                                type="hidden"
+                                name="roleType"
+                                value={role.type}
+                              />
                               <input
                                 type="hidden"
                                 name="status"
-                                value={role.status === 'open' ? 'closed' : 'open'}
+                                value={
+                                  role.status === 'open' ? 'closed' : 'open'
+                                }
                               />
-                              <button class="btn btn-ghost btn-sm" type="submit">
-                                {role.status === 'open' ? '停止招募' : '重新开放'}
+                              <button
+                                class="btn btn-ghost btn-sm"
+                                type="submit"
+                              >
+                                {role.status === 'open'
+                                  ? '停止招募'
+                                  : '重新开放'}
                               </button>
                             </form>
                           ) : role.status === 'open' ? (
@@ -224,20 +246,37 @@ for (const resp of responseRows) {
                                 登录后认领
                               </a>
                             ) : registered ? (
-                              <form method="POST" action={actions.cancelInterest}>
-                                <input type="hidden" name="postId" value={post.id} />
+                              <form
+                                method="POST"
+                                action={actions.cancelInterest}
+                              >
+                                <input
+                                  type="hidden"
+                                  name="postId"
+                                  value={post.id}
+                                />
                                 <input
                                   type="hidden"
                                   name="roleType"
                                   value={role.type}
                                 />
-                                <button class="btn btn-ghost btn-sm" type="submit">
+                                <button
+                                  class="btn btn-ghost btn-sm"
+                                  type="submit"
+                                >
                                   取消认领
                                 </button>
                               </form>
                             ) : (
-                              <form method="POST" action={actions.registerInterest}>
-                                <input type="hidden" name="postId" value={post.id} />
+                              <form
+                                method="POST"
+                                action={actions.registerInterest}
+                              >
+                                <input
+                                  type="hidden"
+                                  name="postId"
+                                  value={post.id}
+                                />
                                 <input
                                   type="hidden"
                                   name="roleType"
@@ -274,16 +313,22 @@ for (const resp of responseRows) {
                   <p class="field-note">还没有更新</p>
                 )}
                 {isOwner && (
-                  <form class="update-form" method="POST" action={actions.addPostUpdate}>
+                  <form
+                    class="update-form"
+                    method="POST"
+                    action={actions.addPostUpdate}
+                  >
                     <input type="hidden" name="postId" value={post.id} />
-                    <textarea
+                    <Textarea
                       name="content"
                       required
                       maxlength="1000"
                       placeholder="发布项目进展，例如：画师已加入，还在找开发者……"
                     />
                     <ErrorBox error={updateResult?.error} />
-                    <button class="btn btn-sm" type="submit">发布更新</button>
+                    <button class="btn btn-sm" type="submit">
+                      发布更新
+                    </button>
                   </form>
                 )}
               </section>
@@ -304,23 +349,29 @@ for (const resp of responseRows) {
                 {post.author_qq && <div>QQ：{post.author_qq}</div>}
                 {post.author_github && <div>GitHub：{post.author_github}</div>}
                 {post.author_steam && <div>Steam：{post.author_steam}</div>}
-                {!post.author_qq && !post.author_github && !post.author_steam && (
-                  <div>未填写</div>
-                )}
+                {!post.author_qq &&
+                  !post.author_github &&
+                  !post.author_steam && <div>未填写</div>}
               </section>
 
-              <p class="aside-note">如果你对这个项目感兴趣，可以先认领一个开放岗位，再通过联系方式开始交流。</p>
+              <p class="aside-note">
+                如果你对这个项目感兴趣，可以先认领一个开放岗位，再通过联系方式开始交流。
+              </p>
 
               {isOwner && (
                 <div class="post-owner-actions">
-                  <a class="btn btn-ghost" href={`/posts/${post.id}/edit`}>编辑需求</a>
+                  <a class="btn btn-ghost" href={`/posts/${post.id}/edit`}>
+                    编辑需求
+                  </a>
                   <form
                     method="POST"
                     action={actions.deletePost}
                     data-confirm="确定删除这条需求吗？删除后不可恢复。"
                   >
                     <input type="hidden" name="postId" value={post.id} />
-                    <button class="btn btn-danger" type="submit">删除</button>
+                    <button class="btn btn-danger" type="submit">
+                      删除
+                    </button>
                   </form>
                 </div>
               )}
