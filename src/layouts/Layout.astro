@@ -91,11 +91,13 @@ const isHome = Astro.url.pathname === '/'
       </div>
 
       <div id="profile-menu" class="profile-menu" popover>
-        <span class="menu-label">账户</span>
         {
           profileToken ? (
             <>
-              <a href="/me">我的主页</a>
+              <a href="/me#profile">个人资料</a>
+              <a href="/me#posts">我的需求</a>
+              <a href="/me#claims">我的认领</a>
+              <hr />
               <form method="POST" action={actions.logout}>
                 <button class="menu-item" type="submit">
                   登出
@@ -305,14 +307,11 @@ const isHome = Astro.url.pathname === '/'
     background: transparent;
   }
 
-  .menu-label {
-    display: block;
-    padding: 7px 11px 5px;
-    color: var(--text-dim);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.61rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+  .profile-menu hr {
+    height: 1px;
+    margin: 8px 4px;
+    border: 0;
+    background: var(--border);
   }
 
   .profile-menu a,
