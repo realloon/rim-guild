@@ -1,6 +1,7 @@
 ---
 import '../assets/styles/main.css'
 import { avatarUrl } from '../lib/avatar'
+import { actions } from 'astro:actions'
 
 interface Props {
 	title?: string
@@ -27,14 +28,25 @@ const profileToken = Astro.locals.auth?.profileToken ?? null
 				<div class="header-actions">
 					{back && <a class="btn btn-ghost" href="/">返回列表</a>}
 					<a class="btn" href={profileToken ? '/posts/new' : '/login?next=/posts/new'}>发布需求</a>
-					{profileToken ? (
-						<a class="header-profile" href="/me" title="我的主页">
+					<button class="header-profile" type="button" popovertarget="profile-menu" title="菜单">
+						{profileToken ? (
 							<img class="author-avatar" src={avatarUrl(profileToken, 32)} width={32} height={32} alt="我的头像" />
-						</a>
-					) : (
-						<a class="header-profile" href="/login?next=/me" title="登录">
+						) : (
 							<span class="header-profile-placeholder" aria-hidden="true"></span>
-						</a>
+						)}
+					</button>
+				</div>
+
+				<div id="profile-menu" class="profile-menu" popover>
+					{profileToken ? (
+						<>
+							<a href="/me">我的主页</a>
+							<form method="POST" action={actions.logout}>
+								<button class="menu-item" type="submit">登出</button>
+							</form>
+						</>
+					) : (
+						<a href="/login?next=/me">登录</a>
 					)}
 				</div>
 			</header>
