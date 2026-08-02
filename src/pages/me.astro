@@ -88,7 +88,7 @@ if (result && !result.error) {
 ---
 
 <Layout title="我的主页 · 边缘工会">
-  <main class="profile-page">
+  <main>
     <div class="profile-layout">
       <aside class="profile-index">
         <nav aria-label="个人主页索引">
@@ -215,7 +215,7 @@ if (result && !result.error) {
       </div>
       {
         claimedRows.length > 0 ? (
-            <ul class="post-list claim-list">
+            <ul class="post-list">
             {claimedRows.map(claim => (
               <li>
                 <a class="post-card-link" href={`/posts/${claim.post_id}`}>

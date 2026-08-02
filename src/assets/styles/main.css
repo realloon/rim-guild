@@ -213,12 +213,6 @@ p {
   color: var(--on-forest);
 }
 
-.btn-secondary {
-  background: var(--forest);
-  box-shadow: 0 3px 0 var(--forest-shadow-color);
-  color: var(--on-forest);
-}
-
 .btn-ghost {
   background: transparent;
   border-color: var(--border-strong);
@@ -871,10 +865,6 @@ time {
 }
 
 @media (max-width: 700px) {
-  body {
-    padding: 0;
-  }
-
   main {
     padding-top: 32px;
     padding-bottom: 64px;

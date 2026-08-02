@@ -42,7 +42,7 @@ if (result && !result.error && post) {
     {
       post ? (
         isOwner ? (
-          <div class="editor-page">
+          <>
             <div class="page-heading">
               <div>
                 <h1>编辑项目需求</h1>
@@ -54,7 +54,7 @@ if (result && !result.error && post) {
               <PostForm post={post} />
               <ErrorBox error={result?.error} />
             </section>
-          </div>
+          </>
         ) : (
           <p class="not-found">你没有权限编辑这条需求</p>
         )
@@ -66,14 +66,6 @@ if (result && !result.error && post) {
 </Layout>
 
 <style>
-  main {
-    padding-top: clamp(36px, 6vw, 76px);
-  }
-
-  .editor-page {
-    padding-top: 0;
-  }
-
   .editor-card {
     padding: clamp(22px, 5vw, 46px);
     border: 1px solid var(--border);

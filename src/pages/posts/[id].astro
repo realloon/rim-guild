@@ -117,7 +117,7 @@ for (const resp of responseRows) {
   title={post ? `${post.title} · 边缘工会` : '需求不存在 · 边缘工会'}
   back
 >
-  <main class="detail-page">
+  <main>
     {
       post ? (
         <article class="post-detail">
@@ -136,7 +136,7 @@ for (const resp of responseRows) {
           </header>
 
           <div class="detail-columns">
-            <div class="detail-main">
+            <div>
               {post.description && (
                 <div class="detail-description">
                   <p>{post.description}</p>
