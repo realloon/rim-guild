@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
+import ErrorBox from '../../components/ui/ErrorBox.astro'
 import {
   POST_SELECT,
   postFromRow,
@@ -269,16 +270,7 @@ for (const resp of responseRows) {
                   maxlength="1000"
                   placeholder="发布项目进展，例如：画师已加入，还在找开发者……"
                 />
-                {updateResult?.error && (
-                  <div class="error">
-                    {updateResult.error.message && (
-                      <p>{updateResult.error.message}</p>
-                    )}
-                    {updateResult.error.issues?.map(issue => (
-                      <p>{issue.message}</p>
-                    ))}
-                  </div>
-                )}
+                <ErrorBox error={updateResult?.error} />
                 <button class="btn btn-sm" type="submit">
                   发布更新
                 </button>
@@ -304,24 +296,14 @@ for (const resp of responseRows) {
             </div>
           )}
 
-          {(roleStatusResult?.error ||
-            deleteResult?.error ||
-            interestResult?.error ||
-            cancelResult?.error) && (
-            <div class="error">
-              {(roleStatusResult?.error?.message ??
-                deleteResult?.error?.message ??
-                interestResult?.error?.message ??
-                cancelResult?.error?.message) && (
-                <p>
-                  {roleStatusResult?.error?.message ??
-                    deleteResult?.error?.message ??
-                    interestResult?.error?.message ??
-                    cancelResult?.error?.message}
-                </p>
-              )}
-            </div>
-          )}
+          <ErrorBox
+            error={
+              roleStatusResult?.error ??
+              deleteResult?.error ??
+              interestResult?.error ??
+              cancelResult?.error
+            }
+          />
         </article>
       ) : (
         <p class="not-found">该需求不存在或已被删除</p>
@@ -333,7 +315,8 @@ for (const resp of responseRows) {
 <style>
   .post-detail h1 {
     font-size: 1.4rem;
-    margin: 0 0 0.5rem;
+    margin: 0 0 8px;
+    line-height: 1.5;
   }
 
   .post-detail .description {
@@ -341,15 +324,16 @@ for (const resp of responseRows) {
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
+    padding: 16px;
+    margin-bottom: 24px;
+    line-height: 1.5;
   }
 
   .post-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
+    gap: 8px;
+    margin-bottom: 16px;
   }
 
   .tag-muted {
@@ -360,21 +344,21 @@ for (const resp of responseRows) {
   .role-requirements {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: 8px;
+    margin-bottom: 24px;
   }
 
   .role-requirement {
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 0.9rem 1.1rem;
+    padding: 16px;
   }
 
   .role-requirement-head {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 8px;
   }
 
   .role-requirement-head .status {
@@ -387,12 +371,13 @@ for (const resp of responseRows) {
   }
 
   .role-requirement form {
-    margin-top: 0.75rem;
+    margin-top: 8px;
   }
 
   .role-requirement p {
-    margin: 0.5rem 0 0;
+    margin: 8px 0 0;
     white-space: pre-wrap;
+    line-height: 1.5;
   }
 
   .role-closed {
@@ -401,23 +386,23 @@ for (const resp of responseRows) {
 
   .response-avatars {
     display: flex;
-    gap: 0.35rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
     border-top: 1px dashed var(--border);
   }
 
   .contact-box {
     border: 1px dashed var(--accent);
     border-radius: 8px;
-    padding: 0.9rem 1.1rem;
+    padding: 16px;
     color: var(--accent-strong);
   }
 
   .contact-box strong {
     display: block;
     color: var(--text);
-    margin-bottom: 0.25rem;
+    margin-bottom: 4px;
   }
 
   .contact-line {
@@ -425,38 +410,39 @@ for (const resp of responseRows) {
   }
 
   .post-updates {
-    margin: 1.5rem 0;
+    margin: 24px 0;
   }
 
   .post-updates h2 {
     font-size: 1rem;
-    margin: 0 0 0.75rem;
+    margin: 0 0 8px;
   }
 
   .post-updates form > textarea {
     display: block;
-    margin-bottom: 1.1rem;
+    margin-bottom: 16px;
   }
 
   .update-list {
     list-style: none;
-    margin: 0 0 1rem;
+    margin: 0 0 16px;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 8px;
   }
 
   .update-list li {
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 0.9rem 1.1rem;
+    padding: 16px;
   }
 
   .update-list p {
-    margin: 0 0 0.35rem;
+    margin: 0 0 4px;
     white-space: pre-wrap;
+    line-height: 1.5;
   }
 
   .update-list time {
@@ -466,8 +452,8 @@ for (const resp of responseRows) {
 
   .post-owner-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 8px;
     align-items: center;
-    margin-top: 1.5rem;
+    margin-top: 24px;
   }
 </style>

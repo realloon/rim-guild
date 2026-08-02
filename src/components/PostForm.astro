@@ -1,6 +1,7 @@
 ---
 import { actions } from 'astro:actions'
-import { POST_TAGS, ROLE_TYPES, type Post, type PostTag } from '../lib/posts'
+import { POST_TAGS, ROLE_TYPES, type Post } from '../lib/posts'
+import CheckboxGroup from './ui/CheckboxGroup.astro'
 
 interface Props {
   post?: Post
@@ -88,24 +89,12 @@ const submitLabel = post ? '保存修改' : '发布'
     >
   </label>
 
-  <fieldset class="form-options">
-    <legend>项目标签（可多选）</legend>
-    <div class="role-checkboxes">
-      {
-        Object.entries(POST_TAGS).map(([value, label]) => (
-          <label class="role-checkbox">
-            <input
-              type="checkbox"
-              name="tags"
-              value={value}
-              checked={post?.tags.includes(value as PostTag)}
-            />
-            {label}
-          </label>
-        ))
-      }
-    </div>
-  </fieldset>
+  <CheckboxGroup
+    legend="项目标签（可多选）"
+    name="tags"
+    options={POST_TAGS}
+    checked={post?.tags ?? []}
+  />
 
   <fieldset class="form-section">
     <legend>招揽需求</legend>
@@ -186,19 +175,19 @@ const submitLabel = post ? '保存修改' : '发布'
   .role-pairs {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 8px;
   }
 
   .role-pair {
     display: flex;
-    gap: 0.5rem;
+    gap: 8px;
     align-items: center;
   }
 
   .role-pair select {
     flex-shrink: 0;
     width: auto;
-    min-width: 6.5rem;
+    min-width: 104px;
   }
 
   .role-pair input {
@@ -207,13 +196,13 @@ const submitLabel = post ? '保存修改' : '发布'
 
   .role-count {
     flex: 0 0 auto;
-    width: 4.5rem !important;
+    width: 72px !important;
   }
 
   .remove-role {
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
+    width: 32px;
+    height: 32px;
     box-sizing: border-box;
     background: none;
     border: 1px solid var(--border);
@@ -229,12 +218,12 @@ const submitLabel = post ? '保存修改' : '发布'
   }
 
   .add-role {
-    margin-top: 0.5rem;
+    margin-top: 8px;
     background: none;
     border: 1px dashed var(--border);
     border-radius: 6px;
     color: var(--text-dim);
-    padding: 0.4rem 0.9rem;
+    padding: 4px 16px;
     cursor: pointer;
   }
 

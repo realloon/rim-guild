@@ -1,29 +1,25 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import PostForm from '../../components/PostForm.astro'
+import ErrorBox from '../../components/ui/ErrorBox.astro'
 import { actions } from 'astro:actions'
 
 if (!Astro.locals.auth) {
-	return Astro.redirect('/login?next=/posts/new')
+  return Astro.redirect('/login?next=/posts/new')
 }
 
 const result = Astro.getActionResult(actions.createPost)
 
 if (result && !result.error) {
-	return Astro.redirect(`/posts/${result.data.id}`)
+  return Astro.redirect(`/posts/${result.data.id}`)
 }
 ---
 
 <Layout title="发布需求 · 边缘工会">
-	<main>
-		<h2>发布项目需求</h2>
-		<PostForm />
+  <main>
+    <h2>发布项目需求</h2>
+    <PostForm />
 
-		{result?.error && (
-			<div class="error">
-				{result.error.message && <p>{result.error.message}</p>}
-				{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
-			</div>
-		)}
-	</main>
+    <ErrorBox error={result?.error} />
+  </main>
 </Layout>

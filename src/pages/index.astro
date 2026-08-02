@@ -1,12 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import AuthorAvatar from '../components/AuthorAvatar.astro'
+import PostListItem from '../components/PostListItem.astro'
 import {
   ROLE_TYPES,
   POST_SELECT,
   postFromRow,
-  roleLabel,
-  formatDate,
   type Post,
   type PostRow,
   type RoleType,
@@ -94,32 +92,7 @@ const posts: Post[] = results.map(postFromRow)
           <h2>适合你的需求</h2>
           <ul class="post-list">
             {recommended.map(post => (
-              <li>
-                <a href={`/posts/${post.id}`}>
-                  <h2>{post.title}</h2>
-                  {post.description && (
-                    <p class="post-excerpt">{post.description}</p>
-                  )}
-                  <div class="post-meta">
-                    <span class="tags">
-                      {post.roles
-                        .filter(role => role.status === 'open')
-                        .map(role => (
-                          <span class="tag">{roleLabel(role.type)}</span>
-                        ))}
-                    </span>
-                    <span class="meta-side">
-                      <AuthorAvatar
-                        seed={post.author_token}
-                        name={post.author_name}
-                        href={`/authors/${post.author_id}`}
-                        size={28}
-                      />
-                      <time>{formatDate(post.created_at)}</time>
-                    </span>
-                  </div>
-                </a>
-              </li>
+              <PostListItem post={post} showClosedCount={false} />
             ))}
           </ul>
         </section>
@@ -163,44 +136,7 @@ const posts: Post[] = results.map(postFromRow)
       posts.length > 0 ? (
         <ul class="post-list">
           {posts.map(post => (
-            <li>
-              <a href={`/posts/${post.id}`}>
-                <h2>{post.title}</h2>
-                {post.description && (
-                  <p class="post-excerpt">{post.description}</p>
-                )}
-                <div class="post-meta">
-                  <span class="tags">
-                    {post.roles
-                      .filter(role => role.status === 'open')
-                      .map(role => (
-                        <span class="tag">{roleLabel(role.type)}</span>
-                      ))}
-                  </span>
-                  <span class="meta-side">
-                    {(() => {
-                      const closedCount = post.roles.filter(
-                        role => role.status === 'closed',
-                      ).length
-                      return (
-                        closedCount > 0 && (
-                          <span class="role-closed-count">
-                            已招到 {closedCount}/{post.roles.length}
-                          </span>
-                        )
-                      )
-                    })()}
-                    <AuthorAvatar
-                      seed={post.author_token}
-                      name={post.author_name}
-                      href={`/authors/${post.author_id}`}
-                      size={28}
-                    />
-                    <time>{formatDate(post.created_at)}</time>
-                  </span>
-                </div>
-              </a>
-            </li>
+            <PostListItem post={post} />
           ))}
         </ul>
       ) : (
@@ -214,25 +150,25 @@ const posts: Post[] = results.map(postFromRow)
 
 <style>
   .recommended {
-    margin-bottom: 1.5rem;
+    margin-bottom: 24px;
   }
 
   .recommended h2 {
     font-size: 1rem;
-    margin: 0 0 0.75rem;
+    margin: 0 0 8px;
     color: var(--accent-strong);
   }
 
   .search-bar {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 8px;
+    margin-bottom: 16px;
   }
 
   .search-bar input {
     flex: 1;
     box-sizing: border-box;
-    padding: 0.55rem 0.8rem;
+    padding: 8px 12px;
     background: var(--bg-raised);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -248,12 +184,12 @@ const posts: Post[] = results.map(postFromRow)
   .role-filter {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
+    gap: 8px;
+    margin-bottom: 24px;
   }
 
   .role-filter a {
-    padding: 0.3rem 0.9rem;
+    padding: 4px 16px;
     border: 1px solid var(--border);
     border-radius: 999px;
     color: var(--text-dim);

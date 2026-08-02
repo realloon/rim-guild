@@ -1,0 +1,41 @@
+---
+import AuthorAvatar from './AuthorAvatar.astro'
+import { roleLabel, formatDate, type Post } from '../lib/posts'
+
+interface Props {
+  post: Post
+  showClosedCount?: boolean
+}
+
+const { post, showClosedCount = true } = Astro.props
+const openRoles = post.roles.filter(role => role.status === 'open')
+const closedCount = post.roles.length - openRoles.length
+---
+
+<li>
+  <a href={`/posts/${post.id}`}>
+    <h2>{post.title}</h2>
+    {post.description && <p class="post-excerpt">{post.description}</p>}
+    <div class="post-meta">
+      <span class="tags">
+        {openRoles.map(role => <span class="tag">{roleLabel(role.type)}</span>)}
+      </span>
+      <span class="meta-side">
+        {
+          showClosedCount && closedCount > 0 && (
+            <span class="role-closed-count">
+              已招到 {closedCount}/{post.roles.length}
+            </span>
+          )
+        }
+        <AuthorAvatar
+          seed={post.author_token}
+          name={post.author_name}
+          href={`/authors/${post.author_id}`}
+          size={28}
+        />
+        <time>{formatDate(post.created_at)}</time>
+      </span>
+    </div>
+  </a>
+</li>

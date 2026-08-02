@@ -1,0 +1,18 @@
+---
+interface Props {
+  error?: { message?: string; issues?: { message: string }[] } | null
+}
+
+const { error } = Astro.props
+---
+
+{
+  error && (
+    <div class="error">
+      {error.message && <p>{error.message}</p>}
+      {error.issues?.map(issue => (
+        <p>{issue.message}</p>
+      ))}
+    </div>
+  )
+}

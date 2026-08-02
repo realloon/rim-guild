@@ -1,0 +1,29 @@
+---
+interface Props {
+  legend: string
+  name: string
+  options: Record<string, string>
+  checked: string[]
+}
+
+const { legend, name, options, checked } = Astro.props
+---
+
+<fieldset class="form-options">
+  <legend>{legend}</legend>
+  <div class="role-checkboxes">
+    {
+      Object.entries(options).map(([value, label]) => (
+        <label class="role-checkbox">
+          <input
+            type="checkbox"
+            name={name}
+            value={value}
+            checked={checked.includes(value)}
+          />
+          {label}
+        </label>
+      ))
+    }
+  </div>
+</fieldset>

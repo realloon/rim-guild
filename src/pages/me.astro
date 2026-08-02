@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import PostListItem from '../components/PostListItem.astro'
+import ErrorBox from '../components/ui/ErrorBox.astro'
+import CheckboxGroup from '../components/ui/CheckboxGroup.astro'
 import {
   POST_SELECT,
   ROLE_TYPES,
@@ -109,24 +112,12 @@ if (result && !result.error) {
             placeholder="例如：阿哲"
           />
         </label>
-        <fieldset class="form-options">
-          <legend>我的身份（可多选）</legend>
-          <div class="role-checkboxes">
-            {
-              Object.entries(ROLE_TYPES).map(([value, label]) => (
-                <label class="role-checkbox">
-                  <input
-                    type="checkbox"
-                    name="roles"
-                    value={value}
-                    checked={myRoles.includes(value as RoleType)}
-                  />
-                  {label}
-                </label>
-              ))
-            }
-          </div>
-        </fieldset>
+        <CheckboxGroup
+          legend="我的身份（可多选）"
+          name="roles"
+          options={ROLE_TYPES}
+          checked={myRoles}
+        />
         <fieldset class="form-section">
           <legend>联系方式</legend>
           <label class="form-field" for="qq">
@@ -161,16 +152,7 @@ if (result && !result.error) {
           </label>
         </fieldset>
 
-        {
-          result?.error && (
-            <div class="error">
-              {result.error.message && <p>{result.error.message}</p>}
-              {result.error.issues?.map(issue => (
-                <p>{issue.message}</p>
-              ))}
-            </div>
-          )
-        }
+        <ErrorBox error={result?.error} />
 
         <button class="btn" type="submit">保存</button>
       </form>
@@ -181,38 +163,7 @@ if (result && !result.error) {
       posts.length > 0 ? (
         <ul class="post-list">
           {posts.map(post => (
-            <li>
-              <a href={`/posts/${post.id}`}>
-                <h2>{post.title}</h2>
-                {post.description && (
-                  <p class="post-excerpt">{post.description}</p>
-                )}
-                <div class="post-meta">
-                  <span class="tags">
-                    {post.roles
-                      .filter(role => role.status === 'open')
-                      .map(role => (
-                        <span class="tag">{roleLabel(role.type)}</span>
-                      ))}
-                  </span>
-                  <span class="meta-side">
-                    {(() => {
-                      const closedCount = post.roles.filter(
-                        role => role.status === 'closed',
-                      ).length
-                      return (
-                        closedCount > 0 && (
-                          <span class="role-closed-count">
-                            已招到 {closedCount}/{post.roles.length}
-                          </span>
-                        )
-                      )
-                    })()}
-                    <time>{formatDate(post.created_at)}</time>
-                  </span>
-                </div>
-              </a>
-            </li>
+            <PostListItem post={post} />
           ))}
         </ul>
       ) : (

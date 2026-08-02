@@ -1,7 +1,13 @@
 ---
 import Layout from '../../../layouts/Layout.astro'
 import PostForm from '../../../components/PostForm.astro'
-import { POST_SELECT, postFromRow, type Post, type PostRow } from '../../../lib/posts'
+import ErrorBox from '../../../components/ui/ErrorBox.astro'
+import {
+  POST_SELECT,
+  postFromRow,
+  type Post,
+  type PostRow,
+} from '../../../lib/posts'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
@@ -9,45 +15,45 @@ const db = env.rim_guild_db
 const { id } = Astro.params
 
 const row = await db
-	.prepare(`${POST_SELECT} WHERE p.id = ? GROUP BY p.id`)
-	.bind(Number(id))
-	.first<PostRow>()
+  .prepare(`${POST_SELECT} WHERE p.id = ? GROUP BY p.id`)
+  .bind(Number(id))
+  .first<PostRow>()
 
 const post: Post | undefined = row ? postFromRow(row) : undefined
 const isOwner = !!post && Astro.locals.auth?.profileToken === post.author_token
 
 if (!post) {
-	Astro.response.status = 404
+  Astro.response.status = 404
 } else if (!isOwner) {
-	Astro.response.status = 403
+  Astro.response.status = 403
 }
 
 const result = Astro.getActionResult(actions.updatePost)
 if (result && !result.error && post) {
-	return Astro.redirect(`/posts/${post.id}`)
+  return Astro.redirect(`/posts/${post.id}`)
 }
 ---
 
-<Layout title={post ? `编辑 ${post.title} · 边缘工会` : '需求不存在 · 边缘工会'} back>
-	<main>
-		{post ? (
-			isOwner ? (
-				<>
-					<h2>编辑项目需求</h2>
-					<PostForm post={post} />
+<Layout
+  title={post ? `编辑 ${post.title} · 边缘工会` : '需求不存在 · 边缘工会'}
+  back
+>
+  <main>
+    {
+      post ? (
+        isOwner ? (
+          <>
+            <h2>编辑项目需求</h2>
+            <PostForm post={post} />
 
-					{result?.error && (
-						<div class="error">
-							{result.error.message && <p>{result.error.message}</p>}
-							{result.error.issues?.map((issue) => <p>{issue.message}</p>)}
-						</div>
-					)}
-				</>
-			) : (
-				<p class="not-found">你没有权限编辑这条需求</p>
-			)
-		) : (
-			<p class="not-found">该需求不存在或已被删除</p>
-		)}
-	</main>
+            <ErrorBox error={result?.error} />
+          </>
+        ) : (
+          <p class="not-found">你没有权限编辑这条需求</p>
+        )
+      ) : (
+        <p class="not-found">该需求不存在或已被删除</p>
+      )
+    }
+  </main>
 </Layout>

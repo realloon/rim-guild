@@ -1,10 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro'
+import PostListItem from '../../components/PostListItem.astro'
 import {
   POST_SELECT,
   postFromRow,
   roleLabel,
-  formatDate,
   type Post,
   type PostRow,
   type RoleType,
@@ -95,38 +95,7 @@ if (!profile) {
           {posts.length > 0 ? (
             <ul class="post-list">
               {posts.map(post => (
-                <li>
-                  <a href={`/posts/${post.id}`}>
-                    <h2>{post.title}</h2>
-                    {post.description && (
-                      <p class="post-excerpt">{post.description}</p>
-                    )}
-                    <div class="post-meta">
-                      <span class="tags">
-                        {post.roles
-                          .filter(role => role.status === 'open')
-                          .map(role => (
-                            <span class="tag">{roleLabel(role.type)}</span>
-                          ))}
-                      </span>
-                      <span class="meta-side">
-                        {(() => {
-                          const closedCount = post.roles.filter(
-                            role => role.status === 'closed',
-                          ).length
-                          return (
-                            closedCount > 0 && (
-                              <span class="role-closed-count">
-                                已招到 {closedCount}/{post.roles.length}
-                              </span>
-                            )
-                          )
-                        })()}
-                        <time>{formatDate(post.created_at)}</time>
-                      </span>
-                    </div>
-                  </a>
-                </li>
+                <PostListItem post={post} />
               ))}
             </ul>
           ) : (
