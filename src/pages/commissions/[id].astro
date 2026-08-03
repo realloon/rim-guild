@@ -144,6 +144,7 @@ for (const claim of claimRows) {
                 name={commission.author_name}
                 href={`/authors/${commission.author_id}`}
                 size={32}
+                avatarSide="left"
               />
               <span class="meta-separator">/</span>
               <time>{formatDate(commission.created_at)}</time>
@@ -462,7 +463,7 @@ for (const claim of claimRows) {
   .detail-columns {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(230px, 280px);
-    gap: clamp(40px, 7vw, 92px);
+    gap: 24px;
     padding-top: 44px;
   }
 

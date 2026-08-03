@@ -6,18 +6,26 @@ interface Props {
   name: string
   href: string
   size?: number
+  avatarSide?: 'left' | 'right'
 }
 
-const { seed, name, href, size = 40 } = Astro.props
+const { seed, name, href, size = 40, avatarSide = 'left' } = Astro.props
 ---
 
 <a class="author" href={href}>
-  {name}
   <img
+    class:list={{ 'author-avatar-right': avatarSide === 'right' }}
     class="author-avatar"
     src={avatarUrl(seed, size)}
     width={size}
     height={size}
     alt=""
   />
+  {name}
 </a>
+
+<style>
+  .author-avatar-right {
+    order: 1;
+  }
+</style>

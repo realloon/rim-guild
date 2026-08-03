@@ -22,17 +22,25 @@ const openRequirements = commission.requirements.filter(
       {
         openRequirements.length > 0 ? (
           <>
-            <span class="requirement-pin requirement-pin-open" aria-hidden="true"></span>
-            开放招募
+            <span
+              class="requirement-pin requirement-pin-open"
+              aria-hidden="true"
+            />
+            招募中
           </>
         ) : (
           <>
-            <span class="requirement-pin requirement-pin-closed" aria-hidden="true"></span>
+            <span
+              class="requirement-pin requirement-pin-closed"
+              aria-hidden="true"
+            />
             招募已结束
           </>
         )
       }
-      <time class="commission-card-date">{formatDate(commission.created_at)}</time>
+      <time class="commission-card-date"
+        >{formatDate(commission.created_at)}</time
+      >
     </span>
     <span class="commission-card-top-meta">
       <AuthorAvatar
@@ -40,20 +48,25 @@ const openRequirements = commission.requirements.filter(
         name={commission.author_name}
         href={`/authors/${commission.author_id}`}
         size={28}
+        avatarSide="right"
       />
     </span>
   </div>
   <a class="commission-card-link" href={`/commissions/${commission.id}`}>
     <h2>{commission.title}</h2>
-    {commission.description && (
-      <p class="commission-excerpt">{commission.description}</p>
-    )}
+    {
+      commission.description && (
+        <p class="commission-excerpt">{commission.description}</p>
+      )
+    }
   </a>
   <div class="commission-card-footer">
     <span class="tags">
-      {openRequirements.map(requirement => (
-        <span class="tag">{requirementTypeLabel(requirement.type)}</span>
-      ))}
+      {
+        openRequirements.map(requirement => (
+          <span class="tag">{requirementTypeLabel(requirement.type)}</span>
+        ))
+      }
     </span>
   </div>
 </li>
