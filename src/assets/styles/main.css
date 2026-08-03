@@ -97,10 +97,6 @@ p {
 }
 
 .page-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 32px;
   margin-bottom: 36px;
 }
 
@@ -113,7 +109,7 @@ p {
   line-height: 1.05;
 }
 
-.page-heading > div:first-child > p:last-child {
+.page-heading p {
   max-width: 620px;
   margin: 18px 0 0;
   color: var(--text-muted);

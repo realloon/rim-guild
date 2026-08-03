@@ -17,18 +17,19 @@ const attrs = Astro.props
   }
 
   const setup = () => {
-    Array.from(document.getElementsByTagName('textarea'))
-      .filter(
-        textarea =>
-          textarea.hasAttribute('data-auto-resize') &&
-          !textarea.hasAttribute('data-auto-resize-ready'),
-      )
-      .forEach(textarea => {
-        textarea.dataset.autoResizeReady = 'true'
-        textarea.addEventListener('input', () => resize(textarea))
-        resize(textarea)
-      })
+    Array.from(
+      document.querySelectorAll<HTMLTextAreaElement>(
+        'textarea[data-auto-resize]',
+      ),
+    ).forEach(resize)
   }
+
+  document.addEventListener('input', event => {
+    const target = event.target as HTMLElement
+    if (target.matches('textarea[data-auto-resize]')) {
+      resize(target as HTMLTextAreaElement)
+    }
+  })
 
   setup()
   document.addEventListener('astro:page-load', setup)

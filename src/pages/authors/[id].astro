@@ -74,10 +74,12 @@ if (!profile) {
                 />
                 <div>
                   <h1>{profile.author_name}</h1>
-                {authorCreatorTypes.length > 0 && (
-                  <div class="tags">
-                    {authorCreatorTypes.map(creatorType => (
-                      <span class="tag">{requirementTypeLabel(creatorType)}</span>
+                  {authorCreatorTypes.length > 0 && (
+                    <div class="tags">
+                      {authorCreatorTypes.map(creatorType => (
+                        <span class="tag">
+                          {requirementTypeLabel(creatorType)}
+                        </span>
                       ))}
                     </div>
                   )}
@@ -110,7 +112,7 @@ if (!profile) {
           </section>
 
           <div class="section-heading">
-              <h2>TA 的委托</h2>
+            <h2>TA 的委托</h2>
             <span class="section-count">{commissions.length} 条记录</span>
           </div>
           {commissions.length > 0 ? (
@@ -120,7 +122,7 @@ if (!profile) {
               ))}
             </ul>
           ) : (
-            <p class="empty">TA 还没有发布过委托</p>
+            <p class="empty">TA 还没有发布委托</p>
           )}
         </>
       ) : (

@@ -144,7 +144,6 @@ for (const claim of claimRows) {
                 name={commission.author_name}
                 href={`/authors/${commission.author_id}`}
                 size={32}
-                avatarSide="left"
               />
               <span class="meta-separator">/</span>
               <time>{formatDate(commission.created_at)}</time>
@@ -169,7 +168,7 @@ for (const claim of claimRows) {
 
               <section class="requirement-section">
                 <div class="section-heading">
-                  <h2>委托需求</h2>
+                  <h2>需求</h2>
                   <span class="section-count">
                     {commission.requirements.length} 项需求
                   </span>

@@ -64,6 +64,7 @@ const submitLabel = commission ? '保存修改' : '发布'
         select.value = nextRole.value
       }
       const descInput = pair.querySelector('textarea')!
+      descInput.style.height = ''
       descInput.value = ''
       const countInput = pair.querySelector('input')!
       countInput.value = '1'
@@ -114,7 +115,7 @@ const submitLabel = commission ? '保存修改' : '发布'
   }
 
   <label class="form-field" for="title">
-    委托标题
+    标题
     <input
       id="title"
       name="title"
@@ -125,7 +126,7 @@ const submitLabel = commission ? '保存修改' : '发布'
     />
   </label>
   <label class="form-field" for="description">
-    委托描述（可选）
+    描述
     <Textarea
       id="description"
       name="description"
@@ -136,14 +137,14 @@ const submitLabel = commission ? '保存修改' : '发布'
   </label>
 
   <CheckboxGroup
-    legend="委托标签（可多选）"
+    legend="标签"
     name="tags"
     options={COMMISSION_TAGS}
     checked={commission?.tags ?? []}
   />
 
   <fieldset class="form-section">
-    <legend>委托需求</legend>
+    <legend>需求</legend>
     <div class="requirement-pairs">
       {
         commission ? (
@@ -299,7 +300,7 @@ const submitLabel = commission ? '保存修改' : '发布'
     height: 32px;
     padding: 0;
     background: none;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: 0;
     color: var(--text-muted);
     font-size: 1rem;
