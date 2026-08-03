@@ -110,205 +110,215 @@ if (result && !result.error) {
 
 <Layout title="我的主页 · 边缘工会">
   <main>
-    <div>
-      <aside>
-        <nav aria-label="个人主页索引">
-          <a href="#profile">
-            <span>01</span>
-            个人资料
-          </a>
-          <a href="#commissions">
-            <span>02</span>
-            我的委托
-          </a>
-          <a href="#claims">
-            <span>03</span>
-            我认领的
-          </a>
-        </nav>
-      </aside>
+    <aside>
+      <nav aria-label="个人主页索引">
+        <a href="#profile">
+          <span>01</span>
+          个人资料
+        </a>
+        <a href="#commissions">
+          <span>02</span>
+          我的委托
+        </a>
+        <a href="#claims">
+          <span>03</span>
+          我认领的
+        </a>
+      </nav>
+    </aside>
 
-      <div>
-        <section class="profile-card" id="profile">
-          <div class="profile-hero">
-            <div class="profile-identity">
-              <img
-                class="author-avatar"
-                src={avatarUrl(profileToken, 72)}
-                width={72}
-                height={72}
-                alt=""
-              />
-              <div>
-                <h1>{nickname}</h1>
-                <span class="profile-email" title="已登录账号"
-                  >{loggedEmail}</span
-                >
-              </div>
-            </div>
-            <span class="profile-badge">注册会员</span>
-          </div>
-
-          <form method="POST" action={actions.updateProfile}>
-            <label class="form-field" for="authorName">
-              昵称
-              <input
-                id="authorName"
-                name="authorName"
-                required
-                maxlength="30"
-                value={nickname}
-                placeholder="例如：阿哲"
-              />
-            </label>
-            <CheckboxGroup
-              legend="创作者身份"
-              name="creatorTypes"
-              options={CREATOR_TYPES}
-              checked={myCreatorTypes}
+    <div class="profile-wrapper">
+      <section class="profile-card" id="profile">
+        <div class="profile-hero">
+          <div class="profile-identity">
+            <img
+              class="author-avatar"
+              src={avatarUrl(profileToken, 72)}
+              width={72}
+              height={72}
+              alt=""
             />
-            <fieldset class="form-section">
-              <legend>联系方式</legend>
-              <div class="contact-fields">
-                <label class="form-field" for="qq">
-                  QQ
-                  <input
-                    id="qq"
-                    name="qq"
-                    maxlength="50"
-                    value={myQq}
-                    placeholder="选填"
-                  />
-                </label>
-                <label class="form-field" for="github">
-                  GitHub
-                  <input
-                    id="github"
-                    name="github"
-                    maxlength="100"
-                    value={myGithub}
-                    placeholder="选填"
-                  />
-                </label>
-                <label class="form-field" for="steam">
-                  Steam
-                  <input
-                    id="steam"
-                    name="steam"
-                    maxlength="100"
-                    value={mySteam}
-                    placeholder="选填"
-                  />
-                </label>
-              </div>
-            </fieldset>
-
-            <ErrorBox error={result?.error} />
-
-            <button class="btn" type="submit">保存资料</button>
-          </form>
-        </section>
-
-        <section class="profile-section" id="commissions">
-          <div class="section-heading">
-            <h2>我的委托</h2>
-            <span class="section-count">{commissions.length}条记录</span>
+            <div>
+              <h1>{nickname}</h1>
+              <span class="profile-email" title="已登录账号">{loggedEmail}</span
+              >
+            </div>
           </div>
-          {
-            commissions.length > 0 ? (
-              <ul class="commission-list">
-                {commissions.map(commission => (
-                  <CommissionListItem commission={commission} />
-                ))}
-              </ul>
-            ) : (
-              <p class="empty">还没有发布委托</p>
-            )
-          }
-        </section>
+          <span class="profile-badge">注册会员</span>
+        </div>
 
-        <section class="profile-section" id="claims">
-          <div class="section-heading">
-            <h2>我认领的</h2>
-            <span class="section-count">{claimedRows.length}条记录</span>
-          </div>
-          {
-            claimedCommissions.length > 0 ? (
-              <ul class="commission-list">
-                {claimedCommissions.map(commission => (
-                  <CommissionListItem commission={commission} />
-                ))}
-              </ul>
-            ) : (
-              <p class="empty">还没有认领需求</p>
-            )
-          }
-        </section>
-      </div>
+        <form method="POST" action={actions.updateProfile}>
+          <label class="form-field" for="authorName">
+            昵称
+            <input
+              id="authorName"
+              name="authorName"
+              required
+              maxlength="30"
+              value={nickname}
+              placeholder="例如：阿哲"
+            />
+          </label>
+          <CheckboxGroup
+            legend="创作者身份"
+            name="creatorTypes"
+            options={CREATOR_TYPES}
+            checked={myCreatorTypes}
+          />
+          <fieldset class="form-section">
+            <legend>联系方式</legend>
+            <div class="contact-fields">
+              <label class="form-field" for="qq">
+                QQ
+                <input
+                  id="qq"
+                  name="qq"
+                  maxlength="50"
+                  value={myQq}
+                  placeholder="选填"
+                />
+              </label>
+              <label class="form-field" for="github">
+                GitHub
+                <input
+                  id="github"
+                  name="github"
+                  maxlength="100"
+                  value={myGithub}
+                  placeholder="选填"
+                />
+              </label>
+              <label class="form-field" for="steam">
+                Steam
+                <input
+                  id="steam"
+                  name="steam"
+                  maxlength="100"
+                  value={mySteam}
+                  placeholder="选填"
+                />
+              </label>
+            </div>
+          </fieldset>
+
+          <ErrorBox error={result?.error} />
+
+          <button class="btn" type="submit">保存资料</button>
+        </form>
+      </section>
+
+      <section class="profile-section" id="commissions">
+        <div class="section-heading">
+          <h2>我的委托</h2>
+          <span class="section-count">{commissions.length}条记录</span>
+        </div>
+        {
+          commissions.length > 0 ? (
+            <ul class="commission-list">
+              {commissions.map(commission => (
+                <CommissionListItem commission={commission} />
+              ))}
+            </ul>
+          ) : (
+            <p class="empty">还没有发布委托</p>
+          )
+        }
+      </section>
+
+      <section class="profile-section" id="claims">
+        <div class="section-heading">
+          <h2>我认领的</h2>
+          <span class="section-count">{claimedRows.length}条记录</span>
+        </div>
+        {
+          claimedCommissions.length > 0 ? (
+            <ul class="commission-list">
+              {claimedCommissions.map(commission => (
+                <CommissionListItem commission={commission} />
+              ))}
+            </ul>
+          ) : (
+            <p class="empty">还没有认领需求</p>
+          )
+        }
+      </section>
     </div>
   </main>
 </Layout>
 
 <style>
-  main > div {
-    display: grid;
-    grid-template-columns: 168px minmax(0, 1fr);
-    gap: 72px;
+  main {
+    display: flex;
+    flex-direction: row;
     align-items: start;
+    gap: 48px;
+  }
 
-    aside {
-      position: sticky;
-      top: calc(var(--site-header-height) + var(--main-padding-top));
-      align-self: start;
+  aside {
+    position: sticky;
+    top: 136px;
 
-      nav {
-        display: grid;
-        gap: 0;
+    nav {
+      display: flex;
+      flex-direction: column;
+
+      a {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+
+        color: var(--text-muted);
+        font-size: 0.875rem;
+
+        padding-inline: 1em 2em;
+        padding-block: 12px;
         border-left: 1px solid
           color-mix(in oklch, var(--line) 50%, var(--text-muted));
 
-        a {
-          display: grid;
-          grid-template-columns: 27px 1fr;
-          gap: 8px;
-          padding: 9px 10px 9px 12px;
-          border-left: 2px solid transparent;
-          color: var(--text-muted);
-          font-size: 0.8rem;
-          text-decoration: none;
-          transition: 0.2s;
+        transition: 0.2s;
 
-          span {
-            color: var(--accent);
-            font-family: var(--mono);
-            font-size: 0.63rem;
-            font-weight: 700;
-          }
+        span {
+          color: var(--accent);
+          font-family: var(--mono);
+          font-size: 0.75rem;
+          font-weight: bolder;
+        }
 
-          &:hover {
-            border-color: var(--accent);
-            background: color-mix(
-              in oklch,
-              var(--accent) 22%,
-              light-dark(white, black)
-            );
-            color: color-mix(
-              in oklch,
-              var(--accent) 78%,
-              light-dark(black, white)
-            );
-          }
+        &:hover {
+          border-color: var(--accent);
+          background-color: color-mix(
+            in oklch,
+            var(--accent) 22%,
+            light-dark(white, black)
+          );
+          color: color-mix(
+            in oklch,
+            var(--accent) 78%,
+            light-dark(black, white)
+          );
         }
       }
     }
 
-    & > div {
-      & > section {
-        scroll-margin-top: calc(
-          var(--site-header-height) + var(--main-padding-top)
-        );
-      }
+    @media (max-width: 768px) {
+      display: none;
     }
+  }
+
+  .profile-wrapper {
+    flex-grow: 1;
+
+    section {
+      scroll-margin-top: 136px;
+    }
+  }
+
+  .profile-card {
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
   }
 
   form {
@@ -336,16 +346,6 @@ if (result && !result.error) {
 
     .form-field {
       margin-bottom: 0;
-    }
-  }
-
-  @media (max-width: 768px) {
-    main > div {
-      display: block;
-    }
-
-    aside {
-      display: none;
     }
   }
 </style>
