@@ -227,8 +227,7 @@ h3 {
   width: 100%;
 }
 
-.text-link,
-.back-link {
+.text-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -248,12 +247,6 @@ h3 {
 
   &:hover svg {
     transform: translateX(3px);
-  }
-}
-
-.back-link {
-  &:hover svg {
-    transform: translateX(-3px);
   }
 }
 
@@ -337,7 +330,7 @@ form {
   font-size: 0.76rem;
   font-weight: 700;
 
-  > :is(input, select, textarea) {
+  & > :is(input, select, textarea) {
     display: block;
     margin-top: 8px;
   }

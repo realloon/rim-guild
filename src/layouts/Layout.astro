@@ -5,10 +5,9 @@ import { actions } from 'astro:actions'
 
 interface Props {
   title?: string
-  back?: boolean
 }
 
-const { title = '边缘工会', back = false } = Astro.props
+const { title = '边缘工会' } = Astro.props
 const profileToken = Astro.locals.auth?.profileToken ?? null
 const isHome = Astro.url.pathname === '/'
 ---
@@ -56,22 +55,6 @@ const isHome = Astro.url.pathname === '/'
       </nav>
 
       <section>
-        {
-          back && (
-            <a class="back-link" href="/">
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path
-                  d="M13 8H3m4-4-4 4 4 4"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="square"
-                  stroke-linejoin="miter"
-                />
-              </svg>
-              <span>返回列表</span>
-            </a>
-          )
-        }
         <a
           class="btn publish-link"
           href={profileToken

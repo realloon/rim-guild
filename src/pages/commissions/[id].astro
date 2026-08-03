@@ -130,7 +130,6 @@ for (const claim of claimRows) {
   title={commission
     ? `${commission.title} · 边缘工会`
     : '委托不存在 · 边缘工会'}
-  back
 >
   <main>
     {
@@ -418,18 +417,20 @@ for (const claim of claimRows) {
 
 <style>
   article {
-    > header {
+    & > header {
       padding: 40px 0 34px;
       border-bottom: 1px solid var(--line);
 
       h1 {
-        margin: 0 0 24px;
         color: var(--forest);
-        font-size: 5.3rem;
-        font-weight: 500;
+        font-size: 2rem;
+        font-weight: normal;
+        line-height: 1.25;
+
+        margin: 0 0 24px;
       }
 
-      > div {
+      & > div {
         display: flex;
         align-items: center;
         gap: 12px;
@@ -453,13 +454,13 @@ for (const claim of claimRows) {
       }
     }
 
-    > div {
+    & > div {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(230px, 280px);
-      gap: 24px;
+      gap: 32px;
       padding-top: 44px;
 
-      > div {
+      & > div {
         .detail-description {
           margin-bottom: 22px;
           padding: 22px 24px;
@@ -507,7 +508,7 @@ for (const claim of claimRows) {
                 opacity: 0.68;
               }
 
-              > p {
+              & > p {
                 margin: 15px 0 0;
                 white-space: pre-wrap;
                 color: var(--text);
@@ -611,7 +612,7 @@ for (const claim of claimRows) {
         }
       }
 
-      > aside {
+      & > aside {
         position: sticky;
         top: 110px;
         align-self: start;
