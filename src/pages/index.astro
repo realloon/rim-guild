@@ -145,9 +145,7 @@ const clearSearchHref = activeRequirementType
     </section>
 
     <section class="board-section" id="board">
-      <div class="section-heading">
-        <h2>委托列表</h2>
-      </div>
+      <h2>委托列表</h2>
 
       <nav aria-label="按类型筛选">
         <a
@@ -366,14 +364,49 @@ const clearSearchHref = activeRequirementType
   .board-section {
     scroll-margin-top: 112px;
 
-    .section-heading {
-      margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      padding-block: 14px;
+      border-block: 1px solid var(--line);
+
+      a {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+
+        padding: 5px 12px;
+        border: 1px solid transparent;
+        border-radius: 13px;
+
+        transition: 0.2s;
+
+        &:hover {
+          border-color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+          color: color-mix(
+            in oklch,
+            var(--accent) 78%,
+            light-dark(black, white)
+          );
+        }
+
+        &.active {
+          color: var(--on-forest);
+          background-color: var(--forest);
+          border-color: var(--forest);
+        }
+      }
     }
 
     form {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
 
       label {
         display: flex;
@@ -418,48 +451,12 @@ const clearSearchHref = activeRequirementType
         }
       }
 
-      & > button {
-        min-width: 100px;
+      button {
+        padding-inline: 24px;
 
         svg {
-          width: 15px;
-          height: 15px;
-        }
-      }
-    }
-
-    nav {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-bottom: 24px;
-      padding: 14px 0;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-
-      a {
-        padding: 5px 11px;
-        border: 1px solid transparent;
-        border-radius: 999px;
-        color: var(--text-muted);
-        font-size: 0.8rem;
-        text-decoration: none;
-        transition: 0.2s;
-
-        &:hover {
-          border-color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
-          color: color-mix(
-            in oklch,
-            var(--accent) 78%,
-            light-dark(black, white)
-          );
-        }
-
-        &.active {
-          border-color: var(--forest);
-          background-color: var(--forest);
-          color: var(--on-forest);
+          width: 14px;
+          height: 14px;
         }
       }
     }

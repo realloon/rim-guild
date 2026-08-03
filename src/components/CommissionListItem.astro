@@ -17,7 +17,7 @@ const openRequirements = commission.requirements.filter(
 ---
 
 <li>
-  <div class="commission-card-top">
+  <header>
     <span class="commission-card-type">
       {
         openRequirements.length > 0 ? (
@@ -38,18 +38,18 @@ const openRequirements = commission.requirements.filter(
           </>
         )
       }
-      <time>{formatDate(commission.created_at)}</time>
+      <time datetime={commission.created_at}>
+        {formatDate(commission.created_at)}
+      </time>
     </span>
-    <span class="commission-card-top-meta">
-      <AuthorAvatar
-        seed={commission.author_token}
-        name={commission.author_name}
-        href={`/authors/${commission.author_id}`}
-        size={28}
-        avatarSide="right"
-      />
-    </span>
-  </div>
+    <AuthorAvatar
+      seed={commission.author_token}
+      name={commission.author_name}
+      href={`/authors/${commission.author_id}`}
+      size={24}
+      avatarSide="right"
+    />
+  </header>
   <a href={`/commissions/${commission.id}`}>
     <h2>{commission.title}</h2>
     {commission.description && <p>{commission.description}</p>}
@@ -68,13 +68,13 @@ const openRequirements = commission.requirements.filter(
 <style>
   li {
     position: relative;
-    min-width: 0;
 
     background-color: var(--surface);
+
+    padding: 16px 24px;
     border: 1px solid var(--line);
     border-radius: 4px;
     box-shadow: var(--shadow-small);
-    overflow: hidden;
 
     transition: 0.2s;
 
@@ -102,75 +102,65 @@ const openRequirements = commission.requirements.filter(
     }
   }
 
-  li > a {
-    display: block;
-    padding: 0 24px;
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
 
-    h2 {
-      margin: 0 0 7px;
-      color: var(--forest);
-      font-size: 1.28rem;
-      font-weight: 600;
-    }
+    .commission-card-type {
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
-    p {
-      margin: 0 0 15px;
-      overflow: hidden;
       color: var(--text-muted);
-      font-size: 0.88rem;
 
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
+      font-size: 0.75rem;
+      font-weight: bold;
+
+      time {
+        font-family: var(--mono);
+        font-weight: normal;
+        margin-bottom: -1.5px;
+      }
     }
+  }
+
+  a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    padding-block: 2px 8px;
 
     &:hover h2 {
       color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
     }
-  }
 
-  .commission-card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 20px 24px 0;
-    margin-bottom: 11px;
-  }
-
-  .commission-card-type {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-
-    time {
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 0.72rem;
-      font-weight: 400;
-      text-transform: none;
+    h2 {
+      color: var(--forest);
+      font-size: 1.25rem;
+      line-height: 1.25;
     }
-  }
 
-  .commission-card-top-meta {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    gap: 12px;
+    p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
   }
 
   .commission-card-footer {
     display: flex;
     align-items: center;
-    min-height: 52px;
-    padding: 11px 24px 13px;
+
+    padding-top: 12px;
     border-top: 1px dashed color-mix(in srgb, var(--line) 75%, transparent);
   }
 
@@ -214,20 +204,9 @@ const openRequirements = commission.requirements.filter(
   }
 
   @media (max-width: 768px) {
-    li > a {
-      padding-inline: 20px;
-    }
-
     .commission-card-top {
       align-items: flex-start;
       gap: 7px;
-    }
-
-    .commission-card-footer {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 11px;
-      padding: 11px 20px 13px;
     }
   }
 </style>

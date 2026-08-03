@@ -467,34 +467,33 @@ form {
 }
 
 .author {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
+
   color: var(--text-muted);
-  font-size: 0.82rem;
-  text-decoration: none;
-  white-space: nowrap;
+  font-size: 0.75rem;
+  font-family: var(--serif);
 
   &:hover {
     color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
-}
 
-.author-avatar {
-  flex-shrink: 0;
-  box-sizing: border-box;
-  border: 2px solid var(--surface);
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--line);
+  .author-avatar {
+    border-radius: 50%;
+    box-shadow: 0 0 4px 1px var(--line);
+  }
 }
 
 .commission-list {
-  display: grid;
-  gap: 13px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  list-style-type: none;
+
+  padding-inline-start: unset;
+  margin-block: unset;
 }
 
 .tags {

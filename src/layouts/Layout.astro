@@ -106,7 +106,7 @@ const isHome = Astro.url.pathname === '/'
     </header>
   </body>
 
-  <meun id="profile-menu" popover>
+  <menu id="profile-menu" popover>
     {
       profileToken ? (
         <>
@@ -132,7 +132,7 @@ const isHome = Astro.url.pathname === '/'
         </li>
       )
     }
-  </meun>
+  </menu>
 
   <slot />
 
@@ -158,7 +158,7 @@ const isHome = Astro.url.pathname === '/'
     height: var(--site-header-height);
     box-shadow: 0 8px 18px var(--page);
 
-    margin-bottom: 64px;
+    margin-bottom: 72px;
     @media (max-width: 768px) {
       margin-bottom: 48px;
     }
