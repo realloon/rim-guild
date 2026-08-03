@@ -17,6 +17,8 @@
   --on-forest: light-dark(#fffaf4, #14201a);
   --on-danger: light-dark(#fffaf4, #291514);
   --site-header-height: 64px;
+  --gutter: clamp(32px, 8vw, 144px);
+  --main-width: calc(100% - var(--gutter));
   --shadow: 0 18px 40px light-dark(rgb(73 57 40 / 0.08), rgb(0 0 0 / 0.34));
   --shadow-small: 0 7px 18px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
   text-autospace: normal;
@@ -51,8 +53,8 @@ textarea {
 }
 
 main {
-  --main-padding-top: clamp(36px, 6vw, 76px);
-  width: calc(100% - clamp(32px, 8vw, 144px));
+  --main-padding-top: 76px;
+  width: var(--main-width);
   max-width: 1160px;
   margin: 0 auto;
   padding: var(--main-padding-top) 0 96px;
@@ -681,7 +683,7 @@ time {
 
 .profile-card {
   margin-bottom: 52px;
-  padding: clamp(22px, 4vw, 38px);
+  padding: 32px;
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--surface);

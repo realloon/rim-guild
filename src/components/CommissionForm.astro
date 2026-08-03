@@ -122,7 +122,7 @@ const submitLabel = commission ? '保存修改' : '发布'
       required
       maxlength="80"
       value={commission?.title}
-      placeholder="例如：为武器扩展模组招募成员"
+      placeholder="例如：电磁武器拓展模组"
     />
   </label>
   <label class="form-field" for="description">
@@ -131,7 +131,7 @@ const submitLabel = commission ? '保存修改' : '发布'
       id="description"
       name="description"
       maxlength="5000"
-      placeholder="介绍你的模组委托：玩法、规模、进度、工期与报酬……"
+      placeholder="描述模组的玩法、规模和工期，内容越详细具体越容易吸引创作者喔"
       >{commission?.description}</Textarea
     >
   </label>
@@ -180,7 +180,7 @@ const submitLabel = commission ? '保存修改' : '发布'
                 name="requirementDescriptions"
                 required
                 aria-label="需求说明"
-                placeholder="面向该需求的具体要求……"
+                placeholder="面向该需求的具体要求"
                 maxlength="2000"
                 rows="2"
               >
@@ -218,7 +218,7 @@ const submitLabel = commission ? '保存修改' : '发布'
               name="requirementDescriptions"
               required
               aria-label="需求说明"
-              placeholder="面向该需求的具体要求……"
+              placeholder="面向该需求的具体要求"
               maxlength="2000"
               rows="2"
             />

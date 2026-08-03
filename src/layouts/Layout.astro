@@ -373,10 +373,17 @@ const isHome = Astro.url.pathname === '/'
     text-decoration: none;
   }
 
-  .profile-menu a:hover,
-  .profile-menu .menu-item:hover {
+  .profile-menu a:hover {
     background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
     color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+  }
+
+  .menu-item:hover {
+    background-color: color-mix(
+      in oklch,
+      var(--accent) 22%,
+      light-dark(white, black)
+    );
   }
 
   .site-footer {
@@ -384,7 +391,7 @@ const isHome = Astro.url.pathname === '/'
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    width: calc(100% - clamp(32px, 8vw, 144px));
+    width: var(--main-width);
     max-width: 1160px;
     margin: 0 auto;
     padding: 20px 0 28px;

@@ -132,7 +132,7 @@ const result = mode === 'register' ? registerResult : loginResult
   .auth-page {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
-    gap: clamp(50px, 10vw, 150px);
+    gap: 96px;
     align-items: center;
     max-width: 1000px;
     min-height: calc(100vh - 200px);
@@ -204,7 +204,7 @@ const result = mode === 'register' ? registerResult : loginResult
   }
 
   .auth-card {
-    padding: clamp(24px, 5vw, 42px);
+    padding: 32px;
     border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
     border-top: 4px solid var(--accent);
     background: var(--surface);
