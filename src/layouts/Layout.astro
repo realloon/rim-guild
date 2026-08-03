@@ -121,27 +121,27 @@ const isHome = Astro.url.pathname === '/'
           </button>
         </div>
       </div>
-
-      <div id="profile-menu" class="profile-menu" popover>
-        {
-          profileToken ? (
-            <>
-              <a href="/me#profile">个人资料</a>
-              <a href="/me#commissions">我的委托</a>
-              <a href="/me#claims">我认领的</a>
-              <hr />
-              <form method="POST" action={actions.logout}>
-                <button class="menu-item" type="submit">
-                  登出
-                </button>
-              </form>
-            </>
-          ) : (
-            <a href="/login?next=/me">登录</a>
-          )
-        }
-      </div>
     </header>
+
+    <div id="profile-menu" popover>
+      {
+        profileToken ? (
+          <>
+            <a href="/me#profile">个人资料</a>
+            <a href="/me#commissions">我的委托</a>
+            <a href="/me#claims">我认领的</a>
+            <hr />
+            <form method="POST" action={actions.logout}>
+              <button class="menu-item" type="submit">
+                登出
+              </button>
+            </form>
+          </>
+        ) : (
+          <a href="/login?next=/me">登录</a>
+        )
+      }
+    </div>
 
     <script>
       const profileMenu = document.querySelector<HTMLElement>('#profile-menu')!
@@ -203,32 +203,30 @@ const isHome = Astro.url.pathname === '/'
     place-items: center;
     border: 1px solid var(--forest);
     color: var(--forest);
-  }
 
-  .brand-mark svg {
-    width: 30px;
-    height: 30px;
+    svg {
+      width: 32px;
+      height: 32px;
+    }
   }
 
   .brand-copy {
-    display: grid;
-    gap: 2px;
-  }
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 
-  .brand-copy strong {
-    font-family: var(--serif);
-    font-size: 1.12rem;
-    font-weight: 600;
-    line-height: 1;
-  }
+    strong {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+    }
 
-  .brand-copy small {
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-size: 0.56rem;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    line-height: 1;
+    small {
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 0.56rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+    }
   }
 
   .site-nav {
@@ -302,7 +300,6 @@ const isHome = Astro.url.pathname === '/'
     border-radius: 50%;
     background: transparent;
     color: var(--text-muted);
-    line-height: 0;
     place-items: center;
     anchor-name: --profile-anchor;
     transition: 0.2s;
@@ -332,7 +329,7 @@ const isHome = Astro.url.pathname === '/'
     height: 20px;
   }
 
-  .profile-menu {
+  #profile-menu {
     position: fixed;
     position-anchor: --profile-anchor;
     position-area: bottom span-left;
@@ -347,19 +344,19 @@ const isHome = Astro.url.pathname === '/'
     box-shadow: var(--shadow);
   }
 
-  .profile-menu::backdrop {
+  #profile-menu::backdrop {
     background: transparent;
   }
 
-  .profile-menu hr {
+  #profile-menu hr {
     height: 1px;
     margin: 8px 4px;
     border: 0;
     background: var(--line);
   }
 
-  .profile-menu a,
-  .profile-menu .menu-item {
+  #profile-menu a,
+  #profile-menu .menu-item {
     display: block;
     width: 100%;
     padding: 10px 11px;
@@ -372,7 +369,7 @@ const isHome = Astro.url.pathname === '/'
     text-decoration: none;
   }
 
-  .profile-menu a:hover {
+  #profile-menu a:hover {
     background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
     color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
