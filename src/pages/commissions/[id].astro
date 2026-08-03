@@ -116,6 +116,7 @@ for (const claim of claimRows) {
   const forms = Array.from(document.forms).filter(form =>
     form.hasAttribute('data-confirm'),
   )
+
   forms.forEach(form => {
     form.addEventListener('submit', event => {
       const message = form.dataset.confirm
@@ -137,30 +138,30 @@ for (const claim of claimRows) {
         <article>
           <header>
             <h1>{commission.title}</h1>
-            <div>
+
+            <address>
               <AuthorAvatar
                 seed={commission.author_token}
                 name={commission.author_name}
                 href={`/authors/${commission.author_id}`}
-                size={32}
+                size={24}
               />
-              <span>/</span>
-              <time>{formatDate(commission.created_at)}</time>
-            </div>
+              <time datetime={commission.created_at}>
+                {formatDate(commission.created_at)}
+              </time>
+            </address>
           </header>
 
-          <div>
-            <div>
+          <div class="commission-wrapper">
+            <section>
               {commission.description && (
-                <div class="detail-description">
-                  <p>{commission.description}</p>
-                </div>
+                <p class="detail-description">{commission.description}</p>
               )}
 
               {commission.tags.length > 0 && (
                 <div class="commission-tags">
                   {commission.tags.map(tag => (
-                    <span class="tag tag-muted">{tagLabel(tag)}</span>
+                    <span class="tag tag-muted">#{tagLabel(tag)}</span>
                   ))}
                 </div>
               )}
@@ -202,7 +203,7 @@ for (const claim of claimRows) {
 
                         {claims.length > 0 && (
                           <div class="response-area">
-                            <span class="response-label">已加入</span>
+                            <span class="response-label">已认领</span>
                             <div class="response-avatars">
                               {claims.map(claim => (
                                 <a
@@ -360,24 +361,26 @@ for (const claim of claimRows) {
                   cancelClaimResult?.error
                 }
               />
-            </div>
+            </section>
 
             <aside>
-              <section class="contact-box">
+              <section>
                 <strong>发布者联系方式</strong>
-                {commission.author_qq && <div>QQ：{commission.author_qq}</div>}
-                {commission.author_github && (
-                  <div>GitHub：{commission.author_github}</div>
-                )}
-                {commission.author_steam && (
-                  <div>Steam：{commission.author_steam}</div>
-                )}
-                {!commission.author_qq &&
-                  !commission.author_github &&
-                  !commission.author_steam && <div>未填写</div>}
+                <address>
+                  {commission.author_qq && <p>QQ：{commission.author_qq}</p>}
+                  {commission.author_github && (
+                    <p>GitHub：{commission.author_github}</p>
+                  )}
+                  {commission.author_steam && (
+                    <p>Steam：{commission.author_steam}</p>
+                  )}
+                  {!commission.author_qq &&
+                    !commission.author_github &&
+                    !commission.author_steam && <p>未填写</p>}
+                </address>
               </section>
 
-              <p>
+              <p class="note">
                 如果你对这份委托感兴趣，可以先认领一项开放需求，再通过联系方式开始交流。
               </p>
 
@@ -416,301 +419,244 @@ for (const claim of claimRows) {
 </Layout>
 
 <style>
-  article {
-    & > header {
-      padding: 40px 0 34px;
-      border-bottom: 1px solid var(--line);
+  header {
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 16px;
 
-      h1 {
-        color: var(--forest);
-        font-size: 2rem;
-        font-weight: normal;
-        line-height: 1.25;
+    h1 {
+      color: var(--forest);
+      font-size: 2.5rem;
+      line-height: 1.25;
+    }
 
-        margin: 0 0 24px;
+    address {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      font-style: normal;
+      margin-block: 16px;
+
+      time {
+        font-family: var(--mono);
+        margin-bottom: -1.5px;
+      }
+    }
+  }
+
+  .commission-wrapper {
+    display: flex;
+    gap: 32px;
+  }
+
+  .commission-wrapper > section {
+    flex-grow: 1;
+
+    .detail-description {
+      line-height: 1.5;
+    }
+
+    .commission-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tag-muted {
+      border-color: var(--line);
+      color: var(--text-muted);
+    }
+
+    .requirement-section {
+      margin-top: 40px;
+
+      .section-heading {
+        margin-bottom: 16px;
       }
 
-      & > div {
-        display: flex;
-        align-items: center;
+      .requirement-list {
+        display: grid;
         gap: 12px;
 
-        .author {
-          color: var(--text);
-          font-weight: 700;
+        .requirement-card {
+          padding: 20px 22px;
+          border: 1px solid var(--line);
+          background-color: var(--surface);
+          box-shadow: var(--shadow-small);
 
-          &:hover {
-            color: color-mix(
-              in oklch,
-              var(--accent) 78%,
-              light-dark(black, white)
-            );
+          &:has(.status-closed) {
+            opacity: 0.68;
           }
-        }
 
-        span {
-          color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+          & > p {
+            margin: 15px 0 0;
+            white-space: pre-wrap;
+            color: var(--text);
+          }
+
+          .requirement-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+
+            .requirement-title {
+              display: flex;
+              align-items: center;
+              flex-wrap: wrap;
+              gap: 9px;
+
+              .requirement-count-label {
+                color: var(--text-muted);
+                font-size: 0.8rem;
+              }
+            }
+          }
+
+          .response-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 13px;
+            border-top: 1px dashed var(--line);
+
+            .response-label {
+              flex: 0 0 auto;
+              color: var(--text-muted);
+              font-size: 0.72rem;
+            }
+
+            .response-avatars {
+              display: flex;
+              align-items: center;
+
+              .author + .author {
+                margin-left: -6px;
+              }
+
+              .author-avatar {
+                border-color: var(--surface);
+              }
+            }
+          }
+
+          .requirement-actions {
+            margin-top: 16px;
+
+            form {
+              display: inline-flex;
+            }
+          }
         }
       }
     }
 
-    & > div {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(230px, 280px);
-      gap: 32px;
-      padding-top: 44px;
+    .commission-updates {
+      margin-top: 54px;
 
-      & > div {
-        .detail-description {
-          margin-bottom: 22px;
-          padding: 22px 24px;
-          border-left: 3px solid var(--accent);
-          background: color-mix(in srgb, var(--surface) 72%, transparent);
+      .section-heading {
+        margin-bottom: 17px;
+      }
+
+      ul {
+        display: grid;
+        gap: 10px;
+        margin: 0 0 20px;
+        padding: 0;
+        list-style: none;
+
+        li {
+          padding: 16px 18px;
+          border-left: 2px solid var(--gold);
+          background-color: var(--surface);
+          box-shadow: var(--shadow-small);
 
           p {
-            margin: 0;
+            margin: 0 0 8px;
             white-space: pre-wrap;
-            color: var(--text);
-            font-size: 1rem;
-          }
-        }
-
-        .commission-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 18px;
-        }
-
-        .tag-muted {
-          border-color: var(--line);
-          color: var(--text-muted);
-        }
-
-        .requirement-section {
-          margin-top: 40px;
-
-          .section-heading {
-            margin-bottom: 16px;
-          }
-
-          .requirement-list {
-            display: grid;
-            gap: 12px;
-
-            .requirement-card {
-              padding: 20px 22px;
-              border: 1px solid var(--line);
-              background-color: var(--surface);
-              box-shadow: var(--shadow-small);
-
-              &:has(.status-closed) {
-                opacity: 0.68;
-              }
-
-              & > p {
-                margin: 15px 0 0;
-                white-space: pre-wrap;
-                color: var(--text);
-              }
-
-              .requirement-card-head {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-
-                .requirement-title {
-                  display: flex;
-                  align-items: center;
-                  flex-wrap: wrap;
-                  gap: 9px;
-
-                  .requirement-count-label {
-                    color: var(--text-muted);
-                    font-size: 0.8rem;
-                  }
-                }
-              }
-
-              .response-area {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                margin-top: 16px;
-                padding-top: 13px;
-                border-top: 1px dashed var(--line);
-
-                .response-label {
-                  flex: 0 0 auto;
-                  color: var(--text-muted);
-                  font-size: 0.72rem;
-                }
-
-                .response-avatars {
-                  display: flex;
-                  align-items: center;
-
-                  .author + .author {
-                    margin-left: -6px;
-                  }
-
-                  .author-avatar {
-                    border-color: var(--surface);
-                  }
-                }
-              }
-
-              .requirement-actions {
-                margin-top: 16px;
-
-                form {
-                  display: inline-flex;
-                }
-              }
-            }
-          }
-        }
-
-        .commission-updates {
-          margin-top: 54px;
-
-          .section-heading {
-            margin-bottom: 17px;
-          }
-
-          ul {
-            display: grid;
-            gap: 10px;
-            margin: 0 0 20px;
-            padding: 0;
-            list-style: none;
-
-            li {
-              padding: 16px 18px;
-              border-left: 2px solid var(--gold);
-              background-color: var(--surface);
-              box-shadow: var(--shadow-small);
-
-              p {
-                margin: 0 0 8px;
-                white-space: pre-wrap;
-              }
-            }
-          }
-
-          form {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--line);
-
-            textarea {
-              min-height: 130px;
-              margin-bottom: 12px;
-            }
           }
         }
       }
 
-      & > aside {
-        position: sticky;
-        top: 110px;
-        align-self: start;
+      form {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
 
-        .contact-box {
-          padding: 22px;
-          border: 1px solid color-mix(in oklch, var(--accent) 52%, var(--line));
-          background: color-mix(in oklch, var(--accent) 10%, var(--surface));
-          color: color-mix(
-            in oklch,
-            var(--accent) 78%,
-            light-dark(black, white)
-          );
-
-          strong {
-            display: block;
-            margin-bottom: 12px;
-            color: var(--forest);
-            font-family: var(--serif);
-            font-size: 1.1rem;
-            font-weight: 600;
-          }
-
-          div {
-            padding: 7px 0;
-            border-top: 1px solid
-              color-mix(in srgb, var(--accent) 40%, transparent);
-            color: color-mix(
-              in oklch,
-              var(--accent) 78%,
-              light-dark(black, white)
-            );
-            font-size: 0.87rem;
-
-            &:first-of-type {
-              border-top: 0;
-            }
-          }
-        }
-
-        p {
-          margin: 18px 0 0;
-          color: var(--text-muted);
-          font-size: 0.78rem;
-        }
-
-        .commission-owner-actions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 9px;
-          margin-top: 28px;
-          padding-top: 20px;
-          border-top: 1px solid var(--line);
-
-          form {
-            display: inline-flex;
-          }
+        textarea {
+          min-height: 130px;
+          margin-bottom: 12px;
         }
       }
     }
   }
 
-  @media (max-width: 768px) {
-    header {
-      padding-top: 30px;
+  .commission-wrapper > aside {
+    position: sticky;
+    top: 88px;
 
-      h1 {
-        font-size: 2.25rem;
+    flex-basis: 280px;
+    align-self: start;
+
+    section {
+      padding: 16px;
+      border: 1px solid color-mix(in oklch, var(--accent) 52%, var(--line));
+      background-color: color-mix(in oklch, var(--accent) 10%, var(--surface));
+
+      strong {
+        color: var(--forest);
+        font-family: var(--serif);
       }
-    }
 
-    article > div {
-      display: flex;
-      flex-direction: column;
-      padding-top: 32px;
-    }
-
-    aside {
-      position: static;
-    }
-
-    .requirement-card {
-      padding: 17px;
-
-      .requirement-card-head {
-        align-items: flex-start;
+      address {
+        display: flex;
         flex-direction: column;
+        gap: 8px;
 
-        .status {
-          align-self: flex-start;
+        font-style: normal;
+        font-family: var(--mono);
+        margin-top: 12px;
+
+        p {
+          color: color-mix(
+            in oklch,
+            var(--accent) 78%,
+            light-dark(black, white)
+          );
         }
       }
     }
 
-    .response-area {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 7px;
+    .note {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      margin-top: 16px;
+    }
+
+    .commission-owner-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+
+      form {
+        display: inline-flex;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .commission-wrapper {
+      flex-wrap: wrap;
+
+      aside {
+        flex-grow: 1;
+      }
     }
   }
 </style>
