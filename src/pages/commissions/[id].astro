@@ -421,21 +421,15 @@ for (const claim of claimRows) {
 </Layout>
 
 <style>
-  .commission-detail {
-    max-width: 1080px;
-    margin: 0 auto;
-  }
-
   .detail-header {
     padding: 40px 0 34px;
     border-bottom: 1px solid var(--line);
   }
 
   .detail-header h1 {
-    max-width: 900px;
     margin: 0 0 24px;
     color: var(--forest);
-    font-size: clamp(2.35rem, 5vw, 5.3rem);
+    font-size: 5.3rem;
     font-weight: 500;
     line-height: 1.02;
   }
@@ -607,20 +601,13 @@ for (const claim of claimRows) {
     display: inline-flex;
   }
 
-  @media (max-width: 900px) {
-    .detail-columns {
-      grid-template-columns: minmax(0, 1fr) 230px;
-      gap: 32px;
-    }
-  }
-
-  @media (max-width: 720px) {
+  @media (max-width: 768px) {
     .detail-header {
       padding-top: 30px;
     }
 
     .detail-header h1 {
-      font-size: clamp(2.25rem, 13vw, 4.5rem);
+      font-size: 2.25rem;
     }
 
     .detail-columns {
@@ -632,9 +619,7 @@ for (const claim of claimRows) {
     .detail-aside {
       position: static;
     }
-  }
 
-  @media (max-width: 460px) {
     .requirement-card {
       padding: 17px;
     }

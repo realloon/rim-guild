@@ -160,7 +160,7 @@ const isHome = Astro.url.pathname === '/'
       <span
         >Copyright © {new Date().getFullYear()} RimGuild. All Rights Reserved.</span
       >
-      <span>让创意成为创造</span>
+      <span>好的想法值得认真实现</span>
     </footer>
   </body>
 </html>
@@ -182,9 +182,6 @@ const isHome = Astro.url.pathname === '/'
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 clamp(16px, 4vw, 72px);
     min-height: var(--site-header-height);
   }
 
@@ -202,6 +199,7 @@ const isHome = Astro.url.pathname === '/'
     width: 38px;
     height: 38px;
     flex: 0 0 auto;
+    box-sizing: border-box;
     place-items: center;
     border: 1px solid var(--forest);
     color: var(--forest);
@@ -299,6 +297,7 @@ const isHome = Astro.url.pathname === '/'
     width: 40px;
     height: 40px;
     padding: 1px;
+    box-sizing: border-box;
     border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
     border-radius: 50%;
     background: transparent;
@@ -391,9 +390,6 @@ const isHome = Astro.url.pathname === '/'
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    width: var(--main-width);
-    max-width: 1160px;
-    margin: 0 auto;
     padding: 20px 0 28px;
     border-top: 1px solid var(--line);
     color: var(--text-muted);
@@ -402,7 +398,7 @@ const isHome = Astro.url.pathname === '/'
     letter-spacing: 0.04em;
   }
 
-  @media (max-width: 800px) {
+  @media (max-width: 768px) {
     .site-nav {
       display: none;
     }
@@ -420,9 +416,7 @@ const isHome = Astro.url.pathname === '/'
     .header-back {
       margin-right: 0;
     }
-  }
 
-  @media (max-width: 520px) {
     .brand-copy small {
       display: none;
     }

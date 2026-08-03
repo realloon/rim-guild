@@ -17,8 +17,7 @@
   --on-forest: light-dark(#fffaf4, #14201a);
   --on-danger: light-dark(#fffaf4, #291514);
   --site-header-height: 64px;
-  --gutter: clamp(32px, 8vw, 144px);
-  --main-width: calc(100% - var(--gutter));
+  --content-max-width: 900px;
   --shadow: 0 18px 40px light-dark(rgb(73 57 40 / 0.08), rgb(0 0 0 / 0.34));
   --shadow-small: 0 7px 18px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
   text-autospace: normal;
@@ -29,18 +28,16 @@
   background: var(--page);
 }
 
-* {
-  box-sizing: border-box;
-}
-
 html {
   scroll-behavior: smooth;
 }
 
 body {
+  max-width: var(--content-max-width);
   min-height: 100vh;
-  margin: 0;
-  padding: 0;
+  padding-inline: 16px;
+  margin-inline: auto;
+  margin-block: unset;
   background-color: var(--page);
 }
 
@@ -53,10 +50,7 @@ textarea {
 }
 
 main {
-  --main-padding-top: 76px;
-  width: var(--main-width);
-  max-width: 1160px;
-  margin: 0 auto;
+  --main-padding-top: 64px;
   padding: var(--main-padding-top) 0 96px;
 }
 
@@ -106,7 +100,7 @@ p {
   max-width: 720px;
   margin: 0;
   color: var(--forest);
-  font-size: clamp(2.25rem, 5vw, 4.6rem);
+  font-size: 4.6rem;
   font-weight: 500;
   line-height: 1.05;
 }
@@ -129,7 +123,7 @@ p {
 .section-heading h2 {
   margin: 0;
   color: var(--forest);
-  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  font-size: 2.25rem;
   font-weight: 500;
   line-height: 1.1;
 }
@@ -151,6 +145,7 @@ p {
   padding: 9px 17px;
   border: 1px solid transparent;
   border-radius: 3px;
+  box-sizing: border-box;
   background: var(--accent);
   box-shadow: 0 3px 0 light-dark(rgb(151 63 45 / 0.2), rgb(0 0 0 / 0.3));
   color: var(--on-accent);
@@ -256,6 +251,7 @@ form {
 
 form
   :where(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
+  box-sizing: border-box;
   width: 100%;
   min-height: 46px;
   padding: 10px 13px;
@@ -441,6 +437,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 .status {
   display: inline-flex;
   align-items: center;
+  box-sizing: border-box;
   min-height: 25px;
   border-radius: 999px;
   white-space: nowrap;
@@ -489,6 +486,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 
 .author-avatar {
   flex-shrink: 0;
+  box-sizing: border-box;
   border: 2px solid var(--surface);
   border-radius: 50%;
   box-shadow: 0 0 0 1px var(--line);
@@ -544,7 +542,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 .commission-card-link h2 {
   margin: 0 0 7px;
   color: var(--forest);
-  font-size: clamp(1.05rem, 2vw, 1.28rem);
+  font-size: 1.28rem;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -594,6 +592,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 .requirement-pin {
   position: relative;
   display: inline-block;
+  box-sizing: border-box;
   width: 11px;
   height: 11px;
   flex: 0 0 auto;
@@ -715,7 +714,7 @@ time {
 .profile-identity h2 {
   margin: 0 0 6px;
   color: var(--forest);
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-size: 2.25rem;
   font-weight: 500;
   line-height: 1.1;
 }
@@ -844,7 +843,7 @@ time {
   white-space: pre-wrap;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   main {
     --main-padding-top: 32px;
     padding-bottom: 64px;
@@ -888,9 +887,7 @@ time {
   .form-section {
     padding: 16px;
   }
-}
 
-@media (max-width: 460px) {
   .profile-card {
     padding: 20px 16px;
   }
