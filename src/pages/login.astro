@@ -2,6 +2,18 @@
 import Layout from '../layouts/Layout.astro'
 import ErrorBox from '../components/ui/ErrorBox.astro'
 import { actions } from 'astro:actions'
+import { env } from 'cloudflare:workers'
+
+const db = env.rim_guild_db
+const stats = await db
+  .prepare(
+    `SELECT
+      (SELECT COUNT(*) FROM commissions) AS commission_count,
+      (SELECT COUNT(*) FROM profiles) AS user_count`,
+  )
+  .first<{ commission_count: number; user_count: number }>()
+const commissionCount = stats?.commission_count ?? 0
+const registeredUserCount = stats?.user_count ?? 0
 
 const next = Astro.url.searchParams.get('next')
 const redirectTo =
@@ -32,6 +44,10 @@ const result = mode === 'register' ? registerResult : loginResult
         <span>边缘工会</span>
       </h1>
       <p>成为工会会员，发布的委托，招揽合作者，或寻找合适你的委托。</p>
+      <span>
+        <span>注册会员<strong>{registeredUserCount}</strong></span>
+        <span>发布委托<strong>{commissionCount}</strong></span>
+      </span>
     </aside>
 
     <section>
@@ -39,7 +55,7 @@ const result = mode === 'register' ? registerResult : loginResult
       <p>
         {
           mode === 'register'
-            ? '创建账号后，你可以发布委托、认领需求并维护个人资料'
+            ? '注册后，你可以发布委托、认领需求并维护个人资料'
             : '登录后继续管理你的委托和协作记录'
         }
       </p>
@@ -135,6 +151,22 @@ const result = mode === 'register' ? registerResult : loginResult
       line-height: 1.5;
       margin-top: 32px;
     }
+
+    & > span {
+      display: flex;
+      gap: 36px;
+
+      color: var(--text-muted);
+      margin-top: 8px;
+
+      strong {
+        color: var(--accent);
+        font-family: var(--serif);
+        font-size: 1.5rem;
+        vertical-align: middle;
+        margin-left: 4px;
+      }
+    }
   }
 
   section:last-child {
@@ -200,5 +232,9 @@ const result = mode === 'register' ? registerResult : loginResult
     section:last-child {
       align-self: stretch;
     }
+  }
+
+  .btn {
+    justify-content: center;
   }
 </style>

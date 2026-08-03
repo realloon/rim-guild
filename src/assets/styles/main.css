@@ -25,12 +25,9 @@
   font-family: var(--sans);
   line-height: 1;
   color: var(--text);
+  scroll-behavior: smooth;
   scrollbar-gutter: stable both-edges;
   background-color: var(--page);
-}
-
-html {
-  scroll-behavior: smooth;
 }
 
 body {
