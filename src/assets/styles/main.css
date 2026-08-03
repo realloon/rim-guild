@@ -42,7 +42,6 @@ body {
   background-color: var(--page);
 }
 
-body,
 button,
 input,
 select,
@@ -54,9 +53,6 @@ main {
   display: flex;
   flex-direction: column;
   gap: 80px;
-
-  --main-padding-top: 64px;
-  padding: var(--main-padding-top) 0 96px;
 }
 
 a {
@@ -620,7 +616,7 @@ time {
 
 @media (max-width: 768px) {
   main {
-    --main-padding-top: 32px;
+    padding-top: 32px;
     padding-bottom: 64px;
   }
 

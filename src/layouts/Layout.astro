@@ -106,13 +106,19 @@ const isHome = Astro.url.pathname === '/'
     </header>
   </body>
 
-  <div id="profile-menu" popover>
+  <meun id="profile-menu" popover>
     {
       profileToken ? (
         <>
-          <a href="/me#profile">个人资料</a>
-          <a href="/me#commissions">我的委托</a>
-          <a href="/me#claims">我认领的</a>
+          <li>
+            <a href="/me#profile">个人资料</a>
+          </li>
+          <li>
+            <a href="/me#commissions">我的委托</a>
+          </li>
+          <li>
+            <a href="/me#claims">我认领的</a>
+          </li>
           <hr />
           <form method="POST" action={actions.logout}>
             <button class="menu-item" type="submit">
@@ -121,10 +127,12 @@ const isHome = Astro.url.pathname === '/'
           </form>
         </>
       ) : (
-        <a href="/login?next=/me">登录</a>
+        <li>
+          <a href="/login?next=/me">登录</a>
+        </li>
       )
     }
-  </div>
+  </meun>
 
   <slot />
 
@@ -150,6 +158,11 @@ const isHome = Astro.url.pathname === '/'
     height: var(--site-header-height);
     box-shadow: 0 8px 18px var(--page);
 
+    margin-bottom: 64px;
+    @media (max-width: 768px) {
+      margin-bottom: 48px;
+    }
+
     a[href='/'] {
       display: flex;
       align-items: center;
@@ -157,8 +170,8 @@ const isHome = Astro.url.pathname === '/'
 
       svg {
         vertical-align: top;
-        width: 32px;
-        height: 32px;
+        width: 24px;
+        height: 24px;
         border: 1px solid var(--forest);
       }
 
@@ -270,11 +283,9 @@ const isHome = Astro.url.pathname === '/'
     position: fixed;
     position-anchor: --profile-anchor;
     position-area: bottom span-left;
-    top: 8px;
+    top: 8px; /* gap hack */
 
-    display: flex;
-    flex-direction: column;
-
+    list-style-type: none;
     background-color: color-mix(in oklch, var(--surface) 90%, transparent);
     backdrop-filter: blur(10px);
 
@@ -286,6 +297,7 @@ const isHome = Astro.url.pathname === '/'
 
     a,
     .menu-item {
+      display: block;
       box-sizing: border-box;
 
       font-size: 0.875rem;
@@ -298,6 +310,8 @@ const isHome = Astro.url.pathname === '/'
       padding: 10px 12px;
       border: unset;
       border-radius: 6px;
+
+      transition: 0.2s;
     }
 
     a:hover {
@@ -307,18 +321,13 @@ const isHome = Astro.url.pathname === '/'
 
     .menu-item:hover {
       color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-      background-color: color-mix(
-        in oklch,
-        var(--accent) 22%,
-        light-dark(white, black)
-      );
     }
 
     hr {
       height: 1px;
       margin: 4px -4px;
       border: unset;
-      background: var(--line);
+      background: color-mix(in oklch, var(--line) 50%, transparent);
     }
   }
 
@@ -330,16 +339,14 @@ const isHome = Astro.url.pathname === '/'
 
     color: var(--text-muted);
     font-size: 0.75rem;
+    font-family: var(--serif);
 
     padding-block: 24px;
     border-top: 1px solid var(--line);
+    margin-top: 72px;
 
     span:first-of-type {
       font-family: var(--mono);
-    }
-
-    span:last-of-type {
-      font-family: var(--serif);
     }
   }
 </style>
