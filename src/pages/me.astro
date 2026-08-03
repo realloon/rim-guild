@@ -110,8 +110,8 @@ if (result && !result.error) {
 
 <Layout title="我的主页 · 边缘工会">
   <main>
-    <div class="profile-layout">
-      <aside class="profile-index">
+    <div>
+      <aside>
         <nav aria-label="个人主页索引">
           <a href="#profile">
             <span>01</span>
@@ -128,7 +128,7 @@ if (result && !result.error) {
         </nav>
       </aside>
 
-      <div class="profile-content">
+      <div>
         <section class="profile-card" id="profile">
           <div class="profile-hero">
             <div class="profile-identity">
@@ -149,11 +149,7 @@ if (result && !result.error) {
             <span class="profile-badge">注册会员</span>
           </div>
 
-          <form
-            class="profile-form"
-            method="POST"
-            action={actions.updateProfile}
-          >
+          <form method="POST" action={actions.updateProfile}>
             <label class="form-field" for="authorName">
               昵称
               <input
@@ -254,87 +250,101 @@ if (result && !result.error) {
 </Layout>
 
 <style>
-  .profile-layout {
+  main > div {
     display: grid;
     grid-template-columns: 168px minmax(0, 1fr);
     gap: 72px;
     align-items: start;
+
+    aside {
+      position: sticky;
+      top: calc(var(--site-header-height) + var(--main-padding-top));
+      align-self: start;
+
+      nav {
+        display: grid;
+        gap: 0;
+        border-left: 1px solid
+          color-mix(in oklch, var(--line) 50%, var(--text-muted));
+
+        a {
+          display: grid;
+          grid-template-columns: 27px 1fr;
+          gap: 8px;
+          padding: 9px 10px 9px 12px;
+          border-left: 2px solid transparent;
+          color: var(--text-muted);
+          font-size: 0.8rem;
+          text-decoration: none;
+          transition: 0.2s;
+
+          span {
+            color: var(--accent);
+            font-family: var(--mono);
+            font-size: 0.63rem;
+            font-weight: 700;
+          }
+
+          &:hover {
+            border-color: var(--accent);
+            background: color-mix(
+              in oklch,
+              var(--accent) 22%,
+              light-dark(white, black)
+            );
+            color: color-mix(
+              in oklch,
+              var(--accent) 78%,
+              light-dark(black, white)
+            );
+          }
+        }
+      }
+    }
+
+    > div {
+      > section {
+        scroll-margin-top: calc(
+          var(--site-header-height) + var(--main-padding-top)
+        );
+      }
+    }
   }
 
-  .profile-index {
-    position: sticky;
-    top: calc(var(--site-header-height) + var(--main-padding-top));
-    align-self: start;
-  }
+  form {
+    padding-top: 26px;
 
-  .profile-index nav {
-    display: grid;
-    gap: 0;
-    border-left: 1px solid
-      color-mix(in oklch, var(--line) 50%, var(--text-muted));
-  }
+    .form-section {
+      padding: 0;
+      border: 0;
+      background: transparent;
 
-  .profile-index a {
-    display: grid;
-    grid-template-columns: 27px 1fr;
-    gap: 8px;
-    padding: 9px 10px 9px 12px;
-    border-left: 2px solid transparent;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    text-decoration: none;
-    transition: 0.2s;
-  }
+      legend {
+        margin-bottom: 18px;
+      }
+    }
 
-  .profile-index a span {
-    color: var(--accent);
-    font-family: var(--mono);
-    font-size: 0.63rem;
-    font-weight: 700;
-  }
-
-  .profile-index a:hover {
-    border-color: var(--accent);
-    background: color-mix(
-      in oklch,
-      var(--accent) 22%,
-      light-dark(white, black)
-    );
-    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-  }
-
-  .profile-content > :is(.profile-card, .profile-section) {
-    scroll-margin-top: calc(
-      var(--site-header-height) + var(--main-padding-top)
-    );
+    button {
+      margin-top: 2px;
+    }
   }
 
   .contact-fields {
     display: grid;
     grid-template-columns: 1fr;
     gap: 14px;
-  }
 
-  .profile-form .form-section {
-    padding: 0;
-    border: 0;
-    background: transparent;
-  }
-
-  .profile-form .form-section legend {
-    margin-bottom: 18px;
-  }
-
-  .contact-fields .form-field {
-    margin-bottom: 0;
+    .form-field {
+      margin-bottom: 0;
+    }
   }
 
   @media (max-width: 768px) {
-    .profile-layout {
+    main > div {
       display: block;
     }
 
-    .profile-index {
+    aside {
       display: none;
     }
   }

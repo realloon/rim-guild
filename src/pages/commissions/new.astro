@@ -21,7 +21,7 @@ if (result && !result.error) {
       <h1>发布委托</h1>
     </header>
 
-    <section class="editor-card">
+    <section>
       <CommissionForm />
       <ErrorBox error={result?.error} />
     </section>
@@ -29,11 +29,11 @@ if (result && !result.error) {
 </Layout>
 
 <style>
-  .editor-card {
+  section {
     padding: clamp(16px, 100%, 32px);
     border: 1px solid var(--line);
     border-top: 3px solid var(--forest);
-    background: var(--surface);
+    background-color: var(--surface);
     box-shadow: var(--shadow);
   }
 </style>

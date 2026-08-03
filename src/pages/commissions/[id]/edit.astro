@@ -55,7 +55,7 @@ if (result && !result.error && commission) {
               </p>
             </header>
 
-            <section class="editor-card">
+            <section>
               <CommissionForm commission={commission} />
               <ErrorBox error={result?.error} />
             </section>
@@ -71,11 +71,11 @@ if (result && !result.error && commission) {
 </Layout>
 
 <style>
-  .editor-card {
+  section {
     padding: clamp(16px, 100%, 32px);
     border: 1px solid var(--line);
     border-top: 3px solid var(--forest);
-    background: var(--surface);
+    background-color: var(--surface);
     box-shadow: var(--shadow);
   }
 </style>

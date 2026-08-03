@@ -135,22 +135,22 @@ for (const claim of claimRows) {
   <main>
     {
       commission ? (
-        <article class="commission-detail">
-          <header class="detail-header">
+        <article>
+          <header>
             <h1>{commission.title}</h1>
-            <div class="detail-meta">
+            <div>
               <AuthorAvatar
                 seed={commission.author_token}
                 name={commission.author_name}
                 href={`/authors/${commission.author_id}`}
                 size={32}
               />
-              <span class="meta-separator">/</span>
+              <span>/</span>
               <time>{formatDate(commission.created_at)}</time>
             </div>
           </header>
 
-          <div class="detail-columns">
+          <div>
             <div>
               {commission.description && (
                 <div class="detail-description">
@@ -333,11 +333,7 @@ for (const claim of claimRows) {
                   <p class="field-note">还没有更新</p>
                 )}
                 {isOwner && (
-                  <form
-                    class="update-form"
-                    method="POST"
-                    action={actions.addCommissionUpdate}
-                  >
+                  <form method="POST" action={actions.addCommissionUpdate}>
                     <input
                       type="hidden"
                       name="commissionId"
@@ -367,7 +363,7 @@ for (const claim of claimRows) {
               />
             </div>
 
-            <aside class="detail-aside">
+            <aside>
               <section class="contact-box">
                 <strong>发布者联系方式</strong>
                 {commission.author_qq && <div>QQ：{commission.author_qq}</div>}
@@ -382,7 +378,7 @@ for (const claim of claimRows) {
                   !commission.author_steam && <div>未填写</div>}
               </section>
 
-              <p class="aside-note">
+              <p>
                 如果你对这份委托感兴趣，可以先认领一项开放需求，再通过联系方式开始交流。
               </p>
 
@@ -421,212 +417,293 @@ for (const claim of claimRows) {
 </Layout>
 
 <style>
-  .detail-header {
-    padding: 40px 0 34px;
-    border-bottom: 1px solid var(--line);
-  }
+  article {
+    > header {
+      padding: 40px 0 34px;
+      border-bottom: 1px solid var(--line);
 
-  .detail-header h1 {
-    margin: 0 0 24px;
-    color: var(--forest);
-    font-size: 5.3rem;
-    font-weight: 500;
-  }
+      h1 {
+        margin: 0 0 24px;
+        color: var(--forest);
+        font-size: 5.3rem;
+        font-weight: 500;
+      }
 
-  .detail-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+      > div {
+        display: flex;
+        align-items: center;
+        gap: 12px;
 
-  .detail-meta .author {
-    color: var(--text);
-    font-weight: 700;
-  }
+        .author {
+          color: var(--text);
+          font-weight: 700;
 
-  .detail-meta .author:hover {
-    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-  }
+          &:hover {
+            color: color-mix(
+              in oklch,
+              var(--accent) 78%,
+              light-dark(black, white)
+            );
+          }
+        }
 
-  .meta-separator {
-    color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
-  }
+        span {
+          color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+        }
+      }
+    }
 
-  .detail-columns {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(230px, 280px);
-    gap: 24px;
-    padding-top: 44px;
-  }
+    > div {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(230px, 280px);
+      gap: 24px;
+      padding-top: 44px;
 
-  .detail-description {
-    margin-bottom: 22px;
-    padding: 22px 24px;
-    border-left: 3px solid var(--accent);
-    background: color-mix(in srgb, var(--surface) 72%, transparent);
-  }
+      > div {
+        .detail-description {
+          margin-bottom: 22px;
+          padding: 22px 24px;
+          border-left: 3px solid var(--accent);
+          background: color-mix(in srgb, var(--surface) 72%, transparent);
 
-  .detail-description p {
-    margin: 0;
-    white-space: pre-wrap;
-    color: var(--text);
-    font-size: 1rem;
-  }
+          p {
+            margin: 0;
+            white-space: pre-wrap;
+            color: var(--text);
+            font-size: 1rem;
+          }
+        }
 
-  .requirement-section {
-    margin-top: 40px;
-  }
+        .commission-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 18px;
+        }
 
-  .requirement-section .section-heading {
-    margin-bottom: 16px;
-  }
+        .tag-muted {
+          border-color: var(--line);
+          color: var(--text-muted);
+        }
 
-  .requirement-list {
-    display: grid;
-    gap: 12px;
-  }
+        .requirement-section {
+          margin-top: 40px;
 
-  .requirement-card {
-    padding: 20px 22px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    box-shadow: var(--shadow-small);
-  }
+          .section-heading {
+            margin-bottom: 16px;
+          }
 
-  .requirement-card:has(.status-closed) {
-    opacity: 0.68;
-  }
+          .requirement-list {
+            display: grid;
+            gap: 12px;
 
-  .requirement-card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
+            .requirement-card {
+              padding: 20px 22px;
+              border: 1px solid var(--line);
+              background-color: var(--surface);
+              box-shadow: var(--shadow-small);
 
-  .requirement-title {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 9px;
-  }
+              &:has(.status-closed) {
+                opacity: 0.68;
+              }
 
-  .requirement-card > p {
-    margin: 15px 0 0;
-    white-space: pre-wrap;
-    color: var(--text);
-  }
+              > p {
+                margin: 15px 0 0;
+                white-space: pre-wrap;
+                color: var(--text);
+              }
 
-  .response-area {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 16px;
-    padding-top: 13px;
-    border-top: 1px dashed var(--line);
-  }
+              .requirement-card-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
 
-  .response-label {
-    flex: 0 0 auto;
-    color: var(--text-muted);
-    font-size: 0.72rem;
-  }
+                .requirement-title {
+                  display: flex;
+                  align-items: center;
+                  flex-wrap: wrap;
+                  gap: 9px;
 
-  .response-avatars {
-    display: flex;
-    align-items: center;
-  }
+                  .requirement-count-label {
+                    color: var(--text-muted);
+                    font-size: 0.8rem;
+                  }
+                }
+              }
 
-  .response-avatars .author + .author {
-    margin-left: -6px;
-  }
+              .response-area {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-top: 16px;
+                padding-top: 13px;
+                border-top: 1px dashed var(--line);
 
-  .response-avatars .author-avatar {
-    border-color: var(--surface);
-  }
+                .response-label {
+                  flex: 0 0 auto;
+                  color: var(--text-muted);
+                  font-size: 0.72rem;
+                }
 
-  .requirement-actions {
-    margin-top: 16px;
-  }
+                .response-avatars {
+                  display: flex;
+                  align-items: center;
 
-  .requirement-actions form {
-    display: inline-flex;
-  }
+                  .author + .author {
+                    margin-left: -6px;
+                  }
 
-  .commission-updates {
-    margin-top: 54px;
-  }
+                  .author-avatar {
+                    border-color: var(--surface);
+                  }
+                }
+              }
 
-  .commission-updates .section-heading {
-    margin-bottom: 17px;
-  }
+              .requirement-actions {
+                margin-top: 16px;
 
-  .update-form {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
-  }
+                form {
+                  display: inline-flex;
+                }
+              }
+            }
+          }
+        }
 
-  .update-form textarea {
-    min-height: 130px;
-    margin-bottom: 12px;
-  }
+        .commission-updates {
+          margin-top: 54px;
 
-  .detail-aside {
-    position: sticky;
-    top: 110px;
-    align-self: start;
-  }
+          .section-heading {
+            margin-bottom: 17px;
+          }
 
-  .aside-note {
-    margin: 18px 0 0;
-    color: var(--text-muted);
-    font-size: 0.78rem;
-  }
+          ul {
+            display: grid;
+            gap: 10px;
+            margin: 0 0 20px;
+            padding: 0;
+            list-style: none;
 
-  .commission-owner-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 9px;
-    margin-top: 28px;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
-  }
+            li {
+              padding: 16px 18px;
+              border-left: 2px solid var(--gold);
+              background-color: var(--surface);
+              box-shadow: var(--shadow-small);
 
-  .commission-owner-actions form {
-    display: inline-flex;
+              p {
+                margin: 0 0 8px;
+                white-space: pre-wrap;
+              }
+            }
+          }
+
+          form {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--line);
+
+            textarea {
+              min-height: 130px;
+              margin-bottom: 12px;
+            }
+          }
+        }
+      }
+
+      > aside {
+        position: sticky;
+        top: 110px;
+        align-self: start;
+
+        .contact-box {
+          padding: 22px;
+          border: 1px solid color-mix(in oklch, var(--accent) 52%, var(--line));
+          background: color-mix(in oklch, var(--accent) 10%, var(--surface));
+          color: color-mix(
+            in oklch,
+            var(--accent) 78%,
+            light-dark(black, white)
+          );
+
+          strong {
+            display: block;
+            margin-bottom: 12px;
+            color: var(--forest);
+            font-family: var(--serif);
+            font-size: 1.1rem;
+            font-weight: 600;
+          }
+
+          div {
+            padding: 7px 0;
+            border-top: 1px solid
+              color-mix(in srgb, var(--accent) 40%, transparent);
+            color: color-mix(
+              in oklch,
+              var(--accent) 78%,
+              light-dark(black, white)
+            );
+            font-size: 0.87rem;
+
+            &:first-of-type {
+              border-top: 0;
+            }
+          }
+        }
+
+        p {
+          margin: 18px 0 0;
+          color: var(--text-muted);
+          font-size: 0.78rem;
+        }
+
+        .commission-owner-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 9px;
+          margin-top: 28px;
+          padding-top: 20px;
+          border-top: 1px solid var(--line);
+
+          form {
+            display: inline-flex;
+          }
+        }
+      }
+    }
   }
 
   @media (max-width: 768px) {
-    .detail-header {
+    header {
       padding-top: 30px;
+
+      h1 {
+        font-size: 2.25rem;
+      }
     }
 
-    .detail-header h1 {
-      font-size: 2.25rem;
-    }
-
-    .detail-columns {
+    article > div {
       display: flex;
       flex-direction: column;
       padding-top: 32px;
     }
 
-    .detail-aside {
+    aside {
       position: static;
     }
 
     .requirement-card {
       padding: 17px;
-    }
 
-    .requirement-card-head {
-      align-items: flex-start;
-      flex-direction: column;
-    }
+      .requirement-card-head {
+        align-items: flex-start;
+        flex-direction: column;
 
-    .requirement-card-head .status {
-      align-self: flex-start;
+        .status {
+          align-self: flex-start;
+        }
+      }
     }
 
     .response-area {

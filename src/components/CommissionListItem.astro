@@ -38,9 +38,7 @@ const openRequirements = commission.requirements.filter(
           </>
         )
       }
-      <time class="commission-card-date"
-        >{formatDate(commission.created_at)}</time
-      >
+      <time>{formatDate(commission.created_at)}</time>
     </span>
     <span class="commission-card-top-meta">
       <AuthorAvatar
@@ -52,13 +50,9 @@ const openRequirements = commission.requirements.filter(
       />
     </span>
   </div>
-  <a class="commission-card-link" href={`/commissions/${commission.id}`}>
+  <a href={`/commissions/${commission.id}`}>
     <h2>{commission.title}</h2>
-    {
-      commission.description && (
-        <p class="commission-excerpt">{commission.description}</p>
-      )
-    }
+    {commission.description && <p>{commission.description}</p>}
   </a>
   <div class="commission-card-footer">
     <span class="tags">
@@ -70,3 +64,170 @@ const openRequirements = commission.requirements.filter(
     </span>
   </div>
 </li>
+
+<style>
+  li {
+    position: relative;
+    min-width: 0;
+
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--shadow-small);
+    overflow: hidden;
+
+    transition: 0.2s;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      width: 3px;
+      height: 100%;
+      background-color: var(--accent);
+
+      transition: 0.2s;
+      opacity: 0;
+    }
+
+    &:hover {
+      border-color: color-mix(in oklch, var(--accent) 60%, var(--line));
+      box-shadow: var(--shadow);
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+
+  li > a {
+    display: block;
+    padding: 0 24px;
+
+    h2 {
+      margin: 0 0 7px;
+      color: var(--forest);
+      font-size: 1.28rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0 0 15px;
+      overflow: hidden;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+
+    &:hover h2 {
+      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+    }
+  }
+
+  .commission-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px 24px 0;
+    margin-bottom: 11px;
+  }
+
+  .commission-card-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+
+    time {
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 400;
+      text-transform: none;
+    }
+  }
+
+  .commission-card-top-meta {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 12px;
+  }
+
+  .commission-card-footer {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 11px 24px 13px;
+    border-top: 1px dashed color-mix(in srgb, var(--line) 75%, transparent);
+  }
+
+  .requirement-pin {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 11px;
+    height: 11px;
+    flex: 0 0 auto;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+  }
+
+  .requirement-pin-open {
+    color: var(--on-forest);
+    background-color: var(--success);
+    box-shadow:
+      0 0 0 1px var(--success),
+      0 0 0 3px color-mix(in oklch, var(--forest) 24%, light-dark(white, black)),
+      0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
+  }
+
+  .requirement-pin-closed {
+    color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+    background-color: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--line) 50%, var(--text-muted)),
+      0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
+  }
+
+  @media (max-width: 768px) {
+    li > a {
+      padding-inline: 20px;
+    }
+
+    .commission-card-top {
+      align-items: flex-start;
+      gap: 7px;
+    }
+
+    .commission-card-footer {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 11px;
+      padding: 11px 20px 13px;
+    }
+  }
+</style>

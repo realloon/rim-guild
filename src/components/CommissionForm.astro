@@ -238,6 +238,16 @@ const submitLabel = commission ? '保存修改' : '发布'
 <style>
   form {
     max-width: 820px;
+
+    > .form-section {
+      padding: 0;
+      border: 0;
+      background: transparent;
+
+      legend {
+        margin-bottom: 16px;
+      }
+    }
   }
 
   .requirement-pairs {
@@ -269,24 +279,14 @@ const submitLabel = commission ? '保存修改' : '发布'
       flex: 0 0 100%;
       min-height: 72px;
     }
-  }
 
-  .requirement-pair + .requirement-pair {
-    padding-top: 16px;
-  }
+    & + & {
+      padding-top: 16px;
+    }
 
-  .requirement-pair:last-child {
-    padding-bottom: 0;
-  }
-
-  form > .form-section {
-    padding: 0;
-    border: 0;
-    background: transparent;
-  }
-
-  form > .form-section legend {
-    margin-bottom: 16px;
+    &:last-child {
+      padding-bottom: 0;
+    }
   }
 
   .requirement-count {
@@ -300,7 +300,7 @@ const submitLabel = commission ? '保存修改' : '发布'
     height: 32px;
     padding: 0;
     box-sizing: border-box;
-    background: none;
+    background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0;
     color: var(--text-muted);
@@ -317,21 +317,21 @@ const submitLabel = commission ? '保存修改' : '发布'
     padding: 7px 0;
     border: 0;
     border-radius: 0;
-    background: transparent;
+    background-color: transparent;
     color: var(--text-muted);
     font-size: 0.8rem;
     font-weight: 700;
     transition: 0.2s;
-  }
 
-  .add-requirement:hover {
-    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-  }
+    &:hover {
+      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+    }
 
-  .add-requirement:disabled {
-    color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
-    cursor: not-allowed;
-    opacity: 0.6;
+    &:disabled {
+      color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   }
 
   .form-actions {
@@ -339,11 +339,11 @@ const submitLabel = commission ? '保存修改' : '发布'
     align-items: center;
     flex-wrap: wrap;
     gap: 14px;
-  }
 
-  .form-actions > span {
-    color: var(--text-muted);
-    font-size: 0.76rem;
+    > span {
+      color: var(--text-muted);
+      font-size: 0.76rem;
+    }
   }
 
   @media (max-width: 768px) {
