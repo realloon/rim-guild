@@ -112,8 +112,8 @@ if (!profile) {
           </section>
 
           <div class="section-heading">
-            <h2>TA 的委托</h2>
-            <span class="section-count">{commissions.length} 条记录</span>
+            <h2>{profile.author_name}的委托</h2>
+            <span class="section-count">{commissions.length}条记录</span>
           </div>
           {commissions.length > 0 ? (
             <ul class="commission-list">
@@ -122,7 +122,7 @@ if (!profile) {
               ))}
             </ul>
           ) : (
-            <p class="empty">TA 还没有发布委托</p>
+            <p class="empty">TA还没有发布委托</p>
           )}
         </>
       ) : (

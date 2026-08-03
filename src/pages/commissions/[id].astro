@@ -170,7 +170,7 @@ for (const claim of claimRows) {
                 <div class="section-heading">
                   <h2>需求</h2>
                   <span class="section-count">
-                    {commission.requirements.length} 项需求
+                    {commission.requirements.length}项需求
                   </span>
                 </div>
 
@@ -189,9 +189,9 @@ for (const claim of claimRows) {
                               {requirementTypeLabel(requirement.type)}
                             </span>
                             <span class="requirement-count-label">
-                              共需 {requirement.count} 人
+                              共需{requirement.count}人
                               {claims.length > 0
-                                ? `，${claims.length} 人已认领`
+                                ? `，${claims.length}人已认领`
                                 : ''}
                             </span>
                           </div>
@@ -317,7 +317,7 @@ for (const claim of claimRows) {
                 <div class="section-heading">
                   <h2>委托进展</h2>
                   <span class="section-count">
-                    {commissionUpdateRows.length} 条记录
+                    {commissionUpdateRows.length}条记录
                   </span>
                 </div>
                 {commissionUpdateRows.length > 0 ? (

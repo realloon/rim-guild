@@ -157,7 +157,9 @@ const isHome = Astro.url.pathname === '/'
     <slot />
 
     <footer class="site-footer">
-      <span>Copyright © 2026 RimGuild. All Rights Reserved.</span>
+      <span
+        >Copyright © {new Date().getFullYear()} RimGuild. All Rights Reserved.</span
+      >
       <span>让创意成为创造</span>
     </footer>
   </body>
