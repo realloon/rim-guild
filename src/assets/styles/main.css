@@ -539,7 +539,7 @@ time {
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
-  padding-bottom: 26px;
+  padding-bottom: 24px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -581,8 +581,9 @@ time {
 .profile-contacts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin: 8px 0 28px;
+  gap: 16px;
+
+  margin-top: 24px;
 }
 
 .profile-contact-item {
@@ -611,43 +612,4 @@ time {
 
 .profile-section {
   margin-top: 52px;
-}
-
-@media (max-width: 768px) {
-  main {
-    padding-top: 32px;
-    padding-bottom: 64px;
-  }
-
-  .page-heading {
-    margin-bottom: 28px;
-  }
-
-  .section-heading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .profile-hero {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .profile-identity .author-avatar {
-    width: 60px;
-    height: 60px;
-  }
-
-  .profile-contacts {
-    grid-template-columns: 1fr;
-  }
-
-  .form-section {
-    padding: 16px;
-  }
-
-  .profile-identity {
-    gap: 13px;
-  }
 }

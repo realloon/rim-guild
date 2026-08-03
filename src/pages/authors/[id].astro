@@ -69,7 +69,7 @@ if (!profile) {
                   src={avatarUrl(profile.token, 72)}
                   width={72}
                   height={72}
-                  alt={`${profile.author_name} 的头像`}
+                  alt="avatar"
                 />
                 <div>
                   <h1>{profile.author_name}</h1>
@@ -84,7 +84,7 @@ if (!profile) {
                   )}
                 </div>
               </div>
-              <span class="profile-badge">发布者</span>
+              <span class="profile-badge">注册会员</span>
             </div>
             {(profile.qq || profile.github || profile.steam) && (
               <div class="profile-contacts">
@@ -110,19 +110,22 @@ if (!profile) {
             )}
           </section>
 
-          <div class="section-heading">
-            <h2>{profile.author_name}的委托</h2>
-            <span class="section-count">{commissions.length}条记录</span>
-          </div>
-          {commissions.length > 0 ? (
-            <ul class="commission-list">
-              {commissions.map(commission => (
-                <CommissionListItem commission={commission} />
-              ))}
-            </ul>
-          ) : (
-            <p class="empty">TA还没有发布委托</p>
-          )}
+          <section>
+            <header>
+              <h2>{profile.author_name}的委托</h2>
+              <span>{commissions.length}条记录</span>
+            </header>
+
+            {commissions.length > 0 ? (
+              <ul class="commission-list">
+                {commissions.map(commission => (
+                  <CommissionListItem commission={commission} />
+                ))}
+              </ul>
+            ) : (
+              <p class="empty">TA还没有发布委托</p>
+            )}
+          </section>
         </>
       ) : (
         <p class="not-found">该作者不存在</p>
@@ -130,3 +133,23 @@ if (!profile) {
     }
   </main>
 </Layout>
+
+<style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 16px;
+
+    h2 {
+      font-size: 2rem;
+      color: var(--forest);
+    }
+
+    span {
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      color: var(--text-muted);
+    }
+  }
+</style>

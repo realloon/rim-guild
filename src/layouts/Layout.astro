@@ -136,7 +136,7 @@ const isHome = Astro.url.pathname === '/'
 
   <slot />
 
-  <footer class="site-footer">
+  <footer>
     <span
       >Copyright © {new Date().getFullYear()} RimGuild. All Rights Reserved.</span
     >
@@ -331,7 +331,7 @@ const isHome = Astro.url.pathname === '/'
     }
   }
 
-  .site-footer {
+  footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -343,7 +343,8 @@ const isHome = Astro.url.pathname === '/'
 
     padding-block: 24px;
     border-top: 1px solid var(--line);
-    margin-top: 72px;
+
+    margin-top: 96px;
 
     span:first-of-type {
       font-family: var(--mono);
