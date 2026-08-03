@@ -18,15 +18,15 @@ const submitLabel = commission ? '保存修改' : '发布'
 ---
 
 <script>
-  const form = document.querySelector<HTMLFormElement>('[data-requirement-form]')
+  const form = document.querySelector(
+    'form[data-requirement-form]',
+  ) as HTMLFormElement | null
   if (form) {
-    const pairs = form.querySelector<HTMLElement>('.requirement-pairs')!
-    const addBtn = form.querySelector<HTMLButtonElement>('.add-requirement')!
+    const pairs = form.querySelector('.requirement-pairs') as HTMLElement
+    const addBtn = form.querySelector('.add-requirement') as HTMLButtonElement
 
     const updateRequirementOptions = () => {
-      const selects = Array.from(
-        pairs.querySelectorAll<HTMLSelectElement>('select[name="requirementTypes"]'),
-      )
+      const selects = Array.from(pairs.querySelectorAll('select'))
       const selectedRoles = new Set(selects.map(select => select.value))
 
       selects.forEach(select => {
@@ -37,19 +37,22 @@ const submitLabel = commission ? '保存修改' : '发布'
       })
 
       addBtn.disabled =
-        selects.length >= (selects[0]?.options.length ?? Number.POSITIVE_INFINITY)
+        selects.length >=
+        (selects[0]?.options.length ?? Number.POSITIVE_INFINITY)
     }
 
     const makePair = () => {
-      const template = pairs.querySelector<HTMLElement>('.requirement-pair')!
+      const template = pairs.querySelector('.requirement-pair') as HTMLElement
       const pair = template.cloneNode(true) as HTMLDivElement
-      const removeBtn = pair.querySelector<HTMLButtonElement>('.remove-requirement')!
+      const removeBtn = pair.querySelector(
+        '.remove-requirement',
+      ) as HTMLButtonElement
       removeBtn.hidden = false
-      const select = pair.querySelector<HTMLSelectElement>('select')!
+      const select = pair.querySelector('select')!
       const usedRoles = new Set(
-        Array.from(
-          pairs.querySelectorAll<HTMLSelectElement>('select[name="requirementTypes"]'),
-        ).map(existingSelect => existingSelect.value),
+        Array.from(pairs.querySelectorAll('select')).map(
+          existingSelect => existingSelect.value,
+        ),
       )
       Array.from(select.options).forEach(option => {
         option.disabled = false
@@ -60,13 +63,9 @@ const submitLabel = commission ? '保存修改' : '发布'
       if (nextRole) {
         select.value = nextRole.value
       }
-      const descInput = pair.querySelector<HTMLTextAreaElement>(
-        'textarea[name="requirementDescriptions"]',
-      )!
+      const descInput = pair.querySelector('textarea')!
       descInput.value = ''
-      const countInput = pair.querySelector<HTMLInputElement>(
-        'input[name="requirementCounts"]',
-      )!
+      const countInput = pair.querySelector('input')!
       countInput.value = '1'
       return pair
     }
@@ -78,27 +77,25 @@ const submitLabel = commission ? '保存修改' : '发布'
     })
 
     pairs.addEventListener('change', event => {
-      if ((event.target as HTMLElement).matches('select[name="requirementTypes"]')) {
+      if (
+        (event.target as HTMLElement).matches('select[name="requirementTypes"]')
+      ) {
         updateRequirementOptions()
       }
     })
 
     pairs.addEventListener('click', event => {
-      const btn = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      const btn = (event.target as HTMLElement).closest(
         '.remove-requirement',
-      )
+      ) as HTMLButtonElement | null
       if (btn) {
         const pair = btn.closest<HTMLElement>('.requirement-pair')!
         if (pairs.querySelectorAll('.requirement-pair').length > 1) {
           pair.remove()
         } else {
-          const descInput = pair.querySelector<HTMLTextAreaElement>(
-            'textarea[name="requirementDescriptions"]',
-          )!
+          const descInput = pair.querySelector('textarea')!
           descInput.value = ''
-          const countInput = pair.querySelector<HTMLInputElement>(
-            'input[name="requirementCounts"]',
-          )!
+          const countInput = pair.querySelector('input')!
           countInput.value = '1'
         }
         updateRequirementOptions()
@@ -110,7 +107,11 @@ const submitLabel = commission ? '保存修改' : '发布'
 </script>
 
 <form method="POST" action={action} data-requirement-form>
-  {commission && <input type="hidden" name="commissionId" value={commission.id} />}
+  {
+    commission && (
+      <input type="hidden" name="commissionId" value={commission.id} />
+    )
+  }
 
   <label class="form-field" for="title">
     委托标题
@@ -300,12 +301,12 @@ const submitLabel = commission ? '保存修改' : '发布'
     background: none;
     border: 0;
     border-radius: 0;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 1rem;
     line-height: 1;
 
     &:hover {
-      border-color: var(--contact-border);
+      border-color: color-mix(in oklch, var(--accent) 52%, var(--line));
       color: var(--danger);
     }
   }
@@ -316,18 +317,18 @@ const submitLabel = commission ? '保存修改' : '发布'
     border: 0;
     border-radius: 0;
     background: transparent;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.8rem;
     font-weight: 700;
     transition: 0.2s;
   }
 
   .add-requirement:hover {
-    color: var(--accent-strong);
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
 
   .add-requirement:disabled {
-    color: var(--border-strong);
+    color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
     cursor: not-allowed;
     opacity: 0.6;
   }
@@ -340,7 +341,7 @@ const submitLabel = commission ? '保存修改' : '发布'
   }
 
   .form-actions > span {
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.76rem;
   }
 

@@ -159,7 +159,7 @@ const clearFilterHref = isRecommended
               stroke-dasharray="2 7"></path>
             <path
               d="m75 46 11 18 21 4-15 15 3 21-20-10-20 10 3-21-15-15 21-4 11-18Z"
-              fill="var(--accent-soft)"
+              fill="color-mix(in oklch, var(--accent) 22%, light-dark(white, black))"
               stroke="var(--accent)"
               stroke-width="2"></path>
           </svg>
@@ -319,7 +319,7 @@ const clearFilterHref = isRecommended
   .hero-lede {
     max-width: 580px;
     margin: 30px 0 0;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 1rem;
   }
 
@@ -341,8 +341,8 @@ const clearFilterHref = isRecommended
     min-height: 360px;
     padding: 20px;
     border: 1px solid var(--forest);
-    background: var(--hero-note-surface);
-    box-shadow: 11px 11px 0 var(--shadow-small-color);
+    background: color-mix(in srgb, var(--surface) 64%, transparent);
+    box-shadow: 11px 11px 0 light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
     transform: rotate(1.3deg);
   }
 
@@ -384,7 +384,7 @@ const clearFilterHref = isRecommended
   .hero-note > p {
     margin: 0 0 20px;
     color: var(--forest);
-    font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif;
+    font-family: var(--serif);
     font-size: 1rem;
     line-height: 1.55;
     text-align: center;
@@ -396,7 +396,7 @@ const clearFilterHref = isRecommended
     gap: 10px;
     margin: 0;
     padding-top: 15px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
   }
 
   .hero-note dl div {
@@ -407,14 +407,14 @@ const clearFilterHref = isRecommended
   }
 
   .hero-note dt {
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.7rem;
   }
 
   .hero-note dd {
     margin: 0;
-    color: var(--accent-strong);
-    font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif;
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+    font-family: var(--serif);
     font-size: 1.5rem;
   }
 
@@ -440,16 +440,16 @@ const clearFilterHref = isRecommended
     min-width: 0;
     min-height: 48px;
     padding: 0 14px;
-    border: 1px solid var(--border-strong);
+    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
     border-radius: 3px;
-    background: var(--bg-raised);
-    color: var(--text-dim);
-    box-shadow: inset 0 1px 2px var(--control-shadow-color);
+    background: var(--surface);
+    color: var(--text-muted);
+    box-shadow: inset 0 1px 2px light-dark(rgb(73 57 40 / 0.04), rgb(0 0 0 / 0.2));
   }
 
   .search-input:focus-within {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--focus-ring-color);
+    box-shadow: 0 0 0 3px light-dark(rgb(189 93 67 / 0.13), rgb(232 140 108 / 0.22));
   }
 
   .search-input svg {
@@ -488,23 +488,23 @@ const clearFilterHref = isRecommended
     gap: 7px;
     margin-bottom: 24px;
     padding: 14px 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
   }
 
   .filter-nav a {
     padding: 5px 11px;
     border: 1px solid transparent;
     border-radius: 999px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.8rem;
     text-decoration: none;
     transition: 0.2s;
   }
 
   .filter-nav a:hover {
-    border-color: var(--border-strong);
-    color: var(--accent-strong);
+    border-color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
 
   .filter-nav a.active {
@@ -517,15 +517,14 @@ const clearFilterHref = isRecommended
     display: grid;
     min-height: 230px;
     padding: 42px 24px;
-    border: 1px dashed var(--border-strong);
+    border: 1px dashed color-mix(in oklch, var(--line) 50%, var(--text-muted));
     place-items: center;
     text-align: center;
   }
 
   .empty-state > span {
     color: var(--accent);
-    font-family:
-      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: var(--mono);
     font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -533,7 +532,7 @@ const clearFilterHref = isRecommended
 
   .empty-state p {
     margin: 8px 0 10px;
-    color: var(--text-dim);
+    color: var(--text-muted);
   }
 
   @media (max-width: 900px) {

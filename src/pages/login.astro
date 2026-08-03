@@ -29,27 +29,39 @@ const result = mode === 'register' ? registerResult : loginResult
     <section class="auth-intro">
       <div class="auth-symbol" aria-hidden="true">
         <svg viewBox="0 0 120 120" fill="none">
-          <rect x="14" y="14" width="92" height="92" stroke="currentColor" />
-          <path d="M31 39h58M31 60h37M31 81h58" stroke="currentColor" stroke-width="2" />
-          <path d="m78 52 11 8-11 8" stroke="var(--accent)" stroke-width="3" stroke-linecap="square" />
+          <rect x="14" y="14" width="92" height="92" stroke="currentColor"
+          ></rect>
+          <path
+            d="M31 39h58M31 60h37M31 81h58"
+            stroke="currentColor"
+            stroke-width="2"></path>
+          <path
+            d="m78 52 11 8-11 8"
+            stroke="var(--accent)"
+            stroke-width="3"
+            stroke-linecap="square"></path>
         </svg>
       </div>
       <h1>进入协作现场。</h1>
-      <p>
-        用一个账号管理你发布的委托，也让合作者知道该从哪里找到你。
-      </p>
+      <p>用一个账号管理你发布的委托，也让合作者知道该从哪里找到你。</p>
       <div class="auth-principles">
-        <div><span>01</span><strong>发布</strong><small>说清楚你正在做什么</small></div>
-        <div><span>02</span><strong>匹配</strong><small>找到能补上缺口的人</small></div>
+        <div>
+          <span>01</span><strong>发布</strong><small>说清楚你正在做什么</small>
+        </div>
+        <div>
+          <span>02</span><strong>匹配</strong><small>找到能补上缺口的人</small>
+        </div>
       </div>
     </section>
 
     <section class="auth-card">
       <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
       <p class="auth-note">
-        {mode === 'register'
-          ? '创建账号后，你可以发布委托、认领需求并维护个人资料。'
-          : '登录后继续管理你的委托和协作记录。'}
+        {
+          mode === 'register'
+            ? '创建账号后，你可以发布委托、认领需求并维护个人资料。'
+            : '登录后继续管理你的委托和协作记录。'
+        }
       </p>
 
       <form method="POST" action={action}>
@@ -81,7 +93,12 @@ const result = mode === 'register' ? registerResult : loginResult
         <button class="btn btn-primary btn-block" type="submit">
           {mode === 'register' ? '注册' : '登录'}
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M3 8h10m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" />
+            <path
+              d="M3 8h10m-4-4 4 4-4 4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="square"
+              stroke-linejoin="miter"></path>
           </svg>
         </button>
       </form>
@@ -91,14 +108,18 @@ const result = mode === 'register' ? registerResult : loginResult
           mode === 'register' ? (
             <>
               已有账号？
-              <a href={`/login?next=${encodeURIComponent(redirectTo)}`}>去登录</a>
+              <a href={`/login?next=${encodeURIComponent(redirectTo)}`}>
+                去登录
+              </a>
             </>
           ) : (
             <>
               没有账号？
               <a
                 href={`/login?mode=register&next=${encodeURIComponent(redirectTo)}`}
-              >去注册</a>
+              >
+                去注册
+              </a>
             </>
           )
         }
@@ -130,7 +151,7 @@ const result = mode === 'register' ? registerResult : loginResult
   .auth-intro > p {
     max-width: 420px;
     margin-bottom: 30px;
-    color: var(--text-dim);
+    color: var(--text-muted);
   }
 
   .auth-symbol {
@@ -148,7 +169,7 @@ const result = mode === 'register' ? registerResult : loginResult
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     max-width: 440px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
   }
 
   .auth-principles > div {
@@ -160,33 +181,33 @@ const result = mode === 'register' ? registerResult : loginResult
 
   .auth-principles > div + div {
     padding-left: 14px;
-    border-left: 1px solid var(--border);
+    border-left: 1px solid var(--line);
   }
 
   .auth-principles span {
     grid-row: span 2;
     color: var(--accent);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: var(--mono);
     font-size: 0.65rem;
     font-weight: 700;
   }
 
   .auth-principles strong {
     color: var(--forest);
-    font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", serif;
+    font-family: var(--serif);
     font-size: 1rem;
   }
 
   .auth-principles small {
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.72rem;
   }
 
   .auth-card {
     padding: clamp(24px, 5vw, 42px);
-    border: 1px solid var(--border-strong);
+    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
     border-top: 4px solid var(--accent);
-    background: var(--bg-raised);
+    background: var(--surface);
     box-shadow: var(--shadow);
   }
 
@@ -199,7 +220,7 @@ const result = mode === 'register' ? registerResult : loginResult
 
   .auth-note {
     margin: 14px 0 28px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.87rem;
   }
 
@@ -211,14 +232,14 @@ const result = mode === 'register' ? registerResult : loginResult
   .auth-switch {
     margin: 24px 0 0;
     padding-top: 18px;
-    border-top: 1px solid var(--border);
-    color: var(--text-dim);
+    border-top: 1px solid var(--line);
+    color: var(--text-muted);
     font-size: 0.83rem;
     text-align: center;
   }
 
   .auth-switch a {
-    color: var(--accent-strong);
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
     font-weight: 700;
   }
 

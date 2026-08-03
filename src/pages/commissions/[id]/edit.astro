@@ -38,7 +38,9 @@ if (result && !result.error && commission) {
 ---
 
 <Layout
-  title={commission ? `编辑 ${commission.title} · 边缘工会` : '委托不存在 · 边缘工会'}
+  title={commission
+    ? `编辑 ${commission.title} · 边缘工会`
+    : '委托不存在 · 边缘工会'}
   back
 >
   <main>
@@ -49,7 +51,9 @@ if (result && !result.error && commission) {
             <div class="page-heading">
               <div>
                 <h1>编辑委托</h1>
-                <p>更新委托说明、需求类型或人数，让所有正在关注这份委托的人看到最新状态。</p>
+                <p>
+                  更新委托说明、需求类型或人数，让所有正在关注这份委托的人看到最新状态。
+                </p>
               </div>
             </div>
 
@@ -71,9 +75,9 @@ if (result && !result.error && commission) {
 <style>
   .editor-card {
     padding: clamp(22px, 5vw, 46px);
-    border: 1px solid var(--border);
+    border: 1px solid var(--line);
     border-top: 3px solid var(--forest);
-    background: var(--bg-raised);
+    background: var(--surface);
     box-shadow: var(--shadow);
   }
 </style>

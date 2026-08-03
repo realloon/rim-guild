@@ -165,11 +165,11 @@ if (result && !result.error) {
                 placeholder="例如：阿哲"
               />
             </label>
-        <CheckboxGroup
-          legend="创作者身份"
-          name="creatorTypes"
-          options={CREATOR_TYPES}
-          checked={myCreatorTypes}
+            <CheckboxGroup
+              legend="创作者身份"
+              name="creatorTypes"
+              options={CREATOR_TYPES}
+              checked={myCreatorTypes}
             />
             <fieldset class="form-section">
               <legend>联系方式</legend>
@@ -215,7 +215,7 @@ if (result && !result.error) {
 
         <section class="profile-section" id="commissions">
           <div class="section-heading">
-          <h2>我的委托</h2>
+            <h2>我的委托</h2>
             <span class="section-count">{commissions.length} 条记录</span>
           </div>
           {
@@ -226,14 +226,14 @@ if (result && !result.error) {
                 ))}
               </ul>
             ) : (
-          <p class="empty">你还没有发布过委托</p>
+              <p class="empty">你还没有发布过委托</p>
             )
           }
         </section>
 
         <section class="profile-section" id="claims">
           <div class="section-heading">
-          <h2>我认领的</h2>
+            <h2>我认领的</h2>
             <span class="section-count">{claimedRows.length} 条记录</span>
           </div>
           {
@@ -244,7 +244,7 @@ if (result && !result.error) {
                 ))}
               </ul>
             ) : (
-          <p class="empty">你还没有认领过需求</p>
+              <p class="empty">你还没有认领过需求</p>
             )
           }
         </section>
@@ -270,7 +270,8 @@ if (result && !result.error) {
   .profile-index nav {
     display: grid;
     gap: 0;
-    border-left: 1px solid var(--border-strong);
+    border-left: 1px solid
+      color-mix(in oklch, var(--line) 50%, var(--text-muted));
   }
 
   .profile-index a {
@@ -279,7 +280,7 @@ if (result && !result.error) {
     gap: 8px;
     padding: 9px 10px 9px 12px;
     border-left: 2px solid transparent;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.8rem;
     text-decoration: none;
     transition: 0.2s;
@@ -287,16 +288,19 @@ if (result && !result.error) {
 
   .profile-index a span {
     color: var(--accent);
-    font-family:
-      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: var(--mono);
     font-size: 0.63rem;
     font-weight: 700;
   }
 
   .profile-index a:hover {
     border-color: var(--accent);
-    background: var(--accent-soft);
-    color: var(--accent-strong);
+    background: color-mix(
+      in oklch,
+      var(--accent) 22%,
+      light-dark(white, black)
+    );
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
 
   .profile-content > :is(.profile-card, .profile-section) {

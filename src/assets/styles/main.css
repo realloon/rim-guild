@@ -1,82 +1,30 @@
 :root {
   color-scheme: light dark;
-  --canvas: light-dark(#dcd5ca, #0e1110);
-  --bg: light-dark(#f1ede5, #171a18);
-  --bg-raised: light-dark(#fffdf8, #222622);
-  --bg-soft: light-dark(#e9e2d7, #2b302c);
-  --border: light-dark(#d7cec0, #41483f);
-  --border-strong: light-dark(#b9ad9d, #687267);
+  --sans: system-ui, ui-sans-serif, sans-serif;
+  --serif: ui-serif, serif;
+  --mono: ui-monospace, monospace;
+  --page: light-dark(#f1ede5, #171a18);
+  --surface: light-dark(#fffdf8, #222622);
+  --line: light-dark(#d7cec0, #41483f);
   --text: light-dark(#252c29, #eee9df);
-  --text-dim: light-dark(#69716b, #aab2a8);
+  --text-muted: light-dark(#69716b, #aab2a8);
   --accent: light-dark(#bd5d43, #e88c6c);
-  --accent-strong: light-dark(#973f2d, #f2aa8b);
-  --accent-soft: light-dark(#f1d8cd, #4b302d);
   --forest: light-dark(#2e4a40, #b8cdbd);
-  --forest-soft: light-dark(#dce6df, #2a4035);
   --gold: light-dark(#bd8737, #e0aa5f);
   --success: light-dark(#397459, #8fc79d);
   --danger: light-dark(#a3473d, #ef9a91);
   --on-accent: light-dark(#fffaf4, #2a1712);
   --on-forest: light-dark(#fffaf4, #14201a);
   --on-danger: light-dark(#fffaf4, #291514);
-  --forest-hover: light-dark(#20382f, #cde2d0);
-  --header-bg: light-dark(rgb(241 237 229 / 0.9), rgb(23 26 24 / 0.9));
-  --shadow-color: light-dark(rgb(73 57 40 / 0.08), rgb(0 0 0 / 0.34));
-  --shadow-small-color: light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
-  --button-shadow-color: light-dark(rgb(151 63 45 / 0.2), rgb(0 0 0 / 0.3));
-  --button-hover-shadow-color: light-dark(
-    rgb(151 63 45 / 0.18),
-    rgb(0 0 0 / 0.38)
-  );
-  --forest-shadow-color: light-dark(rgb(32 54 46 / 0.2), rgb(0 0 0 / 0.35));
-  --control-shadow-color: light-dark(rgb(73 57 40 / 0.04), rgb(0 0 0 / 0.2));
-  --focus-ring-color: light-dark(
-    rgb(189 93 67 / 0.13),
-    rgb(232 140 108 / 0.22)
-  );
-  --surface-translucent: light-dark(
-    rgb(255 253 248 / 0.48),
-    rgb(34 38 34 / 0.72)
-  );
-  --chip-surface: light-dark(rgb(255 253 248 / 0.68), rgb(34 38 34 / 0.68));
-  --hero-note-surface: light-dark(
-    rgb(255 253 248 / 0.64),
-    rgb(34 38 34 / 0.72)
-  );
-  --detail-description-surface: light-dark(
-    rgb(255 253 248 / 0.72),
-    rgb(34 38 34 / 0.72)
-  );
-  --placeholder: light-dark(#9b9d96, #727b72);
-  --input-focus-bg: light-dark(#fffefa, #292d29);
-  --error-border: light-dark(#d8a6a0, #8f514b);
-  --error-bg: light-dark(#f8e8e4, #382321);
-  --error-text: light-dark(#873a32, #f0b1a5);
-  --tag-border: light-dark(#d99c88, #a96b58);
-  --success-border: light-dark(#8db49c, #5b8b6c);
-  --card-hover-border: light-dark(#c79786, #a96854);
-  --card-divider: light-dark(rgb(215 206 192 / 0.75), rgb(65 72 63 / 0.75));
-  --badge-border: light-dark(#d49a88, #a96b58);
-  --contact-border: light-dark(#d29b86, #a96b58);
-  --contact-bg: light-dark(#f9e8df, #3a2927);
-  --contact-divider: light-dark(rgb(210 155 134 / 0.4), rgb(169 107 88 / 0.42));
   --site-header-height: 64px;
-  --shadow: 0 18px 40px var(--shadow-color);
-  --shadow-small: 0 7px 18px var(--shadow-small-color);
+  --shadow: 0 18px 40px light-dark(rgb(73 57 40 / 0.08), rgb(0 0 0 / 0.34));
+  --shadow-small: 0 7px 18px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
   text-autospace: normal;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    'Noto Sans SC',
-    'PingFang SC',
-    sans-serif;
+  font-family: var(--sans);
   line-height: 1.5;
   color: var(--text);
   scrollbar-gutter: stable both-edges;
-  background: var(--canvas);
+  background: var(--page);
 }
 
 * {
@@ -91,7 +39,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: var(--bg);
+  background-color: var(--page);
 }
 
 body,
@@ -128,7 +76,7 @@ p {
 h1,
 h2,
 h3 {
-  font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif;
+  font-family: var(--serif);
   letter-spacing: -0.025em;
 }
 
@@ -168,7 +116,7 @@ p {
 .page-heading > div:first-child > p:last-child {
   max-width: 620px;
   margin: 18px 0 0;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 1rem;
 }
 
@@ -189,8 +137,8 @@ p {
 }
 
 .section-count {
-  color: var(--text-dim);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-muted);
+  font-family: var(--mono);
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   white-space: nowrap;
@@ -206,7 +154,7 @@ p {
   border: 1px solid transparent;
   border-radius: 3px;
   background: var(--accent);
-  box-shadow: 0 3px 0 var(--button-shadow-color);
+  box-shadow: 0 3px 0 light-dark(rgb(151 63 45 / 0.2), rgb(0 0 0 / 0.3));
   color: var(--on-accent);
   font-size: 0.9rem;
   font-weight: 700;
@@ -216,8 +164,8 @@ p {
 }
 
 .btn:hover {
-  background: var(--accent-strong);
-  box-shadow: 0 4px 0 var(--button-hover-shadow-color);
+  background: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+  box-shadow: 0 4px 0 light-dark(rgb(151 63 45 / 0.18), rgb(0 0 0 / 0.38));
   color: var(--on-accent);
 }
 
@@ -227,32 +175,32 @@ p {
 
 .btn-primary {
   background: var(--forest);
-  box-shadow: 0 3px 0 var(--forest-shadow-color);
+  box-shadow: 0 3px 0 light-dark(rgb(32 54 46 / 0.2), rgb(0 0 0 / 0.35));
   color: var(--on-forest);
 }
 
 .btn-primary:hover {
-  background: var(--forest-hover);
+  background: color-mix(in oklch, var(--forest) 78%, light-dark(black, white));
   color: var(--on-forest);
 }
 
 .btn-ghost {
   background: transparent;
-  border-color: var(--border-strong);
+  border-color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
   box-shadow: none;
   color: var(--text);
 }
 
 .btn-ghost:hover {
-  background: var(--surface, var(--bg-raised));
+  background: var(--surface);
   border-color: var(--accent);
   box-shadow: none;
-  color: var(--accent-strong);
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
 }
 
 .btn-danger {
   background: transparent;
-  border-color: var(--contact-border);
+  border-color: color-mix(in oklch, var(--accent) 52%, var(--line));
   box-shadow: none;
   color: var(--danger);
 }
@@ -280,7 +228,7 @@ p {
   align-items: center;
   gap: 8px;
   white-space: nowrap;
-  color: var(--accent-strong);
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   font-size: 0.88rem;
   font-weight: 700;
   text-decoration: none;
@@ -308,15 +256,16 @@ form {
   margin: 0;
 }
 
-form :where(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
+form
+  :where(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
   width: 100%;
   min-height: 46px;
   padding: 10px 13px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
   border-radius: 3px;
   outline: 0;
-  background-color: var(--bg-raised);
-  box-shadow: inset 0 1px 2px var(--control-shadow-color);
+  background-color: var(--surface);
+  box-shadow: inset 0 1px 2px light-dark(rgb(73 57 40 / 0.04), rgb(0 0 0 / 0.2));
   color: var(--text);
   font-size: 0.93rem;
   transition: 0.2s;
@@ -328,7 +277,7 @@ form
     select,
     textarea
   )::placeholder {
-  color: var(--placeholder);
+  color: color-mix(in oklch, var(--text-muted) 55%, var(--surface));
 }
 
 form
@@ -338,8 +287,9 @@ form
     textarea
   ):focus {
   border-color: var(--accent);
-  background-color: var(--input-focus-bg);
-  box-shadow: 0 0 0 3px var(--focus-ring-color);
+  background-color: color-mix(in oklch, var(--surface) 86%, white);
+  box-shadow: 0 0 0 3px
+    light-dark(rgb(189 93 67 / 0.13), rgb(232 140 108 / 0.22));
 }
 
 form textarea {
@@ -354,11 +304,11 @@ form select {
   padding-right: 42px;
   border: 0;
   border-radius: 0;
-  background-color: var(--bg);
+  background-color: var(--page);
   box-shadow: none;
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--text-dim) 50%),
-    linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
   background-position:
     calc(100% - 17px) 50%,
     calc(100% - 12px) 50%;
@@ -368,27 +318,27 @@ form select {
 
 form select:focus {
   border: 0;
-  background-color: var(--bg);
+  background-color: var(--page);
   box-shadow: none;
 }
 
 form :where(input:not([type='hidden']):not([type='checkbox']), textarea) {
   border: 0;
   border-radius: 0;
-  background-color: var(--bg);
+  background-color: var(--page);
   box-shadow: none;
 }
 
 form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   border: 0;
-  background-color: var(--bg);
+  background-color: var(--page);
   box-shadow: none;
 }
 
 .form-field {
   display: block;
   margin-bottom: 22px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.045em;
@@ -410,7 +360,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 .form-section legend {
   margin-bottom: 10px;
   padding: 0;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.045em;
@@ -419,9 +369,9 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 .form-section {
   margin: 0 0 28px;
   padding: 22px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 4px;
-  background: var(--surface-translucent);
+  background: color-mix(in srgb, var(--surface) 48%, transparent);
 }
 
 .option-checkboxes {
@@ -436,10 +386,10 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   gap: 8px;
   min-height: 36px;
   padding: 6px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--chip-surface);
-  color: var(--text-dim);
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 0.84rem;
   transition: 0.2s;
@@ -454,29 +404,29 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 
 .option-checkbox:hover {
   border-color: var(--accent);
-  color: var(--accent-strong);
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
 }
 
 .option-checkbox:has(input:checked) {
   border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: color-mix(in oklch, var(--accent) 22%, light-dark(white, black));
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
 }
 
 .field-note {
   margin: 0 0 10px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.84rem;
 }
 
 .error {
   margin: 18px 0;
   padding: 12px 14px;
-  border: 1px solid var(--error-border);
+  border: 1px solid color-mix(in oklch, var(--danger) 45%, var(--line));
   border-left: 3px solid var(--danger);
   border-radius: 3px;
-  background: var(--error-bg);
-  color: var(--error-text);
+  background: color-mix(in oklch, var(--danger) 12%, var(--page));
+  color: color-mix(in oklch, var(--danger) 80%, light-dark(black, white));
   font-size: 0.85rem;
 }
 
@@ -500,8 +450,8 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 
 .tag {
   padding: 3px 10px;
-  border: 1px solid var(--tag-border);
-  color: var(--accent-strong);
+  border: 1px solid color-mix(in oklch, var(--accent) 52%, var(--line));
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -513,15 +463,15 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 }
 
 .status-open {
-  border: 1px solid var(--success-border);
-  background: var(--forest-soft);
+  border: 1px solid color-mix(in oklch, var(--success) 55%, var(--line));
+  background: color-mix(in oklch, var(--forest) 24%, light-dark(white, black));
   color: var(--success);
 }
 
 .status-closed {
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
-  color: var(--text-dim);
+  border: 1px solid var(--line);
+  background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
+  color: var(--text-muted);
 }
 
 .author {
@@ -529,21 +479,21 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   align-items: center;
   gap: 8px;
   min-width: 0;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.82rem;
   text-decoration: none;
   white-space: nowrap;
 }
 
 .author:hover {
-  color: var(--accent-strong);
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
 }
 
 .author-avatar {
   flex-shrink: 0;
-  border: 2px solid var(--bg-raised);
+  border: 2px solid var(--surface);
   border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--border);
+  box-shadow: 0 0 0 1px var(--line);
 }
 
 .commission-list {
@@ -558,9 +508,9 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   position: relative;
   min-width: 0;
   margin: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 4px;
-  background: var(--bg-raised);
+  background: var(--surface);
   box-shadow: var(--shadow-small);
   overflow: hidden;
   transition: 0.2s;
@@ -579,7 +529,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 }
 
 .commission-list > li:hover {
-  border-color: var(--card-hover-border);
+  border-color: color-mix(in oklch, var(--accent) 60%, var(--line));
   box-shadow: var(--shadow);
 }
 
@@ -602,7 +552,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 }
 
 .commission-card-link:hover h2 {
-  color: var(--accent-strong);
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
 }
 
 .commission-card-top {
@@ -619,8 +569,8 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-dim);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-muted);
+  font-family: var(--mono);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -635,7 +585,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 }
 
 .commission-card-date {
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-family: inherit;
   font-size: 0.72rem;
   font-weight: 400;
@@ -649,7 +599,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   width: 11px;
   height: 11px;
   flex: 0 0 auto;
-  border: 2px solid var(--bg-raised);
+  border: 2px solid var(--surface);
   border-radius: 50%;
 }
 
@@ -669,23 +619,23 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   background: var(--success);
   box-shadow:
     0 0 0 1px var(--success),
-    0 0 0 3px var(--forest-soft),
-    0 1px 3px var(--shadow-small-color);
+    0 0 0 3px color-mix(in oklch, var(--forest) 24%, light-dark(white, black)),
+    0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
 }
 
 .requirement-pin-closed {
-  color: var(--border-strong);
-  background: var(--bg-soft);
+  color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+  background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
   box-shadow:
-    0 0 0 1px var(--border-strong),
-    0 1px 3px var(--shadow-small-color);
+    0 0 0 1px color-mix(in oklch, var(--line) 50%, var(--text-muted)),
+    0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
 }
 
 .commission-excerpt {
   display: -webkit-box;
   margin: 0 0 15px;
   overflow: hidden;
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.88rem;
   line-height: 1.7;
   -webkit-box-orient: vertical;
@@ -698,7 +648,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   align-items: center;
   min-height: 52px;
   padding: 11px 24px 13px;
-  border-top: 1px dashed var(--card-divider);
+  border-top: 1px dashed color-mix(in srgb, var(--line) 75%, transparent);
 }
 
 .tags {
@@ -712,7 +662,7 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
 }
 
 time {
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.76rem;
   white-space: nowrap;
 }
@@ -720,25 +670,25 @@ time {
 .empty {
   margin: 0;
   padding: 64px 24px;
-  border: 1px dashed var(--border-strong);
+  border: 1px dashed color-mix(in oklch, var(--line) 50%, var(--text-muted));
   border-radius: 4px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   text-align: center;
 }
 
 .not-found {
   margin: 0;
   padding: 100px 24px;
-  color: var(--text-dim);
+  color: var(--text-muted);
   text-align: center;
 }
 
 .profile-card {
   margin-bottom: 52px;
   padding: clamp(22px, 4vw, 38px);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 4px;
-  background: var(--bg-raised);
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 
@@ -748,7 +698,7 @@ time {
   justify-content: space-between;
   gap: 24px;
   padding-bottom: 26px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 
 .profile-identity {
@@ -773,16 +723,16 @@ time {
 }
 
 .profile-email {
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.82rem;
 }
 
 .profile-badge {
   flex-shrink: 0;
   padding: 5px 9px;
-  border: 1px solid var(--badge-border);
-  color: var(--accent-strong);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  border: 1px solid color-mix(in oklch, var(--accent) 52%, var(--line));
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+  font-family: var(--mono);
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -805,15 +755,15 @@ time {
 
 .profile-contact-item {
   padding: 13px 14px;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  border: 1px solid var(--line);
+  background: var(--page);
 }
 
 .profile-contact-item strong {
   display: block;
   margin-bottom: 4px;
-  color: var(--text-dim);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-muted);
+  font-family: var(--mono);
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -840,30 +790,30 @@ time {
 }
 
 .tag-muted {
-  border-color: var(--border);
-  color: var(--text-dim);
+  border-color: var(--line);
+  color: var(--text-muted);
 }
 
 .contact-box {
   padding: 22px;
-  border: 1px solid var(--contact-border);
-  background: var(--contact-bg);
-  color: var(--accent-strong);
+  border: 1px solid color-mix(in oklch, var(--accent) 52%, var(--line));
+  background: color-mix(in oklch, var(--accent) 10%, var(--surface));
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
 }
 
 .contact-box strong {
   display: block;
   margin-bottom: 12px;
   color: var(--forest);
-  font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif;
+  font-family: var(--serif);
   font-size: 1.1rem;
   font-weight: 600;
 }
 
 .contact-box div {
   padding: 7px 0;
-  border-top: 1px solid var(--contact-divider);
-  color: var(--accent-strong);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   font-size: 0.87rem;
 }
 
@@ -872,7 +822,7 @@ time {
 }
 
 .requirement-count-label {
-  color: var(--text-dim);
+  color: var(--text-muted);
   font-size: 0.8rem;
 }
 
@@ -887,7 +837,7 @@ time {
 .commission-updates li {
   padding: 16px 18px;
   border-left: 2px solid var(--gold);
-  background: var(--bg-raised);
+  background: var(--surface);
   box-shadow: var(--shadow-small);
 }
 

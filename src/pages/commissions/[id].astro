@@ -38,7 +38,9 @@ const isOwner =
   !!commission && Astro.locals.auth?.profileToken === commission.author_token
 const myProfileToken = Astro.locals.auth?.profileToken ?? null
 
-const requirementStatusResult = Astro.getActionResult(actions.updateRequirementStatus)
+const requirementStatusResult = Astro.getActionResult(
+  actions.updateRequirementStatus,
+)
 if (requirementStatusResult && !requirementStatusResult.error && commission) {
   return Astro.redirect(`/commissions/${commission.id}`)
 }
@@ -59,7 +61,11 @@ if (updateResult && !updateResult.error && commission) {
   return Astro.redirect(`/commissions/${commission.id}`)
 }
 
-let commissionUpdateRows: { id: number; content: string; created_at: string }[] = []
+let commissionUpdateRows: {
+  id: number
+  content: string
+  created_at: string
+}[] = []
 let claimRows: {
   commission_id: number
   requirement_type: string
@@ -107,7 +113,9 @@ for (const claim of claimRows) {
 ---
 
 <script>
-  const forms = document.querySelectorAll<HTMLFormElement>('[data-confirm]')
+  const forms = Array.from(document.forms).filter(form =>
+    form.hasAttribute('data-confirm'),
+  )
   forms.forEach(form => {
     form.addEventListener('submit', event => {
       const message = form.dataset.confirm
@@ -119,7 +127,9 @@ for (const claim of claimRows) {
 </script>
 
 <Layout
-  title={commission ? `${commission.title} · 边缘工会` : '委托不存在 · 边缘工会'}
+  title={commission
+    ? `${commission.title} · 边缘工会`
+    : '委托不存在 · 边缘工会'}
   back
 >
   <main>
@@ -159,12 +169,15 @@ for (const claim of claimRows) {
               <section class="requirement-section">
                 <div class="section-heading">
                   <h2>委托需求</h2>
-                  <span class="section-count">{commission.requirements.length} 项需求</span>
+                  <span class="section-count">
+                    {commission.requirements.length} 项需求
+                  </span>
                 </div>
 
                 <div class="requirement-list">
                   {commission.requirements.map(requirement => {
-                    const claims = claimsByRequirement.get(requirement.type) ?? []
+                    const claims =
+                      claimsByRequirement.get(requirement.type) ?? []
                     const registered = claims.some(
                       r => r.profile_token === myProfileToken,
                     )
@@ -172,7 +185,9 @@ for (const claim of claimRows) {
                       <div class="requirement-card">
                         <div class="requirement-card-head">
                           <div class="requirement-title">
-                            <span class="tag">{requirementTypeLabel(requirement.type)}</span>
+                            <span class="tag">
+                              {requirementTypeLabel(requirement.type)}
+                            </span>
                             <span class="requirement-count-label">
                               共需 {requirement.count} 人
                               {claims.length > 0
@@ -229,7 +244,9 @@ for (const claim of claimRows) {
                                 type="hidden"
                                 name="status"
                                 value={
-                                  requirement.status === 'open' ? 'closed' : 'open'
+                                  requirement.status === 'open'
+                                    ? 'closed'
+                                    : 'open'
                                 }
                               />
                               <button
@@ -250,10 +267,7 @@ for (const claim of claimRows) {
                                 登录后认领需求
                               </a>
                             ) : registered ? (
-                              <form
-                                method="POST"
-                                action={actions.cancelClaim}
-                              >
+                              <form method="POST" action={actions.cancelClaim}>
                                 <input
                                   type="hidden"
                                   name="commissionId"
@@ -301,8 +315,10 @@ for (const claim of claimRows) {
 
               <section class="commission-updates">
                 <div class="section-heading">
-                    <h2>委托进展</h2>
-                  <span class="section-count">{commissionUpdateRows.length} 条记录</span>
+                  <h2>委托进展</h2>
+                  <span class="section-count">
+                    {commissionUpdateRows.length} 条记录
+                  </span>
                 </div>
                 {commissionUpdateRows.length > 0 ? (
                   <ul>
@@ -322,7 +338,11 @@ for (const claim of claimRows) {
                     method="POST"
                     action={actions.addCommissionUpdate}
                   >
-                    <input type="hidden" name="commissionId" value={commission.id} />
+                    <input
+                      type="hidden"
+                      name="commissionId"
+                      value={commission.id}
+                    />
                     <Textarea
                       name="content"
                       required
@@ -351,8 +371,12 @@ for (const claim of claimRows) {
               <section class="contact-box">
                 <strong>发布者联系方式</strong>
                 {commission.author_qq && <div>QQ：{commission.author_qq}</div>}
-                {commission.author_github && <div>GitHub：{commission.author_github}</div>}
-                {commission.author_steam && <div>Steam：{commission.author_steam}</div>}
+                {commission.author_github && (
+                  <div>GitHub：{commission.author_github}</div>
+                )}
+                {commission.author_steam && (
+                  <div>Steam：{commission.author_steam}</div>
+                )}
                 {!commission.author_qq &&
                   !commission.author_github &&
                   !commission.author_steam && <div>未填写</div>}
@@ -364,7 +388,10 @@ for (const claim of claimRows) {
 
               {isOwner && (
                 <div class="commission-owner-actions">
-                    <a class="btn btn-ghost" href={`/commissions/${commission.id}/edit`}>
+                  <a
+                    class="btn btn-ghost"
+                    href={`/commissions/${commission.id}/edit`}
+                  >
                     编辑委托
                   </a>
                   <form
@@ -372,7 +399,11 @@ for (const claim of claimRows) {
                     action={actions.deleteCommission}
                     data-confirm="确定删除这份委托吗？删除后不可恢复。"
                   >
-                    <input type="hidden" name="commissionId" value={commission.id} />
+                    <input
+                      type="hidden"
+                      name="commissionId"
+                      value={commission.id}
+                    />
                     <button class="btn btn-danger" type="submit">
                       删除
                     </button>
@@ -397,7 +428,7 @@ for (const claim of claimRows) {
 
   .detail-header {
     padding: 40px 0 34px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--line);
   }
 
   .detail-header h1 {
@@ -421,11 +452,11 @@ for (const claim of claimRows) {
   }
 
   .detail-meta .author:hover {
-    color: var(--accent-strong);
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
 
   .meta-separator {
-    color: var(--border-strong);
+    color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
   }
 
   .detail-columns {
@@ -439,7 +470,7 @@ for (const claim of claimRows) {
     margin-bottom: 22px;
     padding: 22px 24px;
     border-left: 3px solid var(--accent);
-    background: var(--detail-description-surface);
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
   }
 
   .detail-description p {
@@ -465,8 +496,8 @@ for (const claim of claimRows) {
 
   .requirement-card {
     padding: 20px 22px;
-    border: 1px solid var(--border);
-    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    background: var(--surface);
     box-shadow: var(--shadow-small);
   }
 
@@ -501,12 +532,12 @@ for (const claim of claimRows) {
     gap: 12px;
     margin-top: 16px;
     padding-top: 13px;
-    border-top: 1px dashed var(--border);
+    border-top: 1px dashed var(--line);
   }
 
   .response-label {
     flex: 0 0 auto;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.72rem;
   }
 
@@ -520,7 +551,7 @@ for (const claim of claimRows) {
   }
 
   .response-avatars .author-avatar {
-    border-color: var(--bg-raised);
+    border-color: var(--surface);
   }
 
   .requirement-actions {
@@ -542,7 +573,7 @@ for (const claim of claimRows) {
   .update-form {
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
   }
 
   .update-form textarea {
@@ -558,7 +589,7 @@ for (const claim of claimRows) {
 
   .aside-note {
     margin: 18px 0 0;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.78rem;
     line-height: 1.7;
   }
@@ -569,7 +600,7 @@ for (const claim of claimRows) {
     gap: 9px;
     margin-top: 28px;
     padding-top: 20px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--line);
   }
 
   .commission-owner-actions form {

@@ -17,9 +17,11 @@ const attrs = Astro.props
   }
 
   const setup = () => {
-    document
-      .querySelectorAll<HTMLTextAreaElement>(
-        'textarea[data-auto-resize]:not([data-auto-resize-ready])',
+    Array.from(document.getElementsByTagName('textarea'))
+      .filter(
+        textarea =>
+          textarea.hasAttribute('data-auto-resize') &&
+          !textarea.hasAttribute('data-auto-resize-ready'),
       )
       .forEach(textarea => {
         textarea.dataset.autoResizeReady = 'true'

@@ -70,7 +70,9 @@ const isHome = Astro.url.pathname === '/'
           }
           <a
             class="btn btn-primary publish-link"
-            href={profileToken ? '/commissions/new' : '/login?next=/commissions/new'}
+            href={profileToken
+              ? '/commissions/new'
+              : '/login?next=/commissions/new'}
           >
             <span>发布委托</span>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -157,8 +159,8 @@ const isHome = Astro.url.pathname === '/'
     z-index: 10;
     width: 100%;
     margin: 0;
-    background: var(--header-bg);
-    box-shadow: 0 8px 18px var(--bg);
+    background: color-mix(in srgb, var(--page) 90%, transparent);
+    box-shadow: 0 8px 18px var(--page);
     backdrop-filter: blur(14px);
   }
 
@@ -203,16 +205,15 @@ const isHome = Astro.url.pathname === '/'
   }
 
   .brand-copy strong {
-    font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif;
+    font-family: var(--serif);
     font-size: 1.12rem;
     font-weight: 600;
     line-height: 1;
   }
 
   .brand-copy small {
-    color: var(--text-dim);
-    font-family:
-      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--text-muted);
+    font-family: var(--mono);
     font-size: 0.56rem;
     font-weight: 700;
     letter-spacing: 0.09em;
@@ -229,7 +230,7 @@ const isHome = Astro.url.pathname === '/'
   .site-nav a {
     position: relative;
     padding: 21px 0 20px;
-    color: var(--text-dim);
+    color: var(--text-muted);
     font-size: 0.83rem;
     font-weight: 700;
     text-decoration: none;
@@ -250,7 +251,7 @@ const isHome = Astro.url.pathname === '/'
 
   .site-nav a:hover,
   .site-nav a.active {
-    color: var(--accent-strong);
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
 
   .site-nav a.active::after,
@@ -285,10 +286,10 @@ const isHome = Astro.url.pathname === '/'
     width: 40px;
     height: 40px;
     padding: 1px;
-    border: 1px solid var(--border-strong);
+    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
     border-radius: 50%;
     background: transparent;
-    color: var(--text-dim);
+    color: var(--text-muted);
     line-height: 0;
     place-items: center;
     anchor-name: --profile-anchor;
@@ -297,7 +298,7 @@ const isHome = Astro.url.pathname === '/'
 
   .header-profile:hover {
     border-color: var(--accent);
-    color: var(--accent-strong);
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
 
   .header-profile .author-avatar {
@@ -328,9 +329,9 @@ const isHome = Astro.url.pathname === '/'
     min-width: 178px;
     margin: 0;
     padding: 8px;
-    border: 1px solid var(--border-strong);
+    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
     border-radius: 3px;
-    background: var(--bg-raised);
+    background: var(--surface);
     box-shadow: var(--shadow);
   }
 
@@ -342,7 +343,7 @@ const isHome = Astro.url.pathname === '/'
     height: 1px;
     margin: 8px 4px;
     border: 0;
-    background: var(--border);
+    background: var(--line);
   }
 
   .profile-menu a,
@@ -361,8 +362,8 @@ const isHome = Astro.url.pathname === '/'
 
   .profile-menu a:hover,
   .profile-menu .menu-item:hover {
-    background: var(--bg-soft);
-    color: var(--accent-strong);
+    background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
+    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
   }
 
   .site-footer {
@@ -374,10 +375,9 @@ const isHome = Astro.url.pathname === '/'
     max-width: 1160px;
     margin: 0 auto;
     padding: 20px 0 28px;
-    border-top: 1px solid var(--border);
-    color: var(--text-dim);
-    font-family:
-      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    border-top: 1px solid var(--line);
+    color: var(--text-muted);
+    font-family: var(--mono);
     font-size: 0.66rem;
     letter-spacing: 0.04em;
   }
