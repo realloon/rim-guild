@@ -96,18 +96,6 @@ h3 {
   border: 0;
 }
 
-.page-heading {
-  margin-bottom: 36px;
-
-  h1 {
-    max-width: 720px;
-    margin: 0;
-    color: var(--forest);
-    font-size: 4.6rem;
-    font-weight: 500;
-  }
-}
-
 .section-heading {
   display: flex;
   align-items: flex-end;
