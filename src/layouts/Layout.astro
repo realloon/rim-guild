@@ -13,7 +13,17 @@ const profileToken = Astro.locals.auth?.profileToken ?? null
 const isHome = Astro.url.pathname === '/'
 ---
 
-<!doctype html>
+<script>
+  const profileMenu = document.querySelector<HTMLElement>('#profile-menu')!
+  const items = profileMenu.querySelectorAll('a')
+
+  items.forEach(item =>
+    item.addEventListener('click', () => {
+      profileMenu.hidePopover()
+    }),
+  )
+</script>
+
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
@@ -23,429 +33,330 @@ const isHome = Astro.url.pathname === '/'
     <title>{title}</title>
   </head>
   <body>
-    <header class="site-header">
-      <div class="site-header-inner">
-        <a class="brand" href="/" aria-label="边缘工会首页">
-          <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 36 36" fill="none">
-              <path
-                d="M7 8.5h22M7 14.5h15M7 20.5h22M7 26.5h15"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="square"></path>
-              <path
-                d="m25 14 4 4-4 4"
-                stroke="var(--accent)"
-                stroke-width="2.5"
-                stroke-linecap="square"
-                stroke-linejoin="miter"></path>
-            </svg>
-          </span>
-          <span class="brand-copy">
-            <strong>边缘工会</strong>
-            <small>模组创作者协作平台</small>
-          </span>
+    <header>
+      <a href="/" aria-label="home">
+        <svg aria-hidden="true" viewBox="0 0 36 36" fill="none">
+          <path
+            d="M7 8.5h22M7 14.5h15M7 20.5h22M7 26.5h15"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="square"></path>
+          <path
+            d="m25 14 4 4-4 4"
+            stroke="var(--accent)"
+            stroke-width="2.5"
+            stroke-linecap="square"
+            stroke-linejoin="miter"></path>
+        </svg>
+        <h1>边缘工会</h1>
+      </a>
+
+      <nav aria-label="主导航">
+        <a class:list={{ active: isHome }} href="/#board">查看委托</a>
+      </nav>
+
+      <section>
+        {
+          back && (
+            <a class="back-link header-back" href="/">
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M13 8H3m4-4-4 4 4 4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="square"
+                  stroke-linejoin="miter"
+                />
+              </svg>
+              <span>返回列表</span>
+            </a>
+          )
+        }
+        <a
+          class="btn publish-link"
+          href={profileToken
+            ? '/commissions/new'
+            : '/login?next=/commissions/new'}
+        >
+          <span>发布委托</span>
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M8 3v10M3 8h10"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="square"></path>
+          </svg>
         </a>
-
-        <nav class="site-nav" aria-label="主导航">
-          <a class:list={{ active: isHome }} href="/#board">查看委托</a>
-        </nav>
-
-        <div class="header-actions">
+        <button
+          type="button"
+          popovertarget="profile-menu"
+          aria-label="打开账户菜单"
+        >
           {
-            back && (
-              <a class="back-link header-back" href="/">
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path
-                    d="M13 8H3m4-4-4 4 4 4"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="square"
-                    stroke-linejoin="miter"
-                  />
-                </svg>
-                <span>返回列表</span>
-              </a>
+            profileToken ? (
+              <img
+                src={avatarUrl(profileToken, 36)}
+                width={36}
+                height={36}
+                alt=""
+              />
+            ) : (
+              <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+                <circle
+                  cx="10"
+                  cy="7"
+                  r="3"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M4.5 17c.7-3 2.5-4.5 5.5-4.5s4.8 1.5 5.5 4.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
             )
           }
-          <a
-            class="btn btn-primary publish-link"
-            href={profileToken
-              ? '/commissions/new'
-              : '/login?next=/commissions/new'}
-          >
-            <span>发布委托</span>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M8 3v10M3 8h10"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="square"></path>
-            </svg>
-          </a>
-          <button
-            class="header-profile"
-            type="button"
-            popovertarget="profile-menu"
-            aria-label="打开账户菜单"
-          >
-            {
-              profileToken ? (
-                <img
-                  class="author-avatar"
-                  src={avatarUrl(profileToken, 36)}
-                  width={36}
-                  height={36}
-                  alt=""
-                />
-              ) : (
-                <span class="header-profile-placeholder" aria-hidden="true">
-                  <svg viewBox="0 0 20 20" fill="none">
-                    <circle
-                      cx="10"
-                      cy="7"
-                      r="3"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                    />
-                    <path
-                      d="M4.5 17c.7-3 2.5-4.5 5.5-4.5s4.8 1.5 5.5 4.5"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                </span>
-              )
-            }
-          </button>
-        </div>
-      </div>
+        </button>
+      </section>
     </header>
-
-    <div id="profile-menu" popover>
-      {
-        profileToken ? (
-          <>
-            <a href="/me#profile">个人资料</a>
-            <a href="/me#commissions">我的委托</a>
-            <a href="/me#claims">我认领的</a>
-            <hr />
-            <form method="POST" action={actions.logout}>
-              <button class="menu-item" type="submit">
-                登出
-              </button>
-            </form>
-          </>
-        ) : (
-          <a href="/login?next=/me">登录</a>
-        )
-      }
-    </div>
-
-    <script>
-      const profileMenu = document.querySelector<HTMLElement>('#profile-menu')!
-      const items = profileMenu.querySelectorAll('a')
-
-      items.forEach(item =>
-        item.addEventListener('click', () => {
-          profileMenu.hidePopover()
-        }),
-      )
-    </script>
-
-    <slot />
-
-    <footer class="site-footer">
-      <span
-        >Copyright © {new Date().getFullYear()} RimGuild. All Rights Reserved.</span
-      >
-      <span>好的想法值得认真实现</span>
-    </footer>
   </body>
+
+  <div id="profile-menu" popover>
+    {
+      profileToken ? (
+        <>
+          <a href="/me#profile">个人资料</a>
+          <a href="/me#commissions">我的委托</a>
+          <a href="/me#claims">我认领的</a>
+          <hr />
+          <form method="POST" action={actions.logout}>
+            <button class="menu-item" type="submit">
+              登出
+            </button>
+          </form>
+        </>
+      ) : (
+        <a href="/login?next=/me">登录</a>
+      )
+    }
+  </div>
+
+  <slot />
+
+  <footer class="site-footer">
+    <span
+      >Copyright © {new Date().getFullYear()} RimGuild. All Rights Reserved.</span
+    >
+    <span>好的想法值得认真实现</span>
+  </footer>
 </html>
 
 <style>
-  .site-header {
+  header {
+    z-index: 1;
     position: sticky;
     top: 0;
-    z-index: 10;
-    width: 100%;
-    margin: 0;
-    background: color-mix(in srgb, var(--page) 90%, transparent);
+
+    display: flex;
+    align-items: center;
+    gap: 32px;
+
+    background-color: var(--page);
+    height: var(--site-header-height);
     box-shadow: 0 8px 18px var(--page);
-    backdrop-filter: blur(14px);
-  }
 
-  .site-header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    min-height: var(--site-header-height);
-  }
+    a[href='/'] {
+      display: flex;
+      align-items: center;
+      gap: 12px;
 
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 11px;
-    min-width: 0;
-    color: var(--forest);
-    text-decoration: none;
-  }
+      svg {
+        vertical-align: top;
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--forest);
+      }
 
-  .brand-mark {
-    display: grid;
-    width: 38px;
-    height: 38px;
-    flex: 0 0 auto;
-    box-sizing: border-box;
-    place-items: center;
-    border: 1px solid var(--forest);
-    color: var(--forest);
+      h1 {
+        font-size: 1.5rem;
+        font-family: var(--serif);
+        color: var(--forest);
+      }
+    }
 
-    svg {
-      width: 32px;
-      height: 32px;
+    nav {
+      flex-grow: 1;
+      justify-content: end;
+
+      display: flex;
+      align-items: center;
+      gap: 24px;
+
+      a {
+        position: relative;
+        color: var(--text-muted);
+
+        font-size: 0.875rem;
+        font-weight: bold;
+        text-decoration: none;
+
+        padding: 20px 0;
+
+        &::after {
+          content: '';
+          position: absolute;
+          right: 0;
+          left: 0;
+          bottom: 0px;
+
+          height: 2px;
+          background-color: var(--accent);
+
+          transition: 0.2s;
+          opacity: 0;
+          transform: scaleX(0.8);
+        }
+
+        &:hover,
+        &.active {
+          color: color-mix(
+            in oklch,
+            var(--accent) 78%,
+            light-dark(black, white)
+          );
+        }
+
+        &.active::after,
+        &:hover::after {
+          opacity: 1;
+        }
+      }
+    }
+
+    section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .publish-link {
+        background-color: var(--forest);
+
+        svg {
+          width: 14px;
+          height: 14px;
+          border: unset;
+        }
+      }
+
+      button {
+        background-color: transparent;
+
+        anchor-name: --profile-anchor;
+        place-items: center;
+
+        padding: 0;
+        border: 1px solid
+          color-mix(in oklch, var(--line) 50%, var(--text-muted));
+        border-radius: 50%;
+        transition: 0.2s;
+
+        &:hover {
+          color: color-mix(
+            in oklch,
+            var(--accent) 78%,
+            light-dark(black, white)
+          );
+          border-color: var(--accent);
+        }
+
+        img,
+        svg {
+          vertical-align: top;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: unset;
+        }
+      }
     }
   }
 
-  .brand-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-
-    strong {
-      font-family: var(--serif);
-      font-size: 1.5rem;
-    }
-
-    small {
-      color: var(--text-muted);
-      font-family: var(--mono);
-      font-size: 0.56rem;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-    }
-  }
-
-  .site-nav {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    margin-left: auto;
-  }
-
-  .site-nav a {
-    position: relative;
-    padding: 21px 0 20px;
-    color: var(--text-muted);
-    font-size: 0.83rem;
-    font-weight: 700;
-    text-decoration: none;
-  }
-
-  .site-nav a::after {
-    position: absolute;
-    right: 0;
-    bottom: -1px;
-    left: 0;
-    height: 2px;
-    background: var(--accent);
-    content: '';
-    opacity: 0;
-    transform: scaleX(0.35);
-    transition: 0.2s;
-  }
-
-  .site-nav a:hover,
-  .site-nav a.active {
-    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-  }
-
-  .site-nav a.active::after,
-  .site-nav a:hover::after {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .publish-link svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .header-back {
-    margin-right: 4px;
-    font-size: 0.78rem;
-  }
-
-  .header-back svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .header-profile {
-    display: grid;
-    width: 40px;
-    height: 40px;
-    padding: 1px;
-    box-sizing: border-box;
-    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
-    border-radius: 50%;
-    background: transparent;
-    color: var(--text-muted);
-    place-items: center;
-    anchor-name: --profile-anchor;
-    transition: 0.2s;
-  }
-
-  .header-profile:hover {
-    border-color: var(--accent);
-    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-  }
-
-  .header-profile .author-avatar {
-    width: 36px;
-    height: 36px;
-    border: 0;
-    box-shadow: none;
-  }
-
-  .header-profile-placeholder {
-    display: grid;
-    width: 34px;
-    height: 34px;
-    place-items: center;
-  }
-
-  .header-profile-placeholder svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  #profile-menu {
+  #profile-menu:popover-open {
     position: fixed;
     position-anchor: --profile-anchor;
     position-area: bottom span-left;
-    top: 10px;
-    z-index: 30;
-    min-width: 178px;
-    margin: 0;
-    padding: 8px;
-    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
-    border-radius: 3px;
-    background: var(--surface);
+    top: 8px;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: color-mix(in oklch, var(--surface) 90%, transparent);
+    backdrop-filter: blur(10px);
+
+    min-width: 8rem;
+    padding: 4px;
+    border: 1px solid color-mix(in oklch, var(--line) 50%, transparent);
+    border-radius: 12px;
     box-shadow: var(--shadow);
-  }
 
-  #profile-menu::backdrop {
-    background: transparent;
-  }
+    a,
+    .menu-item {
+      box-sizing: border-box;
 
-  #profile-menu hr {
-    height: 1px;
-    margin: 8px 4px;
-    border: 0;
-    background: var(--line);
-  }
+      font-size: 0.875rem;
+      text-align: left;
 
-  #profile-menu a,
-  #profile-menu .menu-item {
-    display: block;
-    width: 100%;
-    padding: 10px 11px;
-    border: 0;
-    border-radius: 2px;
-    background: transparent;
-    color: var(--text);
-    font-size: 0.84rem;
-    text-align: left;
-    text-decoration: none;
-  }
+      color: var(--text);
+      background-color: transparent;
 
-  #profile-menu a:hover {
-    background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
-    color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-  }
+      width: 100%;
+      padding: 10px 12px;
+      border: unset;
+      border-radius: 6px;
+    }
 
-  .menu-item:hover {
-    background-color: color-mix(
-      in oklch,
-      var(--accent) 22%,
-      light-dark(white, black)
-    );
+    a:hover {
+      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+      background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
+    }
+
+    .menu-item:hover {
+      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+      background-color: color-mix(
+        in oklch,
+        var(--accent) 22%,
+        light-dark(white, black)
+      );
+    }
+
+    hr {
+      height: 1px;
+      margin: 4px -4px;
+      border: unset;
+      background: var(--line);
+    }
   }
 
   .site-footer {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    padding: 20px 0 28px;
-    border-top: 1px solid var(--line);
+    align-items: center;
+    gap: 16px;
+
     color: var(--text-muted);
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.04em;
-  }
+    font-size: 0.75rem;
 
-  @media (max-width: 768px) {
-    .site-nav {
-      display: none;
+    padding-block: 24px;
+    border-top: 1px solid var(--line);
+
+    span:first-of-type {
+      font-family: var(--mono);
     }
 
-    .site-header .btn {
-      min-height: 38px;
-      padding: 8px 12px;
-      font-size: 0.78rem;
-    }
-
-    .header-back span {
-      display: none;
-    }
-
-    .header-back {
-      margin-right: 0;
-    }
-
-    .brand-copy small {
-      display: none;
-    }
-
-    .brand-copy strong {
-      font-size: 1rem;
-    }
-
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-    }
-
-    .brand-mark svg {
-      width: 27px;
-      height: 27px;
-    }
-
-    .publish-link span {
-      display: none;
-    }
-
-    .publish-link {
-      width: 38px;
-      min-height: 38px !important;
-      padding: 0 !important;
-    }
-
-    .site-footer {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 4px;
+    span:last-of-type {
+      font-family: var(--serif);
     }
   }
 </style>

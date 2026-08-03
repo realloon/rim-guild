@@ -56,6 +56,9 @@ main {
 
 a {
   color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  text-decoration: none;
 }
 
 button {
@@ -65,18 +68,19 @@ button {
 h1,
 h2,
 h3,
+h4,
+h5,
+h6,
 p {
-  margin-top: 0;
+  font-weight: normal;
+  margin-block: unset;
 }
 
 h1,
 h2,
 h3 {
   font-family: var(--serif);
-  letter-spacing: -0.025em;
-}
-
-p {
+  font-weight: bold;
 }
 
 .sr-only {
@@ -129,26 +133,25 @@ p {
   color: var(--text-muted);
   font-family: var(--mono);
   font-size: 0.72rem;
-  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  min-height: 42px;
-  padding: 9px 17px;
+
+  font-size: 0.875rem;
+  font-weight: bold;
+
+  color: var(--on-accent);
+  background-color: var(--accent);
+
+  padding: 8px 12px;
   border: 1px solid transparent;
   border-radius: 3px;
-  box-sizing: border-box;
-  background: var(--accent);
   box-shadow: 0 3px 0 light-dark(rgb(151 63 45 / 0.2), rgb(0 0 0 / 0.3));
-  color: var(--on-accent);
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-decoration: none;
+
   transition: 0.2s;
 }
 
@@ -330,7 +333,6 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 700;
-  letter-spacing: 0.045em;
 }
 
 .form-field > :is(input, select, textarea) {
@@ -351,7 +353,6 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 700;
-  letter-spacing: 0.045em;
 }
 
 .form-section {
@@ -561,7 +562,6 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   font-family: var(--mono);
   font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -577,7 +577,6 @@ form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   font-family: inherit;
   font-size: 0.72rem;
   font-weight: 400;
-  letter-spacing: 0;
   text-transform: none;
 }
 
@@ -722,7 +721,6 @@ time {
   font-family: var(--mono);
   font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
 }
 
 .profile-form {
@@ -752,7 +750,6 @@ time {
   color: var(--text-muted);
   font-family: var(--mono);
   font-size: 0.64rem;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
