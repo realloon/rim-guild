@@ -26,41 +26,21 @@ const result = mode === 'register' ? registerResult : loginResult
 
 <Layout title={mode === 'register' ? '注册 · 边缘工会' : '登录 · 边缘工会'}>
   <main>
-    <section>
-      <div aria-hidden="true">
-        <svg viewBox="0 0 120 120" fill="none">
-          <rect x="14" y="14" width="92" height="92" stroke="currentColor"
-          ></rect>
-          <path
-            d="M31 39h58M31 60h37M31 81h58"
-            stroke="currentColor"
-            stroke-width="2"></path>
-          <path
-            d="m78 52 11 8-11 8"
-            stroke="var(--accent)"
-            stroke-width="3"
-            stroke-linecap="square"></path>
-        </svg>
-      </div>
-      <h1>进入协作现场。</h1>
-      <p>用一个账号管理你发布的委托，也让合作者知道该从哪里找到你。</p>
-      <div>
-        <div>
-          <span>01</span><strong>发布</strong><small>说清楚你正在做什么</small>
-        </div>
-        <div>
-          <span>02</span><strong>匹配</strong><small>找到能补上缺口的人</small>
-        </div>
-      </div>
-    </section>
+    <aside>
+      <h1>
+        <span>加入</span>
+        <span>边缘工会</span>
+      </h1>
+      <p>成为工会会员，发布的委托，招揽合作者，或寻找合适你的委托。</p>
+    </aside>
 
     <section>
       <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
       <p>
         {
           mode === 'register'
-            ? '创建账号后，你可以发布委托、认领需求并维护个人资料。'
-            : '登录后继续管理你的委托和协作记录。'
+            ? '创建账号后，你可以发布委托、认领需求并维护个人资料'
+            : '登录后继续管理你的委托和协作记录'
         }
       </p>
 
@@ -130,141 +110,95 @@ const result = mode === 'register' ? registerResult : loginResult
 
 <style>
   main {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
-    gap: 96px;
+    display: flex;
     align-items: center;
-    min-height: calc(100vh - 200px);
-    padding-top: 40px;
+    flex-direction: row;
+    gap: 40px 16px;
+  }
 
-    & > section:first-child {
-      h1 {
-        max-width: 520px;
-        margin: 0 0 22px;
-        color: var(--forest);
-        font-size: 5.4rem;
-        font-weight: 500;
-      }
+  aside {
+    h1 {
+      color: var(--forest);
+      font-size: 4rem;
+      line-height: 1.25;
 
-      & > p {
-        max-width: 420px;
-        margin-bottom: 30px;
-        color: var(--text-muted);
-      }
-
-      & > div:first-child {
-        width: 130px;
-        margin: 0 0 30px;
-        color: var(--forest);
-
-        svg {
-          width: 100%;
-          height: auto;
-        }
-      }
-
-      & > div:last-child {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        max-width: 440px;
-        border-top: 1px solid var(--line);
-
-        & > div {
-          display: grid;
-          grid-template-columns: 28px 1fr;
-          gap: 0 8px;
-          padding: 14px 12px 0 0;
-
-          & + div {
-            padding-left: 14px;
-            border-left: 1px solid var(--line);
-          }
-        }
-
-        span {
-          grid-row: span 2;
+      span {
+        text-wrap-mode: nowrap;
+        &:last-of-type {
           color: var(--accent);
-          font-family: var(--mono);
-          font-size: 0.65rem;
-          font-weight: 700;
-        }
-
-        strong {
-          color: var(--forest);
-          font-family: var(--serif);
-          font-size: 1rem;
-        }
-
-        small {
-          color: var(--text-muted);
-          font-size: 0.72rem;
         }
       }
     }
 
-    & > section:last-child {
-      padding: 32px;
-      border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
-      border-top: 4px solid var(--accent);
-      background-color: var(--surface);
-      box-shadow: var(--shadow);
+    p {
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: 32px;
+    }
+  }
 
-      h2 {
-        margin: 0;
-        color: var(--forest);
-        font-size: 2rem;
-        font-weight: 500;
+  section:last-child {
+    flex-grow: 1;
+    flex-shrink: 0;
+
+    padding: 32px;
+    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
+    border-top: 4px solid var(--accent);
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+
+    @media (min-width: 768px) {
+      transform: rotate(1deg);
+      transition: 0.2s;
+      &:hover {
+        transform: rotate(0);
       }
+    }
 
-      p:first-of-type {
-        margin: 14px 0 28px;
-        color: var(--text-muted);
-        font-size: 0.87rem;
-      }
+    h2 {
+      margin: 0;
+      color: var(--forest);
+      font-size: 2rem;
+      font-weight: 500;
+    }
 
-      button svg {
-        width: 15px;
-        height: 15px;
-      }
+    p:first-of-type {
+      margin: 14px 0 28px;
+      color: var(--text-muted);
+      font-size: 0.87rem;
+    }
 
-      p:last-of-type {
-        margin: 24px 0 0;
-        padding-top: 18px;
-        border-top: 1px solid var(--line);
-        color: var(--text-muted);
-        font-size: 0.83rem;
-        text-align: center;
+    button svg {
+      width: 15px;
+      height: 15px;
+    }
 
-        a {
-          color: color-mix(
-            in oklch,
-            var(--accent) 78%,
-            light-dark(black, white)
-          );
-          font-weight: 700;
-        }
+    p:last-of-type {
+      margin: 24px 0 0;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--text-muted);
+      font-size: 0.83rem;
+      text-align: center;
+
+      a {
+        color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+        font-weight: 700;
       }
     }
   }
 
   @media (max-width: 768px) {
     main {
-      display: block;
-      min-height: auto;
-      padding-top: 24px;
+      flex-direction: column;
+    }
 
-      & > section:first-child {
-        margin-bottom: 40px;
+    aside h1 {
+      text-align: center;
+    }
 
-        & > div:first-child {
-          width: 92px;
-          margin-bottom: 22px;
-        }
-
-        h1 {
-          font-size: 2.8rem;
-        }
-      }
+    section:last-child {
+      align-self: stretch;
     }
   }
 </style>
