@@ -1,19 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import PostListItem from '../components/PostListItem.astro'
+import CommissionListItem from '../components/CommissionListItem.astro'
 import ErrorBox from '../components/ui/ErrorBox.astro'
 import CheckboxGroup from '../components/ui/CheckboxGroup.astro'
 import {
-  POST_SELECT,
-  ROLE_TYPES,
-  postFromRow,
-  roleLabel,
-  roleStatusLabel,
-  formatDate,
-  type Post,
-  type PostRow,
-  type RoleType,
-} from '../lib/posts'
+  COMMISSION_SELECT,
+  CREATOR_TYPES,
+  commissionFromRow,
+  type Commission,
+  type CommissionRow,
+  type RequirementType,
+} from '../lib/commissions'
 import { avatarUrl } from '../lib/avatar'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
@@ -27,7 +24,7 @@ if (!profileToken) {
 
 const profile = await db
   .prepare(
-    'SELECT author_name, qq, github, steam, roles, email FROM profiles WHERE token = ?',
+    'SELECT author_name, qq, github, steam, creator_types, email FROM profiles WHERE token = ?',
   )
   .bind(profileToken)
   .first<{
@@ -35,7 +32,7 @@ const profile = await db
     qq: string
     github: string
     steam: string
-    roles: string
+    creator_types: string
     email: string
   }>()
 
@@ -44,42 +41,66 @@ const myQq = profile?.qq ?? ''
 const myGithub = profile?.github ?? ''
 const mySteam = profile?.steam ?? ''
 const loggedEmail = profile?.email ?? ''
-const myRoles = profile?.roles
-  ? (profile.roles.split(',').filter(Boolean) as RoleType[])
+const myCreatorTypes = profile?.creator_types
+  ? (profile.creator_types.split(',').filter(Boolean) as RequirementType[])
   : []
 
 const { results } = await db
   .prepare(
-    `${POST_SELECT}
-		WHERE p.author_token = ?
-		GROUP BY p.id
-		ORDER BY p.created_at DESC, p.id DESC`,
+    `${COMMISSION_SELECT}
+		WHERE c.author_token = ?
+		GROUP BY c.id
+		ORDER BY c.created_at DESC, c.id DESC`,
   )
   .bind(profileToken)
-  .all<PostRow>()
-const posts: Post[] = results.map(postFromRow)
+  .all<CommissionRow>()
+const commissions: Commission[] = results.map(commissionFromRow)
 
 const { results: claimedRows } = await db
   .prepare(
-    `SELECT p.id AS post_id, p.title AS post_title, p.author_name, r.role_type, r.created_at,
-			pr.status AS role_status, pr.count, pr.description
-		FROM responses r
-		JOIN posts p ON p.id = r.post_id
-		LEFT JOIN post_roles pr ON pr.post_id = r.post_id AND pr.role_type = r.role_type
+    `SELECT c.id AS commission_id, c.title AS commission_title, c.author_name, c.author_token, c.author_id, c.created_at,
+			cr.status AS requirement_status, cr.count, cr.description, r.requirement_type
+		FROM claims r
+		JOIN commissions c ON c.id = r.commission_id
+		LEFT JOIN requirements cr ON cr.commission_id = r.commission_id AND cr.requirement_type = r.requirement_type
 		WHERE r.profile_token = ?
 		ORDER BY r.created_at DESC`,
   )
   .bind(profileToken)
   .all<{
-    post_id: number
-    post_title: string
+    commission_id: number
+    commission_title: string
     author_name: string
-    role_type: string
+    author_token: string
+    author_id: string
+    requirement_type: string
     created_at: string
-    role_status: string
+    requirement_status: string
     count: number
     description: string
   }>()
+
+const claimedCommissions: Commission[] = claimedRows.map(claim => ({
+  id: claim.commission_id,
+  title: claim.commission_title,
+  description: claim.description,
+  tags: [],
+  requirements: [
+    {
+      type: claim.requirement_type as RequirementType,
+      description: claim.description,
+      count: claim.count,
+      status: claim.requirement_status as 'open' | 'closed',
+    },
+  ],
+  author_name: claim.author_name,
+  author_token: claim.author_token,
+  author_id: claim.author_id,
+  author_qq: '',
+  author_github: '',
+  author_steam: '',
+  created_at: claim.created_at,
+}))
 
 const result = Astro.getActionResult(actions.updateProfile)
 if (result && !result.error) {
@@ -96,13 +117,13 @@ if (result && !result.error) {
             <span>01</span>
             个人资料
           </a>
-          <a href="#posts">
+          <a href="#commissions">
             <span>02</span>
-            我的需求
+            我的委托
           </a>
           <a href="#claims">
             <span>03</span>
-            我的认领
+            我认领的
           </a>
         </nav>
       </aside>
@@ -144,11 +165,11 @@ if (result && !result.error) {
                 placeholder="例如：阿哲"
               />
             </label>
-            <CheckboxGroup
-              legend="创作者身份"
-              name="roles"
-              options={ROLE_TYPES}
-              checked={myRoles}
+        <CheckboxGroup
+          legend="创作者身份"
+          name="creatorTypes"
+          options={CREATOR_TYPES}
+          checked={myCreatorTypes}
             />
             <fieldset class="form-section">
               <legend>联系方式</legend>
@@ -192,70 +213,38 @@ if (result && !result.error) {
           </form>
         </section>
 
-        <section class="profile-section" id="posts">
+        <section class="profile-section" id="commissions">
           <div class="section-heading">
-            <h2>我的需求</h2>
-            <span class="section-count">{posts.length} 条记录</span>
+          <h2>我的委托</h2>
+            <span class="section-count">{commissions.length} 条记录</span>
           </div>
           {
-            posts.length > 0 ? (
-              <ul class="post-list">
-                {posts.map(post => (
-                  <PostListItem post={post} />
+            commissions.length > 0 ? (
+              <ul class="commission-list">
+                {commissions.map(commission => (
+                  <CommissionListItem commission={commission} />
                 ))}
               </ul>
             ) : (
-              <p class="empty">你还没有发布过需求</p>
+          <p class="empty">你还没有发布过委托</p>
             )
           }
         </section>
 
         <section class="profile-section" id="claims">
           <div class="section-heading">
-            <h2>我的认领</h2>
+          <h2>我认领的</h2>
             <span class="section-count">{claimedRows.length} 条记录</span>
           </div>
           {
-            claimedRows.length > 0 ? (
-              <ul class="post-list">
-                {claimedRows.map(claim => (
-                  <li>
-                    <a class="post-card-link" href={`/posts/${claim.post_id}`}>
-                      <div class="post-card-top">
-                        <span class="post-card-type">
-                          <span
-                            class={`quest-pin quest-pin-${claim.role_status}`}
-                            aria-hidden="true"
-                          />
-                          我的认领
-                        </span>
-                        <span class={`status status-${claim.role_status}`}>
-                          {roleStatusLabel(
-                            claim.role_status as 'open' | 'closed',
-                          )}
-                        </span>
-                      </div>
-                      <h2>{claim.post_title}</h2>
-                      {claim.description && (
-                        <p class="post-excerpt">{claim.description}</p>
-                      )}
-                    </a>
-                    <div class="post-card-footer">
-                      <span class="tags">
-                        <span class="tag">
-                          {roleLabel(claim.role_type as RoleType)}
-                        </span>
-                      </span>
-                      <span class="meta-side">
-                        <span class="author-name">{claim.author_name}</span>
-                        <time>{formatDate(claim.created_at)}</time>
-                      </span>
-                    </div>
-                  </li>
+            claimedCommissions.length > 0 ? (
+              <ul class="commission-list">
+                {claimedCommissions.map(commission => (
+                  <CommissionListItem commission={commission} />
                 ))}
               </ul>
             ) : (
-              <p class="empty">你还没有认领过需求</p>
+          <p class="empty">你还没有认领过需求</p>
             )
           }
         </section>
@@ -334,11 +323,6 @@ if (result && !result.error) {
 
   .contact-fields .form-field {
     margin-bottom: 0;
-  }
-
-  .author-name {
-    color: var(--text-dim);
-    font-size: 0.8rem;
   }
 
   @media (max-width: 720px) {

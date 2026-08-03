@@ -1,117 +1,119 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import PostListItem from '../components/PostListItem.astro'
+import CommissionListItem from '../components/CommissionListItem.astro'
 import {
-  ROLE_TYPES,
-  POST_SELECT,
-  postFromRow,
-  type Post,
-  type PostRow,
-  type RoleType,
-} from '../lib/posts'
+  REQUIREMENT_TYPES,
+  COMMISSION_SELECT,
+  commissionFromRow,
+  type Commission,
+  type CommissionRow,
+  type RequirementType,
+} from '../lib/commissions'
 import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
-const roleParam = Astro.url.searchParams.get('role')
-const activeRole: RoleType | null =
-  roleParam && roleParam in ROLE_TYPES ? (roleParam as RoleType) : null
+const requirementParam = Astro.url.searchParams.get('requirement')
+const activeRequirementType: RequirementType | null =
+  requirementParam && requirementParam in REQUIREMENT_TYPES
+    ? (requirementParam as RequirementType)
+    : null
 const q = (Astro.url.searchParams.get('q') ?? '').trim()
 
 const myProfileToken = Astro.locals.auth?.profileToken ?? null
-let myRoles: string[] = []
+let myCreatorTypes: string[] = []
 if (myProfileToken) {
   const profile = await db
-    .prepare('SELECT roles FROM profiles WHERE token = ?')
+    .prepare('SELECT creator_types FROM profiles WHERE token = ?')
     .bind(myProfileToken)
-    .first<{ roles: string }>()
-  myRoles = (profile?.roles ?? '').split(',').filter(Boolean)
+    .first<{ creator_types: string }>()
+  myCreatorTypes = (profile?.creator_types ?? '').split(',').filter(Boolean)
 }
 
-const canUseRecommended = myProfileToken !== null && myRoles.length > 0
-const isRecommended = roleParam === 'mine' && canUseRecommended
-const activeFilter = isRecommended ? 'mine' : activeRole
+const canUseRecommended = myProfileToken !== null && myCreatorTypes.length > 0
+const isRecommended = requirementParam === 'mine' && canUseRecommended
+const activeFilter = isRecommended ? 'mine' : activeRequirementType
 
 // 主列表（类型筛选 + 关键词搜索叠加）
 const conditions = [
-  `EXISTS (
-		SELECT 1 FROM post_roles pr2
-		WHERE pr2.post_id = p.id AND pr2.status = 'open'
+	`EXISTS (
+		SELECT 1 FROM requirements r2
+		WHERE r2.commission_id = c.id AND r2.status = 'open'
 	)`,
 ]
 const params: string[] = []
 if (isRecommended) {
-  const placeholders = myRoles.map(() => '?').join(',')
-  conditions.push('p.author_token != ?')
+  const placeholders = myCreatorTypes.map(() => '?').join(',')
+  conditions.push('c.author_token != ?')
   params.push(myProfileToken)
   conditions.push(
-    `EXISTS (
-			SELECT 1 FROM post_roles pr2
-			WHERE pr2.post_id = p.id AND pr2.role_type IN (${placeholders}) AND pr2.status = 'open'
+	    `EXISTS (
+			SELECT 1 FROM requirements r2
+			WHERE r2.commission_id = c.id AND r2.requirement_type IN (${placeholders}) AND r2.status = 'open'
 		)`,
   )
-  params.push(...myRoles)
+  params.push(...myCreatorTypes)
 }
-if (activeRole) {
+  if (activeRequirementType) {
   conditions.push(
-    `EXISTS (
-			SELECT 1 FROM post_roles pr2
-			WHERE pr2.post_id = p.id AND pr2.role_type = ? AND pr2.status = 'open'
+	    `EXISTS (
+			SELECT 1 FROM requirements r2
+			WHERE r2.commission_id = c.id AND r2.requirement_type = ? AND r2.status = 'open'
 		)`,
-  )
-  params.push(activeRole)
+    )
+    params.push(activeRequirementType)
 }
 if (q) {
   const escaped = q.replace(/[%_]/g, m => `\\${m}`)
   conditions.push(
-    `(p.title LIKE ? ESCAPE '\\' OR p.description LIKE ? ESCAPE '\\')`,
+    `(c.title LIKE ? ESCAPE '\\' OR c.description LIKE ? ESCAPE '\\')`,
   )
   params.push(`%${escaped}%`, `%${escaped}%`)
 }
 
 const { results } = await db
   .prepare(
-    `${POST_SELECT}
+    `${COMMISSION_SELECT}
 		WHERE ${conditions.join('\n\t\tAND ')}
-		GROUP BY p.id
-		ORDER BY p.created_at DESC, p.id DESC`,
+		GROUP BY c.id
+		ORDER BY c.created_at DESC, c.id DESC`,
   )
   .bind(...params)
-  .all<PostRow>()
-const posts: Post[] = results.map(postFromRow)
+  .all<CommissionRow>()
+const commissions: Commission[] = results.map(commissionFromRow)
 const stats = await db
   .prepare(
-    `SELECT
-			(SELECT COUNT(*) FROM posts) AS project_count,
+	    `SELECT
+			(SELECT COUNT(*) FROM commissions) AS commission_count,
 			(SELECT COUNT(*) FROM profiles) AS user_count`,
   )
-  .first<{ project_count: number; user_count: number }>()
-const projectCount = stats?.project_count ?? 0
+  .first<{ commission_count: number; user_count: number }>()
+const commissionCount = stats?.commission_count ?? 0
 const registeredUserCount = stats?.user_count ?? 0
 const clearFilterHref = isRecommended
   ? q
-    ? '/?role=mine'
+    ? '/?requirement=mine'
     : '/'
-  : activeRole
+  : activeRequirementType
     ? q
-      ? `/?role=${activeRole}`
+      ? `/?requirement=${activeRequirementType}`
       : '/'
     : '/'
 ---
 
-<Layout title="边缘工会 · RimWorld 模组需求平台">
+<Layout title="边缘工会 · RimWorld 模组委托平台">
   <main>
     <section class="home-hero">
       <div class="hero-copy">
-        <h1>让每一份模组需求，<em>找到合适的搭档。</em></h1>
+        <h1>让每一份模组委托，<em>找到合适的搭档。</em></h1>
         <p class="hero-lede">
-          发布需求，寻找画师、开发者和其他合作者。边缘工会把还在草稿里的想法，带到真正的制作现场。
+          发布委托，寻找画师、开发者和其他合作者。边缘工会把还在草稿里的想法，带到真正的制作现场。
         </p>
         <div class="hero-actions">
           <a
             class="btn"
-            href={myProfileToken ? '/posts/new' : '/login?next=/posts/new'}
+            href={myProfileToken ? '/commissions/new' : '/login?next=/commissions/new'}
           >
-            发布需求
+            发布委托
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
                 d="M8 3v10M3 8h10"
@@ -121,7 +123,7 @@ const clearFilterHref = isRecommended
             </svg>
           </a>
           <a class="text-link" href="#board">
-            浏览需求
+            查看委托
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
                 d="M3 8h10m-4-4 4 4-4 4"
@@ -134,7 +136,7 @@ const clearFilterHref = isRecommended
         </div>
       </div>
 
-      <aside class="hero-note" aria-label="开放需求概览">
+      <aside class="hero-note" aria-label="开放委托概览">
         <div class="hero-mark" aria-hidden="true">
           <svg viewBox="0 0 150 150" fill="none">
             <circle
@@ -162,11 +164,11 @@ const clearFilterHref = isRecommended
               stroke-width="2"></path>
           </svg>
         </div>
-        <p>一个清晰的岗位，往往就是一个模组项目真正开始的地方。</p>
+        <p>一项清晰的需求，往往就是一份模组委托真正开始的地方。</p>
         <dl>
           <div>
-            <dt>项目需求</dt>
-            <dd>{projectCount}</dd>
+            <dt>委托数量</dt>
+            <dd>{commissionCount}</dd>
           </div>
           <div>
             <dt>注册用户</dt>
@@ -178,7 +180,7 @@ const clearFilterHref = isRecommended
 
     <section class="board-section" id="board">
       <div class="section-heading board-heading">
-        <h2>{isRecommended ? '适合我的' : '最新需求'}</h2>
+        <h2>{isRecommended ? '适合我的' : '最新委托'}</h2>
       </div>
 
       <nav class="filter-nav" aria-label="按类型筛选">
@@ -190,7 +192,9 @@ const clearFilterHref = isRecommended
           canUseRecommended && (
             <a
               href={
-                q ? `/?role=mine&q=${encodeURIComponent(q)}` : '/?role=mine'
+                  q
+                    ? `/?requirement=mine&q=${encodeURIComponent(q)}`
+                    : '/?requirement=mine'
               }
               class:list={{ active: isRecommended }}
             >
@@ -199,14 +203,14 @@ const clearFilterHref = isRecommended
           )
         }
         {
-          Object.entries(ROLE_TYPES).map(([value, label]) => (
+          Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
             <a
               href={
                 q
-                  ? `/?role=${value}&q=${encodeURIComponent(q)}`
-                  : `/?role=${value}`
+                  ? `/?requirement=${value}&q=${encodeURIComponent(q)}`
+                  : `/?requirement=${value}`
               }
-              class:list={{ active: activeRole === value }}
+              class:list={{ active: activeRequirementType === value }}
             >
               {label}
             </a>
@@ -217,10 +221,10 @@ const clearFilterHref = isRecommended
       <form class="search-form" method="GET" action="/">
         {
           activeFilter && (
-            <input type="hidden" name="role" value={activeFilter} />
+            <input type="hidden" name="requirement" value={activeFilter} />
           )
         }
-        <label class="search-input" for="post-search">
+        <label class="search-input" for="commission-search">
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <circle
               cx="8.5"
@@ -234,13 +238,13 @@ const clearFilterHref = isRecommended
               stroke-width="1.5"
               stroke-linecap="square"></path>
           </svg>
-          <span class="sr-only">搜索项目标题或描述</span>
+          <span class="sr-only">搜索委托标题或描述</span>
           <input
-            id="post-search"
+            id="commission-search"
             type="search"
             name="q"
             value={q}
-            placeholder="搜索项目标题或描述……"
+            placeholder="搜索委托标题或描述……"
           />
         </label>
         <button class="btn" type="submit">
@@ -257,23 +261,23 @@ const clearFilterHref = isRecommended
       </form>
 
       {
-        posts.length > 0 ? (
-          <ul class="post-list">
-            {posts.map(post => (
-              <PostListItem post={post} />
+        commissions.length > 0 ? (
+          <ul class="commission-list">
+            {commissions.map(commission => (
+              <CommissionListItem commission={commission} />
             ))}
           </ul>
         ) : (
           <div class="empty-state">
             <span>
-              {q ? '没有匹配结果' : isRecommended ? '暂无匹配需求' : '暂无需求'}
+              {q ? '没有匹配结果' : isRecommended ? '暂无匹配委托' : '暂无委托'}
             </span>
             <p>
               {q
-                ? '没有找到匹配的需求'
+                ? '没有找到匹配的委托'
                 : isRecommended
-                  ? '暂时没有符合你身份的开放岗位'
-                  : '还没有需求，来发布第一条吧'}
+                  ? '暂时没有符合你身份的开放需求'
+                  : '还没有委托，来发布第一份吧'}
             </p>
             {(q || isRecommended) && (
               <a class="text-link" href={clearFilterHref}>

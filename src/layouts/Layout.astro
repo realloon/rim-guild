@@ -28,8 +28,17 @@ const isHome = Astro.url.pathname === '/'
         <a class="brand" href="/" aria-label="边缘工会首页">
           <span class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 36 36" fill="none">
-              <path d="M7 8.5h22M7 14.5h15M7 20.5h22M7 26.5h15" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" />
-              <path d="m25 14 4 4-4 4" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" />
+              <path
+                d="M7 8.5h22M7 14.5h15M7 20.5h22M7 26.5h15"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="square"></path>
+              <path
+                d="m25 14 4 4-4 4"
+                stroke="var(--accent)"
+                stroke-width="2.5"
+                stroke-linecap="square"
+                stroke-linejoin="miter"></path>
             </svg>
           </span>
           <span class="brand-copy">
@@ -39,7 +48,7 @@ const isHome = Astro.url.pathname === '/'
         </a>
 
         <nav class="site-nav" aria-label="主导航">
-          <a class:list={{ active: isHome }} href="/">发现需求</a>
+          <a class:list={{ active: isHome }} href="/#board">查看委托</a>
         </nav>
 
         <div class="header-actions">
@@ -47,7 +56,13 @@ const isHome = Astro.url.pathname === '/'
             back && (
               <a class="back-link header-back" href="/">
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path d="M13 8H3m4-4-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" />
+                  <path
+                    d="M13 8H3m4-4-4 4 4 4"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="square"
+                    stroke-linejoin="miter"
+                  />
                 </svg>
                 <span>返回列表</span>
               </a>
@@ -55,11 +70,15 @@ const isHome = Astro.url.pathname === '/'
           }
           <a
             class="btn btn-primary publish-link"
-            href={profileToken ? '/posts/new' : '/login?next=/posts/new'}
+            href={profileToken ? '/commissions/new' : '/login?next=/commissions/new'}
           >
-            <span>发布需求</span>
+            <span>发布委托</span>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" />
+              <path
+                d="M8 3v10M3 8h10"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="square"></path>
             </svg>
           </a>
           <button
@@ -80,8 +99,19 @@ const isHome = Astro.url.pathname === '/'
               ) : (
                 <span class="header-profile-placeholder" aria-hidden="true">
                   <svg viewBox="0 0 20 20" fill="none">
-                    <circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.5" />
-                    <path d="M4.5 17c.7-3 2.5-4.5 5.5-4.5s4.8 1.5 5.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <circle
+                      cx="10"
+                      cy="7"
+                      r="3"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
+                    <path
+                      d="M4.5 17c.7-3 2.5-4.5 5.5-4.5s4.8 1.5 5.5 4.5"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 </span>
               )
@@ -95,8 +125,8 @@ const isHome = Astro.url.pathname === '/'
           profileToken ? (
             <>
               <a href="/me#profile">个人资料</a>
-              <a href="/me#posts">我的需求</a>
-              <a href="/me#claims">我的认领</a>
+              <a href="/me#commissions">我的委托</a>
+              <a href="/me#claims">我认领的</a>
               <hr />
               <form method="POST" action={actions.logout}>
                 <button class="menu-item" type="submit">
@@ -173,7 +203,7 @@ const isHome = Astro.url.pathname === '/'
   }
 
   .brand-copy strong {
-    font-family: Georgia, "Noto Serif SC", "Source Han Serif SC", serif;
+    font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif;
     font-size: 1.12rem;
     font-weight: 600;
     line-height: 1;
@@ -181,7 +211,8 @@ const isHome = Astro.url.pathname === '/'
 
   .brand-copy small {
     color: var(--text-dim);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.56rem;
     font-weight: 700;
     letter-spacing: 0.09em;
@@ -211,7 +242,7 @@ const isHome = Astro.url.pathname === '/'
     left: 0;
     height: 2px;
     background: var(--accent);
-    content: "";
+    content: '';
     opacity: 0;
     transform: scaleX(0.35);
     transition: 0.2s;
@@ -345,7 +376,8 @@ const isHome = Astro.url.pathname === '/'
     padding: 20px 0 28px;
     border-top: 1px solid var(--border);
     color: var(--text-dim);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.66rem;
     letter-spacing: 0.04em;
   }

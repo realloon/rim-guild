@@ -308,7 +308,7 @@ form {
   margin: 0;
 }
 
-form :is(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
+form :where(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
   width: 100%;
   min-height: 46px;
   padding: 10px 13px;
@@ -323,7 +323,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), select, textarea) {
 }
 
 form
-  :is(
+  :where(
     input:not([type='hidden']):not([type='checkbox']),
     select,
     textarea
@@ -332,7 +332,7 @@ form
 }
 
 form
-  :is(
+  :where(
     input:not([type='hidden']):not([type='checkbox']),
     select,
     textarea
@@ -352,6 +352,10 @@ form select {
   appearance: none;
   cursor: pointer;
   padding-right: 42px;
+  border: 0;
+  border-radius: 0;
+  background-color: var(--bg);
+  box-shadow: none;
   background-image:
     linear-gradient(45deg, transparent 50%, var(--text-dim) 50%),
     linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
@@ -362,14 +366,20 @@ form select {
   background-size: 5px 5px;
 }
 
-form :is(input:not([type='hidden']):not([type='checkbox']), textarea) {
+form select:focus {
+  border: 0;
+  background-color: var(--bg);
+  box-shadow: none;
+}
+
+form :where(input:not([type='hidden']):not([type='checkbox']), textarea) {
   border: 0;
   border-radius: 0;
   background-color: var(--bg);
   box-shadow: none;
 }
 
-form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
+form :where(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   border: 0;
   background-color: var(--bg);
   box-shadow: none;
@@ -414,13 +424,13 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   background: var(--surface-translucent);
 }
 
-.role-checkboxes {
+.option-checkboxes {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.role-checkbox {
+.option-checkbox {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -435,19 +445,19 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   transition: 0.2s;
 }
 
-.role-checkbox input {
+.option-checkbox input {
   width: auto;
   min-height: auto;
   margin: 0;
   accent-color: var(--accent);
 }
 
-.role-checkbox:hover {
+.option-checkbox:hover {
   border-color: var(--accent);
   color: var(--accent-strong);
 }
 
-.role-checkbox:has(input:checked) {
+.option-checkbox:has(input:checked) {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-strong);
@@ -536,7 +546,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   box-shadow: 0 0 0 1px var(--border);
 }
 
-.post-list {
+.commission-list {
   display: grid;
   gap: 13px;
   margin: 0;
@@ -544,7 +554,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   list-style: none;
 }
 
-.post-list > li {
+.commission-list > li {
   position: relative;
   min-width: 0;
   margin: 0;
@@ -556,7 +566,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   transition: 0.2s;
 }
 
-.post-list > li::after {
+.commission-list > li::after {
   position: absolute;
   top: 0;
   left: 0;
@@ -568,22 +578,22 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   transition: 0.2s;
 }
 
-.post-list > li:hover {
+.commission-list > li:hover {
   border-color: var(--card-hover-border);
   box-shadow: var(--shadow);
 }
 
-.post-list > li:hover::after {
+.commission-list > li:hover::after {
   opacity: 1;
 }
 
-.post-card-link {
+.commission-card-link {
   display: block;
   padding: 0 24px;
   text-decoration: none;
 }
 
-.post-card-link h2 {
+.commission-card-link h2 {
   margin: 0 0 7px;
   color: var(--forest);
   font-size: clamp(1.05rem, 2vw, 1.28rem);
@@ -591,11 +601,11 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   line-height: 1.35;
 }
 
-.post-card-link:hover h2 {
+.commission-card-link:hover h2 {
   color: var(--accent-strong);
 }
 
-.post-card-top {
+.commission-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -605,7 +615,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   margin-bottom: 11px;
 }
 
-.post-card-type {
+.commission-card-type {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -617,14 +627,14 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   text-transform: uppercase;
 }
 
-.post-card-top-meta {
+.commission-card-top-meta {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
   gap: 12px;
 }
 
-.post-card-date {
+.commission-card-date {
   color: var(--text-dim);
   font-family: inherit;
   font-size: 0.72rem;
@@ -633,7 +643,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   text-transform: none;
 }
 
-.quest-pin {
+.requirement-pin {
   position: relative;
   display: inline-block;
   width: 11px;
@@ -643,7 +653,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   border-radius: 50%;
 }
 
-.quest-pin::after {
+.requirement-pin::after {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -654,7 +664,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   content: '';
 }
 
-.quest-pin-open {
+.requirement-pin-open {
   color: var(--on-forest);
   background: var(--success);
   box-shadow:
@@ -663,7 +673,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
     0 1px 3px var(--shadow-small-color);
 }
 
-.quest-pin-closed {
+.requirement-pin-closed {
   color: var(--border-strong);
   background: var(--bg-soft);
   box-shadow:
@@ -671,7 +681,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
     0 1px 3px var(--shadow-small-color);
 }
 
-.post-excerpt {
+.commission-excerpt {
   display: -webkit-box;
   margin: 0 0 15px;
   overflow: hidden;
@@ -683,7 +693,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   line-clamp: 2;
 }
 
-.post-card-footer {
+.commission-card-footer {
   display: flex;
   align-items: center;
   min-height: 52px;
@@ -691,8 +701,7 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   border-top: 1px dashed var(--card-divider);
 }
 
-.tags,
-.meta-side {
+.tags {
   display: flex;
   align-items: center;
 }
@@ -702,12 +711,6 @@ form :is(input:not([type='hidden']):not([type='checkbox']), textarea):focus {
   gap: 7px;
 }
 
-.meta-side {
-  flex-shrink: 0;
-  gap: 10px;
-}
-
-.meta-side time,
 time {
   color: var(--text-dim);
   font-size: 0.76rem;
@@ -829,7 +832,7 @@ time {
   margin-top: 52px;
 }
 
-.post-tags {
+.commission-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -868,12 +871,12 @@ time {
   border-top: 0;
 }
 
-.role-count-label {
+.requirement-count-label {
   color: var(--text-dim);
   font-size: 0.8rem;
 }
 
-.post-updates ul {
+.commission-updates ul {
   display: grid;
   gap: 10px;
   margin: 0 0 20px;
@@ -881,14 +884,14 @@ time {
   list-style: none;
 }
 
-.post-updates li {
+.commission-updates li {
   padding: 16px 18px;
   border-left: 2px solid var(--gold);
   background: var(--bg-raised);
   box-shadow: var(--shadow-small);
 }
 
-.post-updates li p {
+.commission-updates li p {
   margin: 0 0 8px;
   white-space: pre-wrap;
 }
@@ -909,11 +912,11 @@ time {
     gap: 7px;
   }
 
-  .post-card-link {
+  .commission-card-link {
     padding: 0 20px;
   }
 
-  .post-card-footer {
+  .commission-card-footer {
     align-items: flex-start;
     flex-direction: column;
     gap: 11px;
@@ -948,7 +951,7 @@ time {
     gap: 13px;
   }
 
-  .post-card-top {
+  .commission-card-top {
     align-items: flex-start;
     gap: 7px;
   }

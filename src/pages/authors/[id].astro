@@ -1,14 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import PostListItem from '../../components/PostListItem.astro'
+import CommissionListItem from '../../components/CommissionListItem.astro'
 import {
-  POST_SELECT,
-  postFromRow,
-  roleLabel,
-  type Post,
-  type PostRow,
-  type RoleType,
-} from '../../lib/posts'
+  COMMISSION_SELECT,
+  commissionFromRow,
+  requirementTypeLabel,
+  type Commission,
+  type CommissionRow,
+  type RequirementType,
+} from '../../lib/commissions'
 import { avatarUrl } from '../../lib/avatar'
 import { env } from 'cloudflare:workers'
 
@@ -17,7 +17,7 @@ const { id } = Astro.params
 
 const profile = await db
   .prepare(
-    'SELECT token, author_name, qq, github, steam, roles FROM profiles WHERE author_id = ?',
+    'SELECT token, author_name, qq, github, steam, creator_types FROM profiles WHERE author_id = ?',
   )
   .bind(id)
   .first<{
@@ -26,25 +26,25 @@ const profile = await db
     qq: string
     github: string
     steam: string
-    roles: string
+    creator_types: string
   }>()
 
-const authorRoles: RoleType[] = profile?.roles
-  ? (profile.roles.split(',').filter(Boolean) as RoleType[])
+const authorCreatorTypes: RequirementType[] = profile?.creator_types
+  ? (profile.creator_types.split(',').filter(Boolean) as RequirementType[])
   : []
 
-let posts: Post[] = []
+let commissions: Commission[] = []
 if (profile) {
   const { results } = await db
     .prepare(
-      `${POST_SELECT}
-			WHERE p.author_token = ?
-			GROUP BY p.id
-			ORDER BY p.created_at DESC, p.id DESC`,
+      `${COMMISSION_SELECT}
+			WHERE c.author_token = ?
+			GROUP BY c.id
+			ORDER BY c.created_at DESC, c.id DESC`,
     )
     .bind(profile.token)
-    .all<PostRow>()
-  posts = results.map(postFromRow)
+    .all<CommissionRow>()
+  commissions = results.map(commissionFromRow)
 }
 
 if (!profile) {
@@ -74,10 +74,10 @@ if (!profile) {
                 />
                 <div>
                   <h1>{profile.author_name}</h1>
-                  {authorRoles.length > 0 && (
-                    <div class="tags">
-                      {authorRoles.map(role => (
-                        <span class="tag">{roleLabel(role)}</span>
+                {authorCreatorTypes.length > 0 && (
+                  <div class="tags">
+                    {authorCreatorTypes.map(creatorType => (
+                      <span class="tag">{requirementTypeLabel(creatorType)}</span>
                       ))}
                     </div>
                   )}
@@ -110,17 +110,17 @@ if (!profile) {
           </section>
 
           <div class="section-heading">
-            <h2>TA 的需求</h2>
-            <span class="section-count">{posts.length} 条记录</span>
+              <h2>TA 的委托</h2>
+            <span class="section-count">{commissions.length} 条记录</span>
           </div>
-          {posts.length > 0 ? (
-            <ul class="post-list">
-              {posts.map(post => (
-                <PostListItem post={post} />
+          {commissions.length > 0 ? (
+            <ul class="commission-list">
+              {commissions.map(commission => (
+                <CommissionListItem commission={commission} />
               ))}
             </ul>
           ) : (
-            <p class="empty">TA 还没有发布过需求</p>
+            <p class="empty">TA 还没有发布过委托</p>
           )}
         </>
       ) : (

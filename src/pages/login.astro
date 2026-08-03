@@ -36,7 +36,7 @@ const result = mode === 'register' ? registerResult : loginResult
       </div>
       <h1>进入协作现场。</h1>
       <p>
-        用一个账号管理你发布的需求，也让合作者知道该从哪里找到你。
+        用一个账号管理你发布的委托，也让合作者知道该从哪里找到你。
       </p>
       <div class="auth-principles">
         <div><span>01</span><strong>发布</strong><small>说清楚你正在做什么</small></div>
@@ -48,8 +48,8 @@ const result = mode === 'register' ? registerResult : loginResult
       <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
       <p class="auth-note">
         {mode === 'register'
-          ? '创建账号后，你可以发布项目、认领岗位并维护个人资料。'
-          : '登录后继续管理你的项目和协作记录。'}
+          ? '创建账号后，你可以发布委托、认领需求并维护个人资料。'
+          : '登录后继续管理你的委托和协作记录。'}
       </p>
 
       <form method="POST" action={action}>

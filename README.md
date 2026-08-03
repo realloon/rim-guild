@@ -1,6 +1,6 @@
 # 边缘工会
 
-面向 RimWorld 模组创作者的需求发布平台：发布需求，招揽画师、开发者等。
+面向 RimWorld 模组创作者的委托平台：发布委托，招募画师、开发者等。
 
 技术栈：Astro 7 + Cloudflare (D1 + Workers) + wrangler
 
@@ -24,5 +24,5 @@ npm run generate-types
 
 - `db/schema.sql` — D1 表结构
 - `src/actions/index.ts` — 表单处理（Astro Actions）
-- `src/lib/posts.ts` — 需求类型与常量
-- `src/pages/` — 首页列表、`/posts/new` 发布、`/posts/[id]` 详情
+- `src/lib/commissions.ts` — 委托类型与常量
+- `src/pages/` — 首页列表、`/commissions/new` 发布、`/commissions/[id]` 详情

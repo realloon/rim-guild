@@ -1,0 +1,354 @@
+---
+import { actions } from 'astro:actions'
+import {
+  COMMISSION_TAGS,
+  REQUIREMENT_TYPES,
+  type Commission,
+} from '../lib/commissions'
+import CheckboxGroup from './ui/CheckboxGroup.astro'
+import Textarea from './ui/Textarea.astro'
+
+interface Props {
+  commission?: Commission
+}
+
+const { commission } = Astro.props
+const action = commission ? actions.updateCommission : actions.createCommission
+const submitLabel = commission ? '保存修改' : '发布'
+---
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-requirement-form]')
+  if (form) {
+    const pairs = form.querySelector<HTMLElement>('.requirement-pairs')!
+    const addBtn = form.querySelector<HTMLButtonElement>('.add-requirement')!
+
+    const updateRequirementOptions = () => {
+      const selects = Array.from(
+        pairs.querySelectorAll<HTMLSelectElement>('select[name="requirementTypes"]'),
+      )
+      const selectedRoles = new Set(selects.map(select => select.value))
+
+      selects.forEach(select => {
+        Array.from(select.options).forEach(option => {
+          option.disabled =
+            option.value !== select.value && selectedRoles.has(option.value)
+        })
+      })
+
+      addBtn.disabled =
+        selects.length >= (selects[0]?.options.length ?? Number.POSITIVE_INFINITY)
+    }
+
+    const makePair = () => {
+      const template = pairs.querySelector<HTMLElement>('.requirement-pair')!
+      const pair = template.cloneNode(true) as HTMLDivElement
+      const removeBtn = pair.querySelector<HTMLButtonElement>('.remove-requirement')!
+      removeBtn.hidden = false
+      const select = pair.querySelector<HTMLSelectElement>('select')!
+      const usedRoles = new Set(
+        Array.from(
+          pairs.querySelectorAll<HTMLSelectElement>('select[name="requirementTypes"]'),
+        ).map(existingSelect => existingSelect.value),
+      )
+      Array.from(select.options).forEach(option => {
+        option.disabled = false
+      })
+      const nextRole = Array.from(select.options).find(
+        option => !usedRoles.has(option.value),
+      )
+      if (nextRole) {
+        select.value = nextRole.value
+      }
+      const descInput = pair.querySelector<HTMLTextAreaElement>(
+        'textarea[name="requirementDescriptions"]',
+      )!
+      descInput.value = ''
+      const countInput = pair.querySelector<HTMLInputElement>(
+        'input[name="requirementCounts"]',
+      )!
+      countInput.value = '1'
+      return pair
+    }
+
+    addBtn.addEventListener('click', () => {
+      const pair = makePair()
+      pairs.appendChild(pair)
+      updateRequirementOptions()
+    })
+
+    pairs.addEventListener('change', event => {
+      if ((event.target as HTMLElement).matches('select[name="requirementTypes"]')) {
+        updateRequirementOptions()
+      }
+    })
+
+    pairs.addEventListener('click', event => {
+      const btn = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        '.remove-requirement',
+      )
+      if (btn) {
+        const pair = btn.closest<HTMLElement>('.requirement-pair')!
+        if (pairs.querySelectorAll('.requirement-pair').length > 1) {
+          pair.remove()
+        } else {
+          const descInput = pair.querySelector<HTMLTextAreaElement>(
+            'textarea[name="requirementDescriptions"]',
+          )!
+          descInput.value = ''
+          const countInput = pair.querySelector<HTMLInputElement>(
+            'input[name="requirementCounts"]',
+          )!
+          countInput.value = '1'
+        }
+        updateRequirementOptions()
+      }
+    })
+
+    updateRequirementOptions()
+  }
+</script>
+
+<form method="POST" action={action} data-requirement-form>
+  {commission && <input type="hidden" name="commissionId" value={commission.id} />}
+
+  <label class="form-field" for="title">
+    委托标题
+    <input
+      id="title"
+      name="title"
+      required
+      maxlength="80"
+      value={commission?.title}
+      placeholder="例如：为武器扩展模组招募成员"
+    />
+  </label>
+  <label class="form-field" for="description">
+    委托描述（可选）
+    <Textarea
+      id="description"
+      name="description"
+      maxlength="5000"
+      placeholder="介绍你的模组委托：玩法、规模、进度、工期与报酬……"
+      >{commission?.description}</Textarea
+    >
+  </label>
+
+  <CheckboxGroup
+    legend="委托标签（可多选）"
+    name="tags"
+    options={COMMISSION_TAGS}
+    checked={commission?.tags ?? []}
+  />
+
+  <fieldset class="form-section">
+    <legend>委托需求</legend>
+    <div class="requirement-pairs">
+      {
+        commission ? (
+          commission.requirements.map((requirement, i) => (
+            <div class="requirement-pair">
+              <select name="requirementTypes" required aria-label="需求类型">
+                {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
+                  <option value={value} selected={requirement.type === value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <input
+                class="requirement-count"
+                name="requirementCounts"
+                type="number"
+                min="1"
+                max="99"
+                value={requirement.count}
+                aria-label="需要人数"
+                title="需要人数"
+              />
+              <button
+                class="remove-requirement"
+                type="button"
+                title="移除"
+                aria-label="移除这一项需求"
+                hidden={i === 0 && commission.requirements.length === 1}
+              >
+                ×
+              </button>
+              <Textarea
+                name="requirementDescriptions"
+                required
+                aria-label="需求说明"
+                placeholder="面向该需求的具体要求……"
+                maxlength="2000"
+                rows="2"
+              >
+                {requirement.description}
+              </Textarea>
+            </div>
+          ))
+        ) : (
+          <div class="requirement-pair">
+            <select name="requirementTypes" required aria-label="需求类型">
+              {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
+                <option value={value}>{label}</option>
+              ))}
+            </select>
+            <input
+              class="requirement-count"
+              name="requirementCounts"
+              type="number"
+              min="1"
+              max="99"
+              value="1"
+              aria-label="需要人数"
+              title="需要人数"
+            />
+            <button
+              class="remove-requirement"
+              type="button"
+              title="移除"
+              aria-label="移除这一项需求"
+              hidden
+            >
+              ×
+            </button>
+            <Textarea
+              name="requirementDescriptions"
+              required
+              aria-label="需求说明"
+              placeholder="面向该需求的具体要求……"
+              maxlength="2000"
+              rows="2"
+            />
+          </div>
+        )
+      }
+    </div>
+    <button class="add-requirement" type="button">+ 添加需求</button>
+  </fieldset>
+
+  <div class="form-actions">
+    <button class="btn" type="submit">{submitLabel}</button>
+    <span>发布后仍可随时修改</span>
+  </div>
+</form>
+
+<style>
+  form {
+    max-width: 820px;
+  }
+
+  .requirement-pairs {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .requirement-pair {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 16px;
+
+    select,
+    input,
+    textarea {
+      min-width: 0;
+    }
+
+    select {
+      width: 132px;
+      flex: 0 1 132px;
+    }
+
+    textarea[name='requirementDescriptions'] {
+      width: 100%;
+      flex: 0 0 100%;
+      min-height: 72px;
+    }
+  }
+
+  .requirement-pair + .requirement-pair {
+    padding-top: 16px;
+  }
+
+  .requirement-pair:last-child {
+    padding-bottom: 0;
+  }
+
+  form > .form-section {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  form > .form-section legend {
+    margin-bottom: 16px;
+  }
+
+  .requirement-count {
+    flex: 0 0 76px;
+    width: 76px !important;
+  }
+
+  .remove-requirement {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    color: var(--text-dim);
+    font-size: 1rem;
+    line-height: 1;
+
+    &:hover {
+      border-color: var(--contact-border);
+      color: var(--danger);
+    }
+  }
+
+  .add-requirement {
+    margin-top: 12px;
+    padding: 7px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: 0.2s;
+  }
+
+  .add-requirement:hover {
+    color: var(--accent-strong);
+  }
+
+  .add-requirement:disabled {
+    color: var(--border-strong);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .form-actions > span {
+    color: var(--text-dim);
+    font-size: 0.76rem;
+  }
+
+  @media (max-width: 640px) {
+    .form-actions {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>

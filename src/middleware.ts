@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers'
-import { AUTHOR_COOKIE } from './lib/posts'
+import { AUTHOR_COOKIE } from './lib/commissions'
 import { clearSessionCookie, setSessionCookie, touchSession } from './lib/auth'
 
 export async function onRequest(

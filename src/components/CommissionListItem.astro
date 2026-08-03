@@ -1,0 +1,59 @@
+---
+import AuthorAvatar from './AuthorAvatar.astro'
+import {
+  requirementTypeLabel,
+  formatDate,
+  type Commission,
+} from '../lib/commissions'
+
+interface Props {
+  commission: Commission
+}
+
+const { commission } = Astro.props
+const openRequirements = commission.requirements.filter(
+  requirement => requirement.status === 'open',
+)
+---
+
+<li>
+  <div class="commission-card-top">
+    <span class="commission-card-type">
+      {
+        openRequirements.length > 0 ? (
+          <>
+            <span class="requirement-pin requirement-pin-open" aria-hidden="true"></span>
+            开放招募
+          </>
+        ) : (
+          <>
+            <span class="requirement-pin requirement-pin-closed" aria-hidden="true"></span>
+            招募已结束
+          </>
+        )
+      }
+      <time class="commission-card-date">{formatDate(commission.created_at)}</time>
+    </span>
+    <span class="commission-card-top-meta">
+      <AuthorAvatar
+        seed={commission.author_token}
+        name={commission.author_name}
+        href={`/authors/${commission.author_id}`}
+        size={28}
+      />
+    </span>
+  </div>
+  <a class="commission-card-link" href={`/commissions/${commission.id}`}>
+    <h2>{commission.title}</h2>
+    {commission.description && (
+      <p class="commission-excerpt">{commission.description}</p>
+    )}
+  </a>
+  <div class="commission-card-footer">
+    <span class="tags">
+      {openRequirements.map(requirement => (
+        <span class="tag">{requirementTypeLabel(requirement.type)}</span>
+      ))}
+    </span>
+  </div>
+</li>

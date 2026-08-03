@@ -1,5 +1,5 @@
--- 需求帖（模组项目）
-CREATE TABLE IF NOT EXISTS posts (
+-- 委托（模组创作任务）
+CREATE TABLE IF NOT EXISTS commissions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
@@ -10,19 +10,19 @@ CREATE TABLE IF NOT EXISTS posts (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- 招揽类型（一个项目可多选，每个类型有独立的需求描述、人数与状态）
-CREATE TABLE IF NOT EXISTS post_roles (
-  post_id INTEGER NOT NULL,
-  role_type TEXT NOT NULL,
+-- 委托需求（一个委托可包含多项需求，每项需求有独立的类型、要求、人数与状态）
+CREATE TABLE IF NOT EXISTS requirements (
+  commission_id INTEGER NOT NULL,
+  requirement_type TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   count INTEGER NOT NULL DEFAULT 1,
   status TEXT NOT NULL DEFAULT 'open',
-  PRIMARY KEY (post_id, role_type),
-  FOREIGN KEY (post_id) REFERENCES posts(id)
+  PRIMARY KEY (commission_id, requirement_type),
+  FOREIGN KEY (commission_id) REFERENCES commissions(id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_post_roles_role_type ON post_roles(role_type);
-CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_requirements_type ON requirements(requirement_type);
+CREATE INDEX IF NOT EXISTS idx_commissions_created_at ON commissions(created_at DESC);
 
 -- 用户资料（guest 匿名身份或已注册账号）
 CREATE TABLE IF NOT EXISTS profiles (
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   qq TEXT NOT NULL DEFAULT '',
   github TEXT NOT NULL DEFAULT '',
   steam TEXT NOT NULL DEFAULT '',
-  roles TEXT NOT NULL DEFAULT '',
+  creator_types TEXT NOT NULL DEFAULT '',
   email TEXT NOT NULL DEFAULT '',
   password_hash TEXT NOT NULL DEFAULT '',
   password_salt TEXT NOT NULL DEFAULT '',
@@ -53,26 +53,26 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE INDEX IF NOT EXISTS idx_sessions_profile ON sessions(profile_token);
 
--- 登记（用户对某项目某类型的招揽登记自己）
-CREATE TABLE IF NOT EXISTS responses (
+-- 认领（用户对某委托某项需求登记自己）
+CREATE TABLE IF NOT EXISTS claims (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INTEGER NOT NULL,
-  role_type TEXT NOT NULL,
+  commission_id INTEGER NOT NULL,
+  requirement_type TEXT NOT NULL,
   profile_token TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  UNIQUE (post_id, role_type, profile_token),
-  FOREIGN KEY (post_id) REFERENCES posts(id)
+  UNIQUE (commission_id, requirement_type, profile_token),
+  FOREIGN KEY (commission_id) REFERENCES commissions(id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_responses_post ON responses(post_id);
+CREATE INDEX IF NOT EXISTS idx_claims_commission ON claims(commission_id);
 
--- 项目更新记录（发布者发布进度）
-CREATE TABLE IF NOT EXISTS post_updates (
+-- 委托更新记录（发布者发布进度）
+CREATE TABLE IF NOT EXISTS commission_updates (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INTEGER NOT NULL,
+  commission_id INTEGER NOT NULL,
   content TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (post_id) REFERENCES posts(id)
+  FOREIGN KEY (commission_id) REFERENCES commissions(id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_post_updates_post ON post_updates(post_id);
+CREATE INDEX IF NOT EXISTS idx_commission_updates_commission ON commission_updates(commission_id);

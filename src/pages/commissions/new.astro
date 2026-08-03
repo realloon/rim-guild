@@ -1,31 +1,31 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import PostForm from '../../components/PostForm.astro'
+import CommissionForm from '../../components/CommissionForm.astro'
 import ErrorBox from '../../components/ui/ErrorBox.astro'
 import { actions } from 'astro:actions'
 
 if (!Astro.locals.auth) {
-  return Astro.redirect('/login?next=/posts/new')
+  return Astro.redirect('/login?next=/commissions/new')
 }
 
-const result = Astro.getActionResult(actions.createPost)
+const result = Astro.getActionResult(actions.createCommission)
 
 if (result && !result.error) {
-  return Astro.redirect(`/posts/${result.data.id}`)
+  return Astro.redirect(`/commissions/${result.data.id}`)
 }
 ---
 
-<Layout title="发布需求 · 边缘工会">
+<Layout title="发布委托 · 边缘工会">
   <main>
     <div class="page-heading">
       <div>
-        <h1>发布项目需求</h1>
-        <p>把项目背景、需要的角色和当前进度写清楚，合作者才能从第一眼判断自己是否适合加入。</p>
+        <h1>发布委托</h1>
+        <p>把委托背景、各项需求和当前进度写清楚，合作者才能从第一眼判断自己是否适合加入。</p>
       </div>
     </div>
 
     <section class="editor-card">
-      <PostForm />
+      <CommissionForm />
       <ErrorBox error={result?.error} />
     </section>
   </main>

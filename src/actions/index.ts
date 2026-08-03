@@ -2,7 +2,11 @@ import { defineAction, ActionError } from 'astro:actions'
 import type { ActionAPIContext } from 'astro:actions'
 import { z } from 'astro/zod'
 import { env } from 'cloudflare:workers'
-import { POST_TAGS, ROLE_TYPES } from '../lib/posts'
+import {
+  COMMISSION_TAGS,
+  CREATOR_TYPES,
+  REQUIREMENT_TYPES,
+} from '../lib/commissions'
 import {
   clearSessionCookie,
   createSession,
@@ -13,8 +17,9 @@ import {
   verifyPassword,
 } from '../lib/auth'
 
-const roleTypes = Object.keys(ROLE_TYPES) as [string, ...string[]]
-const postTags = Object.keys(POST_TAGS) as [string, ...string[]]
+const requirementTypes = Object.keys(REQUIREMENT_TYPES) as [string, ...string[]]
+const commissionTags = Object.keys(COMMISSION_TAGS) as [string, ...string[]]
+const creatorTypes = Object.keys(CREATOR_TYPES) as [string, ...string[]]
 
 const emailSchema = z.preprocess(
   v => (v == null ? '' : String(v).trim().toLowerCase()),
@@ -24,7 +29,7 @@ const emailSchema = z.preprocess(
     .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '请输入有效的邮箱地址'),
 )
 
-const postInput = {
+const commissionInput = {
   title: z.preprocess(
     v => (v == null ? '' : String(v).trim()),
     z.string().min(2, '标题至少 2 个字').max(80, '标题最多 80 个字'),
@@ -33,15 +38,15 @@ const postInput = {
     v => (v == null ? '' : String(v).trim()),
     z.string().max(5000, '描述最多 5000 个字'),
   ),
-  tags: z.array(z.enum(postTags)).default([]),
-  roleTypes: z.array(z.enum(roleTypes)),
-  roleDescriptions: z.array(
+  tags: z.array(z.enum(commissionTags)).default([]),
+  requirementTypes: z.array(z.enum(requirementTypes)),
+  requirementDescriptions: z.array(
     z.preprocess(
       v => (v == null ? '' : String(v).trim()),
-      z.string().min(1, '每类需求请填写具体内容'),
+      z.string().min(1, '每项需求请填写具体要求'),
     ),
   ),
-  roleCounts: z.array(
+  requirementCounts: z.array(
     z.preprocess(
       v => (v == null ? 1 : Number(v)),
       z.number().int().min(1).max(99),
@@ -49,24 +54,30 @@ const postInput = {
   ),
 }
 
-function validateRolePairs(
-  roleTypes: string[],
-  roleDescriptions: string[],
-  roleCounts: number[],
+function validateRequirements(
+  requirementTypes: string[],
+  requirementDescriptions: string[],
+  requirementCounts: number[],
 ) {
-  if (roleTypes.length === 0) {
+  if (requirementTypes.length === 0) {
     throw new ActionError({
       code: 'BAD_REQUEST',
-      message: '请至少添加一项招揽需求',
+      message: '请至少添加一项需求',
     })
   }
   if (
-    roleTypes.length !== roleDescriptions.length ||
-    roleTypes.length !== roleCounts.length
+    requirementTypes.length !== requirementDescriptions.length ||
+    requirementTypes.length !== requirementCounts.length
   ) {
     throw new ActionError({
       code: 'BAD_REQUEST',
-      message: '招揽类型、需求与人数不匹配',
+      message: '需求类型、要求与人数不匹配',
+    })
+  }
+  if (new Set(requirementTypes).size !== requirementTypes.length) {
+    throw new ActionError({
+      code: 'BAD_REQUEST',
+      message: '同一种需求类型只能添加一次',
     })
   }
 }
@@ -80,30 +91,30 @@ function requireAuth(context: ActionAPIContext) {
   return profileToken
 }
 
-async function assertOwner(postId: number, context: ActionAPIContext) {
+async function assertOwner(commissionId: number, context: ActionAPIContext) {
   const profileToken = context.locals.auth?.profileToken
   if (!profileToken) {
     throw new ActionError({ code: 'FORBIDDEN', message: '无权操作' })
   }
   const db = env.rim_guild_db
-  const post = await db
-    .prepare('SELECT author_token FROM posts WHERE id = ?')
-    .bind(postId)
+  const commission = await db
+    .prepare('SELECT author_token FROM commissions WHERE id = ?')
+    .bind(commissionId)
     .first<{ author_token: string }>()
-  if (!post || post.author_token !== profileToken) {
+  if (!commission || commission.author_token !== profileToken) {
     throw new ActionError({ code: 'FORBIDDEN', message: '无权操作' })
   }
 }
 
 export const server = {
-  createPost: defineAction({
+  createCommission: defineAction({
     accept: 'form',
-    input: z.object(postInput),
+    input: z.object(commissionInput),
     handler: async (input, context) => {
-      validateRolePairs(
-        input.roleTypes,
-        input.roleDescriptions,
-        input.roleCounts,
+      validateRequirements(
+        input.requirementTypes,
+        input.requirementDescriptions,
+        input.requirementCounts,
       )
 
       const db = env.rim_guild_db
@@ -123,7 +134,7 @@ export const server = {
 
       const result = await db
         .prepare(
-          'INSERT INTO posts (title, description, tags, author_name, author_token, author_id) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO commissions (title, description, tags, author_name, author_token, author_id) VALUES (?, ?, ?, ?, ?, ?)',
         )
         .bind(
           input.title,
@@ -135,120 +146,127 @@ export const server = {
         )
         .run()
 
-      const postId = Number(result.meta.last_row_id)
+      const commissionId = Number(result.meta.last_row_id)
 
       await db.batch(
-        input.roleTypes.map((role, i) =>
+        input.requirementTypes.map((requirementType, i) =>
           db
             .prepare(
-              'INSERT INTO post_roles (post_id, role_type, description, count) VALUES (?, ?, ?, ?)',
+              'INSERT INTO requirements (commission_id, requirement_type, description, count) VALUES (?, ?, ?, ?)',
             )
-            .bind(postId, role, input.roleDescriptions[i], input.roleCounts[i]),
+            .bind(
+              commissionId,
+              requirementType,
+              input.requirementDescriptions[i],
+              input.requirementCounts[i],
+            ),
         ),
       )
 
-      return { id: postId }
+      return { id: commissionId }
     },
   }),
-  updatePost: defineAction({
+  updateCommission: defineAction({
     accept: 'form',
     input: z.object({
-      postId: z.number(),
-      ...postInput,
+      commissionId: z.number(),
+      ...commissionInput,
     }),
     handler: async (input, context) => {
-      validateRolePairs(
-        input.roleTypes,
-        input.roleDescriptions,
-        input.roleCounts,
+      validateRequirements(
+        input.requirementTypes,
+        input.requirementDescriptions,
+        input.requirementCounts,
       )
-      await assertOwner(input.postId, context)
+      await assertOwner(input.commissionId, context)
 
       const db = env.rim_guild_db
       const existingRoles = await db
-        .prepare('SELECT role_type, status FROM post_roles WHERE post_id = ?')
-        .bind(input.postId)
-        .all<{ role_type: string; status: string }>()
+        .prepare('SELECT requirement_type, status FROM requirements WHERE commission_id = ?')
+        .bind(input.commissionId)
+        .all<{ requirement_type: string; status: string }>()
       const existingStatus = new Map(
-        existingRoles.results.map(r => [r.role_type, r.status]),
+        existingRoles.results.map(r => [r.requirement_type, r.status]),
       )
       const deletedRoles = existingRoles.results.filter(
         r =>
-          !input.roleTypes.includes(r.role_type as (typeof roleTypes)[number]),
+          !input.requirementTypes.includes(
+            r.requirement_type as (typeof requirementTypes)[number],
+          ),
       )
 
       await db.batch([
         db
           .prepare(
-            'UPDATE posts SET title = ?, description = ?, tags = ? WHERE id = ?',
+            'UPDATE commissions SET title = ?, description = ?, tags = ? WHERE id = ?',
           )
           .bind(
             input.title,
             input.description || '',
             input.tags.join(','),
-            input.postId,
-          ),
-        ...input.roleTypes.map((role, i) =>
+            input.commissionId,
+        ),
+        ...input.requirementTypes.map((requirementType, i) =>
           db
             .prepare(
-              `INSERT INTO post_roles (post_id, role_type, description, count, status) VALUES (?, ?, ?, ?, ?)
-							ON CONFLICT (post_id, role_type) DO UPDATE SET description = excluded.description, count = excluded.count`,
+              `INSERT INTO requirements (commission_id, requirement_type, description, count, status) VALUES (?, ?, ?, ?, ?)
+							ON CONFLICT (commission_id, requirement_type) DO UPDATE SET description = excluded.description, count = excluded.count`,
             )
             .bind(
-              input.postId,
-              role,
-              input.roleDescriptions[i],
-              input.roleCounts[i],
-              existingStatus.get(role) ?? 'open',
+              input.commissionId,
+              requirementType,
+              input.requirementDescriptions[i],
+              input.requirementCounts[i],
+              existingStatus.get(requirementType) ?? 'open',
             ),
         ),
         ...deletedRoles.map(r =>
           db
             .prepare(
-              'DELETE FROM post_roles WHERE post_id = ? AND role_type = ?',
+              'DELETE FROM requirements WHERE commission_id = ? AND requirement_type = ?',
             )
-            .bind(input.postId, r.role_type),
+            .bind(input.commissionId, r.requirement_type),
         ),
       ])
 
-      return { id: input.postId }
+      return { id: input.commissionId }
     },
   }),
-  updateRoleStatus: defineAction({
+  updateRequirementStatus: defineAction({
     accept: 'form',
     input: z.object({
-      postId: z.number(),
-      roleType: z.enum(roleTypes),
+      commissionId: z.number(),
+      requirementType: z.enum(requirementTypes),
       status: z.enum(['open', 'closed']),
     }),
     handler: async (input, context) => {
-      await assertOwner(input.postId, context)
+      await assertOwner(input.commissionId, context)
 
       const db = env.rim_guild_db
       await db
         .prepare(
-          'UPDATE post_roles SET status = ? WHERE post_id = ? AND role_type = ?',
+          'UPDATE requirements SET status = ? WHERE commission_id = ? AND requirement_type = ?',
         )
-        .bind(input.status, input.postId, input.roleType)
+        .bind(input.status, input.commissionId, input.requirementType)
         .run()
 
-      return { id: input.postId }
+      return { id: input.commissionId }
     },
   }),
-  deletePost: defineAction({
+  deleteCommission: defineAction({
     accept: 'form',
     input: z.object({
-      postId: z.number(),
+      commissionId: z.number(),
     }),
     handler: async (input, context) => {
-      await assertOwner(input.postId, context)
+      await assertOwner(input.commissionId, context)
 
       const db = env.rim_guild_db
       await db.batch([
         db
-          .prepare('DELETE FROM post_roles WHERE post_id = ?')
-          .bind(input.postId),
-        db.prepare('DELETE FROM posts WHERE id = ?').bind(input.postId),
+          .prepare('DELETE FROM requirements WHERE commission_id = ?')
+          .bind(input.commissionId),
+        db.prepare('DELETE FROM commissions WHERE id = ?').bind(input.commissionId),
       ])
 
       return { ok: true }
@@ -273,28 +291,28 @@ export const server = {
         v => (v == null ? '' : String(v).trim()),
         z.string().max(100),
       ),
-      roles: z.array(z.enum(roleTypes)).default([]),
+      creatorTypes: z.array(z.enum(creatorTypes)).default([]),
     }),
     handler: async (input, context) => {
       const db = env.rim_guild_db
       const profileToken = requireAuth(context)
 
-      const roles = input.roles.join(',')
+      const creatorTypes = input.creatorTypes.join(',')
       await db
         .prepare(
-          'UPDATE profiles SET author_name = ?, qq = ?, github = ?, steam = ?, roles = ? WHERE token = ?',
+          'UPDATE profiles SET author_name = ?, qq = ?, github = ?, steam = ?, creator_types = ? WHERE token = ?',
         )
         .bind(
           input.authorName,
           input.qq,
           input.github,
           input.steam,
-          roles,
+          creatorTypes,
           profileToken,
         )
         .run()
       await db
-        .prepare('UPDATE posts SET author_name = ? WHERE author_token = ?')
+        .prepare('UPDATE commissions SET author_name = ? WHERE author_token = ?')
         .bind(input.authorName, profileToken)
         .run()
 
@@ -394,45 +412,45 @@ export const server = {
       return { ok: true }
     },
   }),
-  registerInterest: defineAction({
+  claimRequirement: defineAction({
     accept: 'form',
     input: z.object({
-      postId: z.number(),
-      roleType: z.enum(roleTypes),
+      commissionId: z.number(),
+      requirementType: z.enum(requirementTypes),
     }),
     handler: async (input, context) => {
       const db = env.rim_guild_db
       const profileToken = requireAuth(context)
 
-      const post = await db
-        .prepare('SELECT author_token FROM posts WHERE id = ?')
-        .bind(input.postId)
+      const commission = await db
+        .prepare('SELECT author_token FROM commissions WHERE id = ?')
+        .bind(input.commissionId)
         .first<{ author_token: string }>()
-      if (!post) {
-        throw new ActionError({ code: 'NOT_FOUND', message: '该需求不存在' })
+      if (!commission) {
+        throw new ActionError({ code: 'NOT_FOUND', message: '该委托不存在' })
       }
-      if (post.author_token === profileToken) {
+      if (commission.author_token === profileToken) {
         throw new ActionError({
           code: 'BAD_REQUEST',
-          message: '不能认领自己发布的需求',
+          message: '不能认领自己发布的委托',
         })
       }
 
       await db
         .prepare(
-          'INSERT OR IGNORE INTO responses (post_id, role_type, profile_token) VALUES (?, ?, ?)',
+          'INSERT OR IGNORE INTO claims (commission_id, requirement_type, profile_token) VALUES (?, ?, ?)',
         )
-        .bind(input.postId, input.roleType, profileToken)
+        .bind(input.commissionId, input.requirementType, profileToken)
         .run()
 
       return { ok: true }
     },
   }),
-  cancelInterest: defineAction({
+  cancelClaim: defineAction({
     accept: 'form',
     input: z.object({
-      postId: z.number(),
-      roleType: z.enum(roleTypes),
+      commissionId: z.number(),
+      requirementType: z.enum(requirementTypes),
     }),
     handler: async (input, context) => {
       const db = env.rim_guild_db
@@ -440,30 +458,30 @@ export const server = {
 
       await db
         .prepare(
-          'DELETE FROM responses WHERE post_id = ? AND role_type = ? AND profile_token = ?',
+          'DELETE FROM claims WHERE commission_id = ? AND requirement_type = ? AND profile_token = ?',
         )
-        .bind(input.postId, input.roleType, profileToken)
+        .bind(input.commissionId, input.requirementType, profileToken)
         .run()
 
       return { ok: true }
     },
   }),
-  addPostUpdate: defineAction({
+  addCommissionUpdate: defineAction({
     accept: 'form',
     input: z.object({
-      postId: z.number(),
+      commissionId: z.number(),
       content: z.preprocess(
         v => (v == null ? '' : String(v).trim()),
         z.string().min(1, '请输入更新内容').max(1000, '更新内容最多 1000 个字'),
       ),
     }),
     handler: async (input, context) => {
-      await assertOwner(input.postId, context)
+      await assertOwner(input.commissionId, context)
 
       const db = env.rim_guild_db
       await db
-        .prepare('INSERT INTO post_updates (post_id, content) VALUES (?, ?)')
-        .bind(input.postId, input.content)
+        .prepare('INSERT INTO commission_updates (commission_id, content) VALUES (?, ?)')
+        .bind(input.commissionId, input.content)
         .run()
 
       return { ok: true }

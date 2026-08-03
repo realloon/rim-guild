@@ -11,10 +11,10 @@ const { legend, name, options, checked } = Astro.props
 
 <fieldset class="form-options">
   <legend>{legend}</legend>
-  <div class="role-checkboxes">
+  <div class="option-checkboxes">
     {
       Object.entries(options).map(([value, label]) => (
-        <label class="role-checkbox">
+        <label class="option-checkbox">
           <input
             type="checkbox"
             name={name}
