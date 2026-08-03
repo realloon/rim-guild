@@ -50,6 +50,10 @@ textarea {
 }
 
 main {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+
   --main-padding-top: 64px;
   padding: var(--main-padding-top) 0 96px;
 }
