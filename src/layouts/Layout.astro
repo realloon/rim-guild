@@ -168,6 +168,8 @@ const isHome = Astro.url.pathname === '/'
       align-items: center;
       gap: 12px;
 
+      margin-right: auto;
+
       svg {
         vertical-align: top;
         width: 24px;
@@ -183,7 +185,6 @@ const isHome = Astro.url.pathname === '/'
     }
 
     nav {
-      flex-grow: 1;
       justify-content: end;
 
       display: flex;
@@ -348,6 +349,20 @@ const isHome = Astro.url.pathname === '/'
 
     span:first-of-type {
       font-family: var(--mono);
+    }
+  }
+
+  @media (max-width: 768px) {
+    [aria-label='主导航'] {
+      display: none;
+    }
+
+    .publish-link svg {
+      display: none;
+    }
+
+    footer {
+      flex-direction: column-reverse;
     }
   }
 </style>

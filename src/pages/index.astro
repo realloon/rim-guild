@@ -338,7 +338,8 @@ const clearSearchHref = activeRequirementType
       justify-content: space-between;
       gap: 16px;
       margin-block: unset;
-      /* border-top: 1px solid var(--line); */
+      border-top: 1px dashed var(--line);
+      padding-top: 16px;
 
       div {
         display: flex;
@@ -484,6 +485,10 @@ const clearSearchHref = activeRequirementType
   }
 
   @media (max-width: 768px) {
+    .home-hero div h1 {
+      font-size: 3rem;
+    }
+
     .home-hero {
       display: block;
       width: 100%;
