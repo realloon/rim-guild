@@ -104,44 +104,44 @@ const isHome = Astro.url.pathname === '/'
         </button>
       </section>
     </header>
+
+    <menu id="profile-menu" popover>
+      {
+        profileToken ? (
+          <>
+            <li>
+              <a href="/me#profile">个人资料</a>
+            </li>
+            <li>
+              <a href="/me#commissions">我的委托</a>
+            </li>
+            <li>
+              <a href="/me#claims">我认领的</a>
+            </li>
+            <hr />
+            <form method="POST" action={actions.logout}>
+              <button class="menu-item" type="submit">
+                登出
+              </button>
+            </form>
+          </>
+        ) : (
+          <li>
+            <a href="/login?next=/me">登录</a>
+          </li>
+        )
+      }
+    </menu>
+
+    <slot />
+
+    <footer>
+      <span
+        >Copyright © {new Date().getFullYear()} RimGuild. All Rights Reserved.</span
+      >
+      <span>好的想法值得认真实现</span>
+    </footer>
   </body>
-
-  <menu id="profile-menu" popover>
-    {
-      profileToken ? (
-        <>
-          <li>
-            <a href="/me#profile">个人资料</a>
-          </li>
-          <li>
-            <a href="/me#commissions">我的委托</a>
-          </li>
-          <li>
-            <a href="/me#claims">我认领的</a>
-          </li>
-          <hr />
-          <form method="POST" action={actions.logout}>
-            <button class="menu-item" type="submit">
-              登出
-            </button>
-          </form>
-        </>
-      ) : (
-        <li>
-          <a href="/login?next=/me">登录</a>
-        </li>
-      )
-    }
-  </menu>
-
-  <slot />
-
-  <footer>
-    <span
-      >Copyright © {new Date().getFullYear()} RimGuild. All Rights Reserved.</span
-    >
-    <span>好的想法值得认真实现</span>
-  </footer>
 </html>
 
 <style>
