@@ -1,8 +1,9 @@
 ---
-interface Props {
+import type { HTMLAttributes } from 'astro/types'
+
+type Props = HTMLAttributes<'input'> & {
   variant?: 'default' | 'search'
   density?: 'default' | 'compact'
-  class?: string
 }
 
 const {
