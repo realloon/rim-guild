@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro'
 import CommissionListItem from '../components/CommissionListItem.astro'
+import Input from '../components/ui/Input.astro'
 import {
   REQUIREMENT_TYPES,
   COMMISSION_SELECT,
@@ -195,7 +196,8 @@ const clearSearchHref = activeRequirementType
               stroke-linecap="square"></path>
           </svg>
           <span class="sr-only">搜索委托标题或描述</span>
-          <input
+          <Input
+            variant="search"
             id="commission-search"
             type="search"
             name="q"
@@ -437,19 +439,6 @@ const clearSearchHref = activeRequirementType
           flex: 0 0 auto;
         }
 
-        input {
-          min-height: 44px;
-          padding: 0;
-          border: unset;
-          outline: 0;
-          background-color: transparent;
-          box-shadow: none;
-
-          &:focus {
-            border: unset;
-            box-shadow: none;
-          }
-        }
       }
 
       button {

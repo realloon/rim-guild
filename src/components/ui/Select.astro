@@ -1,0 +1,55 @@
+---
+interface Props {
+  density?: 'default' | 'compact'
+  class?: string
+}
+
+const { density = 'default', class: className, ...attrs } = Astro.props
+---
+
+<select
+  {...attrs}
+  class:list={[className, { 'select-compact': density === 'compact' }]}
+>
+  <slot />
+</select>
+
+<style>
+  select {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 10px 42px 10px 13px;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background-color: var(--page);
+    box-shadow: none;
+    color: var(--text);
+    font-size: 1rem;
+    transition: 0.2s;
+    appearance: none;
+    cursor: pointer;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+      linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 17px) 50%,
+      calc(100% - 12px) 50%;
+    background-repeat: no-repeat;
+    background-size: 5px 5px;
+
+    &:focus {
+      border: 0;
+      background-color: var(--page);
+      box-shadow: none;
+    }
+  }
+
+  .select-compact {
+    flex: 0 1 132px;
+    width: 132px;
+  }
+</style>

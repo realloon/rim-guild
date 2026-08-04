@@ -27,3 +27,62 @@ const { legend, name, options, checked } = Astro.props
     }
   </div>
 </fieldset>
+
+<style>
+  .form-options {
+    margin: 0 0 28px;
+    padding: 0;
+    border: 0;
+
+    legend {
+      margin-bottom: 10px;
+      padding: 0;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+  }
+
+  .option-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .option-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.84rem;
+    transition: 0.2s;
+
+    input {
+      width: auto;
+      min-height: auto;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    &:hover {
+      border-color: var(--accent);
+      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+    }
+
+    &:has(input:checked) {
+      border-color: var(--accent);
+      background: color-mix(
+        in oklch,
+        var(--accent) 22%,
+        light-dark(white, black)
+      );
+      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+    }
+  }
+</style>

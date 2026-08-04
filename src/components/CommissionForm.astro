@@ -6,6 +6,8 @@ import {
   type Commission,
 } from '../lib/commissions'
 import CheckboxGroup from './ui/CheckboxGroup.astro'
+import Input from './ui/Input.astro'
+import Select from './ui/Select.astro'
 import Textarea from './ui/Textarea.astro'
 
 interface Props {
@@ -116,7 +118,7 @@ const submitLabel = commission ? '保存修改' : '发布'
 
   <label class="form-field" for="title">
     标题
-    <input
+    <Input
       id="title"
       name="title"
       required
@@ -150,15 +152,20 @@ const submitLabel = commission ? '保存修改' : '发布'
         commission ? (
           commission.requirements.map((requirement, i) => (
             <div class="requirement-pair">
-              <select name="requirementTypes" required aria-label="需求类型">
+              <Select
+                density="compact"
+                name="requirementTypes"
+                required
+                aria-label="需求类型"
+              >
                 {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
                   <option value={value} selected={requirement.type === value}>
                     {label}
                   </option>
                 ))}
-              </select>
-              <input
-                class="requirement-count"
+              </Select>
+              <Input
+                density="compact"
                 name="requirementCounts"
                 type="number"
                 min="1"
@@ -177,6 +184,7 @@ const submitLabel = commission ? '保存修改' : '发布'
                 ×
               </button>
               <Textarea
+                density="compact"
                 name="requirementDescriptions"
                 required
                 aria-label="需求说明"
@@ -190,13 +198,18 @@ const submitLabel = commission ? '保存修改' : '发布'
           ))
         ) : (
           <div class="requirement-pair">
-            <select name="requirementTypes" required aria-label="需求类型">
+            <Select
+              density="compact"
+              name="requirementTypes"
+              required
+              aria-label="需求类型"
+            >
               {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
                 <option value={value}>{label}</option>
               ))}
-            </select>
-            <input
-              class="requirement-count"
+            </Select>
+            <Input
+              density="compact"
               name="requirementCounts"
               type="number"
               min="1"
@@ -215,6 +228,7 @@ const submitLabel = commission ? '保存修改' : '发布'
               ×
             </button>
             <Textarea
+              density="compact"
               name="requirementDescriptions"
               required
               aria-label="需求说明"
@@ -263,23 +277,6 @@ const submitLabel = commission ? '保存修改' : '发布'
     align-items: center;
     padding-bottom: 16px;
 
-    select,
-    input,
-    textarea {
-      min-width: 0;
-    }
-
-    select {
-      width: 132px;
-      flex: 0 1 132px;
-    }
-
-    textarea[name='requirementDescriptions'] {
-      width: 100%;
-      flex: 0 0 100%;
-      min-height: 72px;
-    }
-
     & + & {
       padding-top: 16px;
     }
@@ -287,11 +284,6 @@ const submitLabel = commission ? '保存修改' : '发布'
     &:last-child {
       padding-bottom: 0;
     }
-  }
-
-  .requirement-count {
-    flex: 0 0 76px;
-    width: 76px !important;
   }
 
   .remove-requirement {

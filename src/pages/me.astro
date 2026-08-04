@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro'
 import CommissionListItem from '../components/CommissionListItem.astro'
 import ErrorBox from '../components/ui/ErrorBox.astro'
 import CheckboxGroup from '../components/ui/CheckboxGroup.astro'
+import Input from '../components/ui/Input.astro'
 import {
   COMMISSION_SELECT,
   CREATOR_TYPES,
@@ -150,7 +151,7 @@ if (result && !result.error) {
         <form method="POST" action={actions.updateProfile}>
           <label class="form-field" for="authorName">
             昵称
-            <input
+            <Input
               id="authorName"
               name="authorName"
               required
@@ -170,7 +171,7 @@ if (result && !result.error) {
             <div class="contact-fields">
               <label class="form-field" for="qq">
                 QQ
-                <input
+                <Input
                   id="qq"
                   name="qq"
                   maxlength="50"
@@ -180,7 +181,7 @@ if (result && !result.error) {
               </label>
               <label class="form-field" for="github">
                 GitHub
-                <input
+                <Input
                   id="github"
                   name="github"
                   maxlength="100"
@@ -190,7 +191,7 @@ if (result && !result.error) {
               </label>
               <label class="form-field" for="steam">
                 Steam
-                <input
+                <Input
                   id="steam"
                   name="steam"
                   maxlength="100"

@@ -1,8 +1,17 @@
 ---
-const attrs = Astro.props
+interface Props {
+  density?: 'default' | 'compact'
+  class?: string
+}
+
+const { density = 'default', class: className, ...attrs } = Astro.props
 ---
 
-<textarea {...attrs} data-auto-resize><slot /></textarea>
+<textarea
+  {...attrs}
+  class:list={[className, { 'textarea-compact': density === 'compact' }]}
+  data-auto-resize
+><slot /></textarea>
 
 <script>
   const resize = (textarea: HTMLTextAreaElement) => {
@@ -37,10 +46,39 @@ const attrs = Astro.props
 
 <style>
   textarea[data-auto-resize] {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 13px;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background-color: var(--page);
+    box-shadow: none;
+    color: var(--text);
+    font-size: 1rem;
+    transition: 0.2s;
+
     min-height: calc(3.4lh + 20px);
     max-height: calc(10.2lh + 20px);
     line-height: 1.5;
     overflow-y: hidden;
     resize: none;
+
+    &::placeholder {
+      color: color-mix(in oklch, var(--text-muted) 55%, var(--surface));
+    }
+
+    &:focus {
+      border: 0;
+      background-color: var(--page);
+      box-shadow: none;
+    }
+  }
+
+  .textarea-compact {
+    flex: 0 0 100%;
+    min-height: 72px;
   }
 </style>

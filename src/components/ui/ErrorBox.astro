@@ -16,3 +16,24 @@ const { error } = Astro.props
     </div>
   )
 }
+
+<style>
+  .error {
+    margin: 18px 0;
+    padding: 12px 14px;
+    border: 1px solid color-mix(in oklch, var(--danger) 45%, var(--line));
+    border-left: 3px solid var(--danger);
+    border-radius: 3px;
+    background: color-mix(in oklch, var(--danger) 12%, var(--page));
+    color: color-mix(in oklch, var(--danger) 80%, light-dark(black, white));
+    font-size: 0.85rem;
+
+    p {
+      margin: 0;
+
+      & + p {
+        margin-top: 5px;
+      }
+    }
+  }
+</style>
