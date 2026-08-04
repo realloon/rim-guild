@@ -114,106 +114,122 @@ const requirements = commission?.requirements ?? [
   }
 </script>
 
-<form method="POST" action={action} data-requirement-form>
-  {
-    commission && (
-      <input type="hidden" name="commissionId" value={commission.id} />
-    )
-  }
+<section>
+  <form method="POST" action={action} data-requirement-form>
+    {
+      commission && (
+        <input type="hidden" name="commissionId" value={commission.id} />
+      )
+    }
 
-  <label class="form-field" for="title">
-    标题
-    <Input
-      id="title"
-      name="title"
-      required
-      maxlength="80"
-      value={commission?.title}
-      placeholder="例如：电磁武器拓展模组"
+    <label class="form-field" for="title">
+      标题
+      <Input
+        id="title"
+        name="title"
+        required
+        maxlength="80"
+        value={commission?.title}
+        placeholder="例如：电磁武器拓展模组"
+      />
+    </label>
+    <label class="form-field" for="description">
+      描述
+      <Textarea
+        id="description"
+        name="description"
+        maxlength="5000"
+        placeholder="描述模组的玩法、规模和工期，内容越详细具体越容易吸引创作者喔"
+        >{commission?.description}</Textarea
+      >
+    </label>
+
+    <CheckboxGroup
+      legend="标签"
+      name="tags"
+      options={COMMISSION_TAGS}
+      checked={commission?.tags ?? []}
     />
-  </label>
-  <label class="form-field" for="description">
-    描述
-    <Textarea
-      id="description"
-      name="description"
-      maxlength="5000"
-      placeholder="描述模组的玩法、规模和工期，内容越详细具体越容易吸引创作者喔"
-      >{commission?.description}</Textarea
-    >
-  </label>
 
-  <CheckboxGroup
-    legend="标签"
-    name="tags"
-    options={COMMISSION_TAGS}
-    checked={commission?.tags ?? []}
-  />
+    <fieldset>
+      <legend>需求</legend>
+      <ul>
+        {
+          requirements.map((requirement, i) => (
+            <li>
+              <Select
+                density="compact"
+                name="requirementTypes"
+                required
+                aria-label="需求类型"
+              >
+                {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
+                  <option value={value} selected={requirement.type === value}>
+                    {label}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                density="compact"
+                name="requirementCounts"
+                type="number"
+                min="1"
+                max="99"
+                value={requirement.count}
+                aria-label="需要人数"
+                title="需要人数"
+              />
+              <button
+                data-remove-requirement="true"
+                type="button"
+                title="移除"
+                aria-label="移除这一项需求"
+                hidden={i === 0 && requirements.length === 1}
+              >
+                ×
+              </button>
+              <Textarea
+                density="compact"
+                name="requirementDescriptions"
+                required
+                aria-label="需求说明"
+                placeholder="面向该需求的具体要求"
+                maxlength="2000"
+                rows="2"
+              >
+                {requirement.description}
+              </Textarea>
+            </li>
+          ))
+        }
+      </ul>
+      <button data-add-requirement="true" type="button">
+        + 添加需求岗位
+      </button>
+    </fieldset>
 
-  <fieldset>
-    <legend>需求</legend>
-    <ul>
-      {
-        requirements.map((requirement, i) => (
-          <li>
-            <Select
-              density="compact"
-              name="requirementTypes"
-              required
-              aria-label="需求类型"
-            >
-              {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
-                <option value={value} selected={requirement.type === value}>
-                  {label}
-                </option>
-              ))}
-            </Select>
-            <Input
-              density="compact"
-              name="requirementCounts"
-              type="number"
-              min="1"
-              max="99"
-              value={requirement.count}
-              aria-label="需要人数"
-              title="需要人数"
-            />
-            <button
-              data-remove-requirement="true"
-              type="button"
-              title="移除"
-              aria-label="移除这一项需求"
-              hidden={i === 0 && requirements.length === 1}
-            >
-              ×
-            </button>
-            <Textarea
-              density="compact"
-              name="requirementDescriptions"
-              required
-              aria-label="需求说明"
-              placeholder="面向该需求的具体要求"
-              maxlength="2000"
-              rows="2"
-            >
-              {requirement.description}
-            </Textarea>
-          </li>
-        ))
-      }
-    </ul>
-    <button data-add-requirement="true" type="button">
-      + 添加需求岗位
-    </button>
-  </fieldset>
-
-  <footer>
-    <button class="btn" type="submit">{submitLabel}</button>
-    <small>发布后仍可随时修改</small>
-  </footer>
-</form>
+    <footer>
+      <button class="btn" type="submit">{submitLabel}</button>
+      <small>发布后仍可随时修改</small>
+    </footer>
+  </form>
+  <slot />
+</section>
 
 <style>
+  section {
+    padding: clamp(16px, 100%, 32px);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--forest);
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+
+    @media (max-width: 768px) {
+      padding-inline: 16px;
+      margin-inline: -8px;
+    }
+  }
+
   form {
     max-width: 820px;
 

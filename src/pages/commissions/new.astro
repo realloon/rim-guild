@@ -22,10 +22,9 @@ if (result && !result.error) {
       <p>将创意交予最适合的创作者</p>
     </header>
 
-    <section>
-      <CommissionForm />
+    <CommissionForm>
       <ErrorBox error={result?.error} />
-    </section>
+    </CommissionForm>
   </main>
 </Layout>
 
@@ -39,19 +38,6 @@ if (result && !result.error) {
 
     p {
       color: var(--text-muted);
-    }
-  }
-
-  section {
-    padding: clamp(16px, 100%, 32px);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--forest);
-    background-color: var(--surface);
-    box-shadow: var(--shadow);
-
-    @media (max-width: 768px) {
-      padding-inline: 16px;
-      margin-inline: -8px;
     }
   }
 </style>

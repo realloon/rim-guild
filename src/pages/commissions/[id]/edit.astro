@@ -54,10 +54,9 @@ if (result && !result.error && commission) {
               </p>
             </header>
 
-            <section>
-              <CommissionForm commission={commission} />
+            <CommissionForm commission={commission}>
               <ErrorBox error={result?.error} />
-            </section>
+            </CommissionForm>
           </>
         ) : (
           <p class="not-found">你没有权限编辑这份委托</p>
@@ -68,13 +67,3 @@ if (result && !result.error && commission) {
     }
   </main>
 </Layout>
-
-<style>
-  section {
-    padding: clamp(16px, 100%, 32px);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--forest);
-    background-color: var(--surface);
-    box-shadow: var(--shadow);
-  }
-</style>
