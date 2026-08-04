@@ -17,6 +17,9 @@ interface Props {
 const { commission } = Astro.props
 const action = commission ? actions.updateCommission : actions.createCommission
 const submitLabel = commission ? '保存修改' : '发布'
+const requirements = commission?.requirements ?? [
+  { type: 'artist', count: 1, description: '' },
+]
 ---
 
 <script>
@@ -24,8 +27,10 @@ const submitLabel = commission ? '保存修改' : '发布'
     'form[data-requirement-form]',
   ) as HTMLFormElement | null
   if (form) {
-    const pairs = form.querySelector('.requirement-pairs') as HTMLElement
-    const addBtn = form.querySelector('.add-requirement') as HTMLButtonElement
+    const pairs = form.querySelector('fieldset > ul') as HTMLUListElement
+    const addBtn = form.querySelector(
+      '[data-add-requirement]',
+    ) as HTMLButtonElement
 
     const updateRequirementOptions = () => {
       const selects = Array.from(pairs.querySelectorAll('select'))
@@ -44,10 +49,10 @@ const submitLabel = commission ? '保存修改' : '发布'
     }
 
     const makePair = () => {
-      const template = pairs.querySelector('.requirement-pair') as HTMLElement
-      const pair = template.cloneNode(true) as HTMLDivElement
+      const template = pairs.querySelector('li') as HTMLElement
+      const pair = template.cloneNode(true) as HTMLLIElement
       const removeBtn = pair.querySelector(
-        '.remove-requirement',
+        '[data-remove-requirement]',
       ) as HTMLButtonElement
       removeBtn.hidden = false
       const select = pair.querySelector('select')!
@@ -89,11 +94,11 @@ const submitLabel = commission ? '保存修改' : '发布'
 
     pairs.addEventListener('click', event => {
       const btn = (event.target as HTMLElement).closest(
-        '.remove-requirement',
+        '[data-remove-requirement]',
       ) as HTMLButtonElement | null
       if (btn) {
-        const pair = btn.closest<HTMLElement>('.requirement-pair')!
-        if (pairs.querySelectorAll('.requirement-pair').length > 1) {
+        const pair = btn.closest<HTMLElement>('li')!
+        if (pairs.querySelectorAll('li').length > 1) {
           pair.remove()
         } else {
           const descInput = pair.querySelector('textarea')!
@@ -145,59 +150,12 @@ const submitLabel = commission ? '保存修改' : '发布'
     checked={commission?.tags ?? []}
   />
 
-  <fieldset class="form-section">
+  <fieldset>
     <legend>需求</legend>
-    <div class="requirement-pairs">
+    <ul>
       {
-        commission ? (
-          commission.requirements.map((requirement, i) => (
-            <div class="requirement-pair">
-              <Select
-                density="compact"
-                name="requirementTypes"
-                required
-                aria-label="需求类型"
-              >
-                {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
-                  <option value={value} selected={requirement.type === value}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-              <Input
-                density="compact"
-                name="requirementCounts"
-                type="number"
-                min="1"
-                max="99"
-                value={requirement.count}
-                aria-label="需要人数"
-                title="需要人数"
-              />
-              <button
-                class="remove-requirement"
-                type="button"
-                title="移除"
-                aria-label="移除这一项需求"
-                hidden={i === 0 && commission.requirements.length === 1}
-              >
-                ×
-              </button>
-              <Textarea
-                density="compact"
-                name="requirementDescriptions"
-                required
-                aria-label="需求说明"
-                placeholder="面向该需求的具体要求"
-                maxlength="2000"
-                rows="2"
-              >
-                {requirement.description}
-              </Textarea>
-            </div>
-          ))
-        ) : (
-          <div class="requirement-pair">
+        requirements.map((requirement, i) => (
+          <li>
             <Select
               density="compact"
               name="requirementTypes"
@@ -205,7 +163,9 @@ const submitLabel = commission ? '保存修改' : '发布'
               aria-label="需求类型"
             >
               {Object.entries(REQUIREMENT_TYPES).map(([value, label]) => (
-                <option value={value}>{label}</option>
+                <option value={value} selected={requirement.type === value}>
+                  {label}
+                </option>
               ))}
             </Select>
             <Input
@@ -214,16 +174,16 @@ const submitLabel = commission ? '保存修改' : '发布'
               type="number"
               min="1"
               max="99"
-              value="1"
+              value={requirement.count}
               aria-label="需要人数"
               title="需要人数"
             />
             <button
-              class="remove-requirement"
+              data-remove-requirement="true"
               type="button"
               title="移除"
               aria-label="移除这一项需求"
-              hidden
+              hidden={i === 0 && requirements.length === 1}
             >
               ×
             </button>
@@ -235,25 +195,30 @@ const submitLabel = commission ? '保存修改' : '发布'
               placeholder="面向该需求的具体要求"
               maxlength="2000"
               rows="2"
-            />
-          </div>
-        )
+            >
+              {requirement.description}
+            </Textarea>
+          </li>
+        ))
       }
-    </div>
-    <button class="add-requirement" type="button">+ 添加需求岗位</button>
+    </ul>
+    <button data-add-requirement="true" type="button">
+      + 添加需求岗位
+    </button>
   </fieldset>
 
-  <div class="form-actions">
+  <footer>
     <button class="btn" type="submit">{submitLabel}</button>
-    <span>发布后仍可随时修改</span>
-  </div>
+    <small>发布后仍可随时修改</small>
+  </footer>
 </form>
 
 <style>
   form {
     max-width: 820px;
 
-    & > .form-section {
+    & > fieldset {
+      margin: 0 0 28px;
       padding: 0;
       border: 0;
       background: transparent;
@@ -264,13 +229,16 @@ const submitLabel = commission ? '保存修改' : '发布'
     }
   }
 
-  .requirement-pairs {
+  fieldset > ul {
     display: flex;
     flex-direction: column;
     gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .requirement-pair {
+  fieldset > ul > li {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -286,7 +254,7 @@ const submitLabel = commission ? '保存修改' : '发布'
     }
   }
 
-  .remove-requirement {
+  button[data-remove-requirement] {
     flex: 0 0 32px;
     width: 32px;
     height: 32px;
@@ -304,7 +272,7 @@ const submitLabel = commission ? '保存修改' : '发布'
     }
   }
 
-  .add-requirement {
+  button[data-add-requirement] {
     margin-top: 12px;
     padding: 7px 0;
     border: 0;
@@ -326,13 +294,13 @@ const submitLabel = commission ? '保存修改' : '发布'
     }
   }
 
-  .form-actions {
+  form > footer {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 14px;
 
-    & > span {
+    & > small {
       color: var(--text-muted);
       font-size: 0.76rem;
     }

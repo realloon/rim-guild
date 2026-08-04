@@ -9,12 +9,12 @@ interface Props {
 const { legend, name, options, checked } = Astro.props
 ---
 
-<fieldset class="form-options">
+<fieldset>
   <legend>{legend}</legend>
-  <div class="option-checkboxes">
+  <div>
     {
       Object.entries(options).map(([value, label]) => (
-        <label class="option-checkbox">
+        <label>
           <input
             type="checkbox"
             name={name}
@@ -29,7 +29,7 @@ const { legend, name, options, checked } = Astro.props
 </fieldset>
 
 <style>
-  .form-options {
+  fieldset {
     margin: 0 0 28px;
     padding: 0;
     border: 0;
@@ -43,13 +43,13 @@ const { legend, name, options, checked } = Astro.props
     }
   }
 
-  .option-checkboxes {
+  fieldset > div {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
 
-  .option-checkbox {
+  fieldset label {
     display: inline-flex;
     align-items: center;
     gap: 8px;

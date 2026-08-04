@@ -14,8 +14,10 @@ const { seed, name, href, size = 40, avatarSide = 'left' } = Astro.props
 
 <a class="author" href={href}>
   <img
-    class:list={{ 'author-avatar-right': avatarSide === 'right' }}
-    class="author-avatar"
+    class:list={[
+      'author-avatar',
+      { 'author-avatar-right': avatarSide === 'right' },
+    ]}
     src={avatarUrl(seed, size)}
     width={size}
     height={size}
