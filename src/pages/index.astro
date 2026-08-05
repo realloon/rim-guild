@@ -23,9 +23,17 @@ const q = (Astro.url.searchParams.get('q') ?? '').trim()
 
 const myProfileToken = Astro.locals.auth?.profileToken ?? null
 const commissions = await listOpenCommissions(db, {
-  requirementType: activeRequirementType ?? undefined,
   search: q || undefined,
 })
+const hasVisibleCommissions = commissions.some(commission =>
+  activeRequirementType
+    ? commission.requirements.some(
+        requirement =>
+          requirement.status === 'open' &&
+          requirement.type === activeRequirementType,
+      )
+    : true,
+)
 const { commissionCount, registeredUserCount } = await getSiteStats(db)
 const clearSearchHref = activeRequirementType
   ? `/?requirement=${activeRequirementType}`
@@ -89,9 +97,7 @@ const clearSearchHref = activeRequirementType
             stroke="var(--accent)"
             stroke-width="2"></path>
         </svg>
-        <p>
-          让对的人遇上合适的项目，让合适的项目遇上对的人
-        </p>
+        <p>让对的人遇上合适的项目，让合适的项目遇上对的人</p>
         <SiteStats
           variant="card"
           commissionCount={commissionCount}
@@ -129,15 +135,12 @@ const clearSearchHref = activeRequirementType
       </nav>
 
       <form method="GET" action="/">
-        {
-          activeRequirementType && (
-            <input
-              type="hidden"
-              name="requirement"
-              value={activeRequirementType}
-            />
-          )
-        }
+        <input
+          type="hidden"
+          name="requirement"
+          value={activeRequirementType ?? ''}
+          data-requirement-filter
+        />
         <label for="commission-search">
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <circle
@@ -176,20 +179,98 @@ const clearSearchHref = activeRequirementType
         </Button>
       </form>
 
-      <CommissionList commissions={commissions}>
-        <div slot="empty" class="empty-state">
+      <CommissionList
+        commissions={commissions}
+        requirementFilter={activeRequirementType}
+      >
+        <div slot="empty" class="empty-state" hidden={hasVisibleCommissions}>
           <span>{q ? '没有匹配结果' : '暂无委托'}</span>
           <p>{q ? '没有找到匹配的委托' : '还没有委托，来发布第一份吧'}</p>
-          {q && (
-            <Button variant="link" href={clearSearchHref}>
-              清除搜索
-            </Button>
-          )}
+          {
+            q && (
+              <Button variant="link" href={clearSearchHref}>
+                清除搜索
+              </Button>
+            )
+          }
         </div>
       </CommissionList>
     </section>
   </main>
 </Layout>
+
+<script>
+  const nav = document.querySelector(
+    'nav[aria-label="按类型筛选"]',
+  ) as HTMLElement
+  const list = document.querySelector(
+    'ul[data-filter-list]',
+  ) as HTMLUListElement
+  const emptyState = document.querySelector('.empty-state') as HTMLElement
+  const filterInput = document.querySelector(
+    'input[data-requirement-filter]',
+  ) as HTMLInputElement
+  const links = Array.from(nav.querySelectorAll('a')) as HTMLAnchorElement[]
+  const items = Array.from(
+    list.querySelectorAll('li[data-requirements]'),
+  ) as HTMLLIElement[]
+  const clearSearchLink = emptyState.querySelector(
+    'a',
+  ) as HTMLAnchorElement | null
+
+  const filterFromLink = (link: HTMLAnchorElement) =>
+    new URL(link.href, window.location.href).searchParams.get('requirement')
+
+  const initialFilter = filterFromLink(
+    nav.querySelector('a[aria-current="page"]') as HTMLAnchorElement,
+  )
+
+  const applyFilter = (filter: string | null, updateUrl = true) => {
+    let visibleCount = 0
+
+    for (const item of items) {
+      const visible =
+        !filter || item.dataset.requirements?.split(' ').includes(filter)
+      item.hidden = !visible
+      if (visible) visibleCount++
+    }
+
+    emptyState.hidden = visibleCount > 0
+    filterInput.value = filter ?? ''
+    for (const link of links) {
+      if (filterFromLink(link) === filter) {
+        link.setAttribute('aria-current', 'page')
+      } else {
+        link.removeAttribute('aria-current')
+      }
+    }
+
+    if (updateUrl) {
+      const url = new URL(window.location.href)
+      if (filter) {
+        url.searchParams.set('requirement', filter)
+      } else {
+        url.searchParams.delete('requirement')
+      }
+      window.history.replaceState(null, '', url)
+    }
+
+    if (clearSearchLink) {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('q')
+      clearSearchLink.href = `${url.pathname}${url.search}`
+    }
+  }
+
+  for (const link of links) {
+    link.addEventListener('click', event => {
+      event.preventDefault()
+      applyFilter(filterFromLink(link))
+    })
+  }
+
+  applyFilter(initialFilter, false)
+</script>
 
 <style>
   main > section:first-child {
@@ -280,7 +361,6 @@ const clearSearchHref = activeRequirementType
       line-height: 1.5;
       text-align: center;
     }
-
   }
 
   #board {
@@ -352,7 +432,6 @@ const clearSearchHref = activeRequirementType
           height: 19px;
           flex: 0 0 auto;
         }
-
       }
 
       button {

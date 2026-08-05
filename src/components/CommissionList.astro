@@ -1,24 +1,40 @@
 ---
 import CommissionListItem from './CommissionListItem.astro'
-import type { CommissionSummary } from '../lib/commissions'
+import type { CommissionSummary, RequirementType } from '../lib/commissions'
 
 interface Props {
   commissions: CommissionSummary[]
   emptyMessage?: string
+  requirementFilter?: RequirementType | null
 }
 
-const { commissions, emptyMessage } = Astro.props
+const { commissions, emptyMessage, requirementFilter } = Astro.props
+const filterable = requirementFilter !== undefined
 ---
 
 {
-  commissions.length > 0 ? (
+  filterable ? (
+    <>
+      <ul data-filter-list>
+        {commissions.map(commission => (
+          <CommissionListItem
+            commission={commission}
+            requirementFilter={requirementFilter}
+          />
+        ))}
+      </ul>
+      <slot name="empty" />
+    </>
+  ) : commissions.length > 0 ? (
     <ul>
       {commissions.map(commission => (
         <CommissionListItem commission={commission} />
       ))}
     </ul>
+  ) : emptyMessage ? (
+    <p>{emptyMessage}</p>
   ) : (
-    emptyMessage ? <p>{emptyMessage}</p> : <slot name="empty" />
+    <slot name="empty" />
   )
 }
 

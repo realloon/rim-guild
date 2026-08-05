@@ -5,27 +5,38 @@ import {
   requirementTypeLabel,
   formatDate,
   type CommissionSummary,
+  type RequirementType,
 } from '../lib/commissions'
 
 interface Props {
   commission: CommissionSummary
+  requirementFilter?: RequirementType | null
 }
 
-const { commission } = Astro.props
+const { commission, requirementFilter } = Astro.props
 const openRequirements = commission.requirements.filter(
   requirement => requirement.status === 'open',
+)
+const openRequirementTypes = openRequirements.map(
+  requirement => requirement.type,
 )
 const hasOpenRequirements = openRequirements.length > 0
 ---
 
-<li>
+<li
+  data-requirements={requirementFilter !== undefined
+    ? openRequirementTypes.join(' ')
+    : undefined}
+  hidden={requirementFilter !== undefined &&
+    requirementFilter !== null &&
+    !openRequirementTypes.includes(requirementFilter)}
+>
   <header>
     <span>
       <span
         class="requirement-pin"
         data-status={hasOpenRequirements ? 'open' : 'closed'}
-        aria-hidden="true"
-      />
+        aria-hidden="true"></span>
       {hasOpenRequirements ? '招募中' : '招募已结束'}
       <time datetime={commission.created_at}>
         {formatDate(commission.created_at)}
@@ -46,7 +57,7 @@ const hasOpenRequirements = openRequirements.length > 0
   <footer>
     <BadgeList
       items={openRequirements.map(requirement =>
-        requirementTypeLabel(requirement.type)
+        requirementTypeLabel(requirement.type),
       )}
     />
   </footer>
@@ -54,38 +65,17 @@ const hasOpenRequirements = openRequirements.length > 0
 
 <style>
   li {
-    position: relative;
-
     background-color: var(--surface);
 
     padding: 16px 24px;
     border: 1px solid var(--line);
     border-radius: 4px;
     box-shadow: var(--shadow-small);
-
     transition: 0.2s;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-
-      width: 3px;
-      height: 100%;
-      background-color: var(--accent);
-
-      transition: 0.2s;
-      opacity: 0;
-    }
 
     &:hover {
       border-color: color-mix(in oklch, var(--accent) 60%, var(--line));
       box-shadow: var(--shadow);
-
-      &::after {
-        opacity: 1;
-      }
     }
   }
 
@@ -119,7 +109,7 @@ const hasOpenRequirements = openRequirements.length > 0
     flex-direction: column;
     gap: 4px;
 
-    padding-block: 2px 8px;
+    padding-block: 8px;
 
     &:hover h2 {
       color: var(--accent-strong);
@@ -129,6 +119,7 @@ const hasOpenRequirements = openRequirements.length > 0
       color: var(--forest);
       font-size: 1.25rem;
       line-height: 1.25;
+      transition: 0.2s;
     }
 
     p {
@@ -189,5 +180,4 @@ const hasOpenRequirements = openRequirements.length > 0
       0 0 0 1px var(--line-muted),
       0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
   }
-
 </style>
