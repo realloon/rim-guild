@@ -17,27 +17,11 @@ if (result && !result.error) {
 
 <Layout title="发布委托 · 边缘工会">
   <main>
-    <header>
-      <h1>发布委托</h1>
-      <p>将创意交予最适合的创作者</p>
-    </header>
-
-    <CommissionForm>
+    <CommissionForm
+      title="发布委托"
+      description="将创意交予最适合的创作者"
+    >
       <ErrorBox error={result?.error} />
     </CommissionForm>
   </main>
 </Layout>
-
-<style>
-  header {
-    h1 {
-      font-size: 2.5rem;
-      color: var(--forest);
-      margin-bottom: 16px;
-    }
-
-    p {
-      color: var(--text-muted);
-    }
-  }
-</style>

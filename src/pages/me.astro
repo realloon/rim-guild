@@ -1,18 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import CommissionListItem from '../components/CommissionListItem.astro'
+import Button from '../components/ui/Button.astro'
+import CommissionList from '../components/CommissionList.astro'
+import ProfileCard from '../components/ProfileCard.astro'
+import Section from '../components/Section.astro'
 import ErrorBox from '../components/ui/ErrorBox.astro'
 import CheckboxGroup from '../components/ui/CheckboxGroup.astro'
-import Input from '../components/ui/Input.astro'
+import Control from '../components/ui/Control.astro'
+import Field from '../components/ui/Field.astro'
 import {
-  COMMISSION_SELECT,
-  CREATOR_TYPES,
-  commissionFromRow,
-  type Commission,
-  type CommissionRow,
-  type RequirementType,
+  REQUIREMENT_TYPES,
+  listClaimedCommissions,
+  listCommissionsByAuthor,
 } from '../lib/commissions'
-import { avatarUrl } from '../lib/avatar'
+import { findProfileByToken } from '../lib/profiles'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
@@ -23,85 +24,24 @@ if (!profileToken) {
   return Astro.redirect('/login?next=/me')
 }
 
-const profile = await db
-  .prepare(
-    'SELECT author_name, qq, github, steam, creator_types, email FROM profiles WHERE token = ?',
-  )
-  .bind(profileToken)
-  .first<{
-    author_name: string
-    qq: string
-    github: string
-    steam: string
-    creator_types: string
-    email: string
-  }>()
+const profile = await findProfileByToken(db, profileToken)
 
-const nickname = profile?.author_name ?? ''
-const myQq = profile?.qq ?? ''
-const myGithub = profile?.github ?? ''
-const mySteam = profile?.steam ?? ''
-const loggedEmail = profile?.email ?? ''
-const myCreatorTypes = profile?.creator_types
-  ? (profile.creator_types.split(',').filter(Boolean) as RequirementType[])
-  : []
+if (!profile) {
+  throw new Error('登录会话对应的个人资料不存在')
+}
 
-const { results } = await db
-  .prepare(
-    `${COMMISSION_SELECT}
-		WHERE c.author_token = ?
-		GROUP BY c.id
-		ORDER BY c.created_at DESC, c.id DESC`,
-  )
-  .bind(profileToken)
-  .all<CommissionRow>()
-const commissions: Commission[] = results.map(commissionFromRow)
+const {
+  author_name: nickname,
+  qq: myQq,
+  github: myGithub,
+  steam: mySteam,
+  email: loggedEmail,
+  creator_types: myCreatorTypes,
+} = profile
 
-const { results: claimedRows } = await db
-  .prepare(
-    `SELECT c.id AS commission_id, c.title AS commission_title, c.author_name, c.author_token, c.author_id, c.created_at,
-			cr.status AS requirement_status, cr.count, cr.description, r.requirement_type
-		FROM claims r
-		JOIN commissions c ON c.id = r.commission_id
-		LEFT JOIN requirements cr ON cr.commission_id = r.commission_id AND cr.requirement_type = r.requirement_type
-		WHERE r.profile_token = ?
-		ORDER BY r.created_at DESC`,
-  )
-  .bind(profileToken)
-  .all<{
-    commission_id: number
-    commission_title: string
-    author_name: string
-    author_token: string
-    author_id: string
-    requirement_type: string
-    created_at: string
-    requirement_status: string
-    count: number
-    description: string
-  }>()
+const commissions = await listCommissionsByAuthor(db, profileToken)
 
-const claimedCommissions: Commission[] = claimedRows.map(claim => ({
-  id: claim.commission_id,
-  title: claim.commission_title,
-  description: claim.description,
-  tags: [],
-  requirements: [
-    {
-      type: claim.requirement_type as RequirementType,
-      description: claim.description,
-      count: claim.count,
-      status: claim.requirement_status as 'open' | 'closed',
-    },
-  ],
-  author_name: claim.author_name,
-  author_token: claim.author_token,
-  author_id: claim.author_id,
-  author_qq: '',
-  author_github: '',
-  author_steam: '',
-  created_at: claim.created_at,
-}))
+const claimedCommissions = await listClaimedCommissions(db, profileToken)
 
 const result = Astro.getActionResult(actions.updateProfile)
 if (result && !result.error) {
@@ -128,30 +68,19 @@ if (result && !result.error) {
       </nav>
     </aside>
 
-    <div class="profile-wrapper">
-      <section class="profile-card" id="profile">
-        <div class="profile-hero">
-          <div class="profile-identity">
-            <img
-              class="author-avatar"
-              src={avatarUrl(profileToken, 72)}
-              width={72}
-              height={72}
-              alt=""
-            />
-            <div>
-              <h1>{nickname}</h1>
-              <span class="profile-email" title="已登录账号">{loggedEmail}</span
-              >
-            </div>
-          </div>
-          <span class="profile-badge">注册会员</span>
-        </div>
+    <div>
+      <ProfileCard
+        id="profile"
+        seed={profileToken}
+        name={nickname}
+        subtitle={loggedEmail}
+      >
 
         <form method="POST" action={actions.updateProfile}>
-          <label class="form-field" for="authorName">
+          <Field for="authorName">
             昵称
-            <Input
+            <Control
+              as="input"
               id="authorName"
               name="authorName"
               required
@@ -159,90 +88,79 @@ if (result && !result.error) {
               value={nickname}
               placeholder="例如：阿哲"
             />
-          </label>
+          </Field>
           <CheckboxGroup
             legend="创作者身份"
             name="creatorTypes"
-            options={CREATOR_TYPES}
+            options={REQUIREMENT_TYPES}
             checked={myCreatorTypes}
           />
-          <fieldset class="form-section">
+          <fieldset>
             <legend>联系方式</legend>
-            <div class="contact-fields">
-              <label class="form-field" for="qq">
+            <div>
+              <Field for="qq" compact>
                 QQ
-                <Input
+                <Control
+                  as="input"
                   id="qq"
                   name="qq"
                   maxlength="50"
                   value={myQq}
                   placeholder="选填"
                 />
-              </label>
-              <label class="form-field" for="github">
+              </Field>
+              <Field for="github" compact>
                 GitHub
-                <Input
+                <Control
+                  as="input"
                   id="github"
                   name="github"
                   maxlength="100"
                   value={myGithub}
                   placeholder="选填"
                 />
-              </label>
-              <label class="form-field" for="steam">
+              </Field>
+              <Field for="steam" compact>
                 Steam
-                <Input
+                <Control
+                  as="input"
                   id="steam"
                   name="steam"
                   maxlength="100"
                   value={mySteam}
                   placeholder="选填"
                 />
-              </label>
+              </Field>
             </div>
           </fieldset>
 
           <ErrorBox error={result?.error} />
 
-          <button class="btn" type="submit">保存资料</button>
+          <Button type="submit">保存资料</Button>
         </form>
-      </section>
+      </ProfileCard>
 
-      <section class="profile-section" id="commissions">
-        <div class="section-heading">
-          <h2>我的委托</h2>
-          <span class="section-count">{commissions.length}条记录</span>
-        </div>
-        {
-          commissions.length > 0 ? (
-            <ul class="commission-list">
-              {commissions.map(commission => (
-                <CommissionListItem commission={commission} />
-              ))}
-            </ul>
-          ) : (
-            <p class="empty">还没有发布委托</p>
-          )
-        }
-      </section>
+      <Section
+        id="commissions"
+        title="我的委托"
+        meta={`${commissions.length}条记录`}
+      >
+        <CommissionList
+          commissions={commissions}
+          emptyMessage="还没有发布委托"
+        />
+      </Section>
 
-      <section class="profile-section" id="claims">
-        <div class="section-heading">
-          <h2>我认领的</h2>
-          <span class="section-count">{claimedRows.length}条记录</span>
-        </div>
-        {
-          claimedCommissions.length > 0 ? (
-            <ul class="commission-list">
-              {claimedCommissions.map(commission => (
-                <CommissionListItem commission={commission} />
-              ))}
-            </ul>
-          ) : (
-            <p class="empty">还没有认领需求</p>
-          )
-        }
-      </section>
+      <Section
+        id="claims"
+        title="我认领的"
+        meta={`${claimedCommissions.length}条记录`}
+      >
+        <CommissionList
+          commissions={claimedCommissions}
+          emptyMessage="还没有认领需求"
+        />
+      </Section>
     </div>
   </main>
 </Layout>
@@ -273,8 +191,7 @@ if (result && !result.error) {
 
         padding-inline: 1em 2em;
         padding-block: 12px;
-        border-left: 1px solid
-          color-mix(in oklch, var(--line) 50%, var(--text-muted));
+        border-left: 1px solid var(--line-muted);
 
         transition: 0.2s;
 
@@ -292,11 +209,7 @@ if (result && !result.error) {
             var(--accent) 22%,
             light-dark(white, black)
           );
-          color: color-mix(
-            in oklch,
-            var(--accent) 78%,
-            light-dark(black, white)
-          );
+          color: var(--accent-strong);
         }
       }
     }
@@ -306,32 +219,33 @@ if (result && !result.error) {
     }
   }
 
-  .profile-wrapper {
+  main > div {
     flex-grow: 1;
 
-    section {
+    & > section {
       scroll-margin-top: 136px;
     }
-  }
 
-  .profile-card {
-    padding: 32px;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background-color: var(--surface);
-    box-shadow: var(--shadow);
+    & > section + section {
+      margin-top: 52px;
+    }
   }
 
   form {
     padding-top: 26px;
 
-    .form-section {
+    & > fieldset:last-of-type {
+      margin: 0 0 28px;
       padding: 0;
       border: 0;
       background: transparent;
 
       legend {
         margin-bottom: 18px;
+        padding: 0;
+        color: var(--text-muted);
+        font-size: 0.76rem;
+        font-weight: 700;
       }
     }
 
@@ -340,13 +254,9 @@ if (result && !result.error) {
     }
   }
 
-  .contact-fields {
+  form > fieldset:last-of-type > div {
     display: grid;
     grid-template-columns: 1fr;
     gap: 14px;
-
-    .form-field {
-      margin-bottom: 0;
-    }
   }
 </style>

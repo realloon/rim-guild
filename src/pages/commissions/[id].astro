@@ -1,34 +1,29 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
+import CommissionUpdates from '../../components/CommissionUpdates.astro'
+import RequirementCard from '../../components/RequirementCard.astro'
+import Section from '../../components/Section.astro'
+import Button from '../../components/ui/Button.astro'
+import BadgeList from '../../components/ui/BadgeList.astro'
 import ErrorBox from '../../components/ui/ErrorBox.astro'
-import Textarea from '../../components/ui/Textarea.astro'
+import Notice from '../../components/ui/Notice.astro'
 import {
-  COMMISSION_SELECT,
-  commissionFromRow,
-  requirementTypeLabel,
-  requirementStatusLabel,
+  findCommission,
+  listCommissionClaims,
+  listCommissionUpdates,
   tagLabel,
   formatDate,
-  type Commission,
-  type CommissionRow,
-  type RequirementType,
+  type CommissionClaim,
 } from '../../lib/commissions'
-import { avatarUrl } from '../../lib/avatar'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
+import { listContactMethods } from '../../lib/profiles'
 
 const db = env.rim_guild_db
 const { id } = Astro.params
 
-const row = await db
-  .prepare(`${COMMISSION_SELECT} WHERE c.id = ? GROUP BY c.id`)
-  .bind(Number(id))
-  .first<CommissionRow>()
-
-const commission: Commission | undefined = row
-  ? commissionFromRow(row)
-  : undefined
+const commission = await findCommission(db, Number(id))
 
 if (!commission) {
   Astro.response.status = 404
@@ -37,21 +32,28 @@ if (!commission) {
 const isOwner =
   !!commission && Astro.locals.auth?.profileToken === commission.author_token
 const myProfileToken = Astro.locals.auth?.profileToken ?? null
+const contactMethods = commission
+  ? listContactMethods({
+      qq: commission.author_qq,
+      github: commission.author_github,
+      steam: commission.author_steam,
+    })
+  : []
 
-const requirementStatusResult = Astro.getActionResult(
-  actions.updateRequirementStatus,
-)
-if (requirementStatusResult && !requirementStatusResult.error && commission) {
+const requirementActionResults = [
+  Astro.getActionResult(actions.updateRequirementStatus),
+  Astro.getActionResult(actions.claimRequirement),
+  Astro.getActionResult(actions.cancelClaim),
+]
+if (
+  requirementActionResults.some(result => result && !result.error) &&
+  commission
+) {
   return Astro.redirect(`/commissions/${commission.id}`)
 }
-const claimResult = Astro.getActionResult(actions.claimRequirement)
-if (claimResult && !claimResult.error && commission) {
-  return Astro.redirect(`/commissions/${commission.id}`)
-}
-const cancelClaimResult = Astro.getActionResult(actions.cancelClaim)
-if (cancelClaimResult && !cancelClaimResult.error && commission) {
-  return Astro.redirect(`/commissions/${commission.id}`)
-}
+const requirementError = requirementActionResults.find(
+  result => result?.error,
+)?.error
 const deleteResult = Astro.getActionResult(actions.deleteCommission)
 if (deleteResult && !deleteResult.error) {
   return Astro.redirect('/me')
@@ -61,50 +63,17 @@ if (updateResult && !updateResult.error && commission) {
   return Astro.redirect(`/commissions/${commission.id}`)
 }
 
-let commissionUpdateRows: {
-  id: number
-  content: string
-  created_at: string
-}[] = []
-let claimRows: {
-  commission_id: number
-  requirement_type: string
-  profile_token: string
-  created_at: string
-  author_name: string
-  author_id: string
-}[] = []
+const commissionUpdates = commission
+  ? await listCommissionUpdates(db, commission.id)
+  : []
+const claimRows: CommissionClaim[] = commission
+  ? await listCommissionClaims(db, commission.id)
+  : []
 
-if (commission) {
-  const { results: updates } = await db
-    .prepare(
-      'SELECT id, content, created_at FROM commission_updates WHERE commission_id = ? ORDER BY created_at DESC, id DESC',
-    )
-    .bind(commission.id)
-    .all<{ id: number; content: string; created_at: string }>()
-  commissionUpdateRows = updates
-
-  const { results: claims } = await db
-    .prepare(
-      `SELECT r.commission_id, r.requirement_type, r.profile_token, r.created_at, p.author_name, p.author_id
-			FROM claims r
-			JOIN profiles p ON p.token = r.profile_token
-			WHERE r.commission_id = ?
-			ORDER BY r.created_at ASC`,
-    )
-    .bind(commission.id)
-    .all<{
-      commission_id: number
-      requirement_type: string
-      profile_token: string
-      created_at: string
-      author_name: string
-      author_id: string
-    }>()
-  claimRows = claims
-}
-
-const claimsByRequirement = new Map<string, typeof claimRows>()
+const claimsByRequirement = new Map<
+  CommissionClaim['requirement_type'],
+  CommissionClaim[]
+>()
 for (const claim of claimRows) {
   const list = claimsByRequirement.get(claim.requirement_type) ?? []
   list.push(claim)
@@ -152,246 +121,72 @@ for (const claim of claimRows) {
             </address>
           </header>
 
-          <div class="commission-wrapper">
+          <div>
             <section>
               {commission.description && (
-                <p class="detail-description">{commission.description}</p>
+                <p>{commission.description}</p>
               )}
 
               {commission.tags.length > 0 && (
-                <div class="commission-tags">
-                  {commission.tags.map(tag => (
-                    <span class="tag tag-muted">#{tagLabel(tag)}</span>
-                  ))}
-                </div>
+                <BadgeList
+                  items={commission.tags.map(tag => '#' + tagLabel(tag))}
+                  variant="muted"
+                />
               )}
 
-              <section class="requirement-section">
-                <div class="section-heading">
-                  <h2>需求</h2>
-                  <span class="section-count">
-                    {commission.requirements.length}项需求
-                  </span>
-                </div>
-
-                <div class="requirement-list">
-                  {commission.requirements.map(requirement => {
-                    const claims =
-                      claimsByRequirement.get(requirement.type) ?? []
-                    const registered = claims.some(
-                      r => r.profile_token === myProfileToken,
-                    )
-                    return (
-                      <div class="requirement-card">
-                        <div class="requirement-card-head">
-                          <div class="requirement-title">
-                            <span class="tag">
-                              {requirementTypeLabel(requirement.type)}
-                            </span>
-                            <span class="requirement-count-label">
-                              共需{requirement.count}人
-                              {claims.length > 0
-                                ? `，${claims.length}人已认领`
-                                : ''}
-                            </span>
-                          </div>
-                          <span class={`status status-${requirement.status}`}>
-                            {requirementStatusLabel(requirement.status)}
-                          </span>
-                        </div>
-                        <p>{requirement.description}</p>
-
-                        {claims.length > 0 && (
-                          <div class="response-area">
-                            <span class="response-label">已认领</span>
-                            <div class="response-avatars">
-                              {claims.map(claim => (
-                                <a
-                                  class="author"
-                                  href={`/authors/${claim.author_id}`}
-                                >
-                                  <img
-                                    class="author-avatar"
-                                    src={avatarUrl(claim.profile_token, 30)}
-                                    width={30}
-                                    height={30}
-                                    alt={`${claim.author_name} 的头像`}
-                                    title={claim.author_name}
-                                  />
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        <div class="requirement-actions">
-                          {isOwner ? (
-                            <form
-                              method="POST"
-                              action={actions.updateRequirementStatus}
-                            >
-                              <input
-                                type="hidden"
-                                name="commissionId"
-                                value={commission.id}
-                              />
-                              <input
-                                type="hidden"
-                                name="requirementType"
-                                value={requirement.type}
-                              />
-                              <input
-                                type="hidden"
-                                name="status"
-                                value={
-                                  requirement.status === 'open'
-                                    ? 'closed'
-                                    : 'open'
-                                }
-                              />
-                              <button
-                                class="btn btn-ghost btn-sm"
-                                type="submit"
-                              >
-                                {requirement.status === 'open'
-                                  ? '停止招募'
-                                  : '重新开放'}
-                              </button>
-                            </form>
-                          ) : requirement.status === 'open' ? (
-                            !myProfileToken ? (
-                              <a
-                                class="btn btn-sm"
-                                href={`/login?next=/commissions/${commission.id}`}
-                              >
-                                登录后认领需求
-                              </a>
-                            ) : registered ? (
-                              <form method="POST" action={actions.cancelClaim}>
-                                <input
-                                  type="hidden"
-                                  name="commissionId"
-                                  value={commission.id}
-                                />
-                                <input
-                                  type="hidden"
-                                  name="requirementType"
-                                  value={requirement.type}
-                                />
-                                <button
-                                  class="btn btn-ghost btn-sm"
-                                  type="submit"
-                                >
-                                  取消认领
-                                </button>
-                              </form>
-                            ) : (
-                              <form
-                                method="POST"
-                                action={actions.claimRequirement}
-                              >
-                                <input
-                                  type="hidden"
-                                  name="commissionId"
-                                  value={commission.id}
-                                />
-                                <input
-                                  type="hidden"
-                                  name="requirementType"
-                                  value={requirement.type}
-                                />
-                                <button class="btn btn-sm" type="submit">
-                                  认领需求
-                                </button>
-                              </form>
-                            )
-                          ) : null}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </section>
-
-              <section class="commission-updates">
-                <div class="section-heading">
-                  <h2>委托进展</h2>
-                  <span class="section-count">
-                    {commissionUpdateRows.length}条记录
-                  </span>
-                </div>
-                {commissionUpdateRows.length > 0 ? (
-                  <ul>
-                    {commissionUpdateRows.map(update => (
-                      <li>
-                        <p>{update.content}</p>
-                        <time>{formatDate(update.created_at)}</time>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p class="field-note">还没有更新</p>
-                )}
-                {isOwner && (
-                  <form method="POST" action={actions.addCommissionUpdate}>
-                    <input
-                      type="hidden"
-                      name="commissionId"
-                      value={commission.id}
+              <Section
+                title="需求"
+                meta={`${commission.requirements.length}项需求`}
+              >
+                <ul>
+                  {commission.requirements.map(requirement => (
+                    <RequirementCard
+                      commissionId={commission.id}
+                      requirement={requirement}
+                      claims={claimsByRequirement.get(requirement.type) ?? []}
+                      isOwner={isOwner}
+                      profileToken={myProfileToken}
                     />
-                    <Textarea
-                      name="content"
-                      required
-                      maxlength="1000"
-                      placeholder="发布委托进展，例如：画师已加入，还在找开发者……"
-                    />
-                    <ErrorBox error={updateResult?.error} />
-                    <button class="btn btn-sm" type="submit">
-                      发布更新
-                    </button>
-                  </form>
-                )}
-              </section>
+                  ))}
+                </ul>
+              </Section>
 
-              <ErrorBox
-                error={
-                  requirementStatusResult?.error ??
-                  deleteResult?.error ??
-                  claimResult?.error ??
-                  cancelClaimResult?.error
-                }
+              <CommissionUpdates
+                commissionId={commission.id}
+                updates={commissionUpdates}
+                isOwner={isOwner}
+                error={updateResult?.error}
               />
+
+              <ErrorBox error={requirementError ?? deleteResult?.error} />
             </section>
 
             <aside>
               <section>
                 <strong>发布者联系方式</strong>
                 <address>
-                  {commission.author_qq && <p>QQ：{commission.author_qq}</p>}
-                  {commission.author_github && (
-                    <p>GitHub：{commission.author_github}</p>
+                  {contactMethods.length > 0 ? (
+                    contactMethods.map(contact => (
+                      <p>{contact.label}：{contact.value}</p>
+                    ))
+                  ) : (
+                    <p>未填写</p>
                   )}
-                  {commission.author_steam && (
-                    <p>Steam：{commission.author_steam}</p>
-                  )}
-                  {!commission.author_qq &&
-                    !commission.author_github &&
-                    !commission.author_steam && <p>未填写</p>}
                 </address>
               </section>
 
-              <p class="note">
+              <p>
                 如果你对这份委托感兴趣，可以先认领一项开放需求，再通过联系方式开始交流。
               </p>
 
               {isOwner && (
-                <div class="commission-owner-actions">
-                  <a
-                    class="btn btn-ghost"
+                <div>
+                  <Button
+                    variant="ghost"
                     href={`/commissions/${commission.id}/edit`}
                   >
                     编辑委托
-                  </a>
+                  </Button>
                   <form
                     method="POST"
                     action={actions.deleteCommission}
@@ -402,9 +197,9 @@ for (const claim of claimRows) {
                       name="commissionId"
                       value={commission.id}
                     />
-                    <button class="btn btn-danger" type="submit">
+                    <Button variant="danger" type="submit">
                       删除
-                    </button>
+                    </Button>
                   </form>
                 </div>
               )}
@@ -412,14 +207,14 @@ for (const claim of claimRows) {
           </div>
         </article>
       ) : (
-        <p class="not-found">该委托不存在或已被删除</p>
+        <Notice>该委托不存在或已被删除</Notice>
       )
     }
   </main>
 </Layout>
 
 <style>
-  header {
+  article > header {
     border-bottom: 1px solid var(--line);
     margin-bottom: 16px;
 
@@ -444,156 +239,36 @@ for (const claim of claimRows) {
     }
   }
 
-  .commission-wrapper {
+  article > div {
     display: flex;
     gap: 32px;
   }
 
-  .commission-wrapper > section {
+  article > div > section {
     flex-grow: 1;
 
-    .detail-description {
+    & > p {
       line-height: 1.5;
     }
 
-    .commission-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    & > ul {
       margin-top: 16px;
     }
 
-    .tag-muted {
-      border-color: var(--line);
-      color: var(--text-muted);
-    }
-
-    .requirement-section {
+    & > section:first-of-type {
       margin-top: 40px;
 
-      .section-heading {
-        margin-bottom: 16px;
-      }
-
-      .requirement-list {
+      & > ul {
         display: grid;
         gap: 12px;
-
-        .requirement-card {
-          padding: 20px 22px;
-          border: 1px solid var(--line);
-          background-color: var(--surface);
-          box-shadow: var(--shadow-small);
-
-          &:has(.status-closed) {
-            opacity: 0.68;
-          }
-
-          & > p {
-            margin: 15px 0 0;
-            white-space: pre-wrap;
-            color: var(--text);
-          }
-
-          .requirement-card-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-
-            .requirement-title {
-              display: flex;
-              align-items: center;
-              flex-wrap: wrap;
-              gap: 9px;
-
-              .requirement-count-label {
-                color: var(--text-muted);
-                font-size: 0.8rem;
-              }
-            }
-          }
-
-          .response-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 16px;
-            padding-top: 13px;
-            border-top: 1px dashed var(--line);
-
-            .response-label {
-              flex: 0 0 auto;
-              color: var(--text-muted);
-              font-size: 0.72rem;
-            }
-
-            .response-avatars {
-              display: flex;
-              align-items: center;
-
-              .author + .author {
-                margin-left: -6px;
-              }
-
-              .author-avatar {
-                border-color: var(--surface);
-              }
-            }
-          }
-
-          .requirement-actions {
-            margin-top: 16px;
-
-            form {
-              display: inline-flex;
-            }
-          }
-        }
-      }
-    }
-
-    .commission-updates {
-      margin-top: 54px;
-
-      .section-heading {
-        margin-bottom: 17px;
-      }
-
-      ul {
-        display: grid;
-        gap: 10px;
-        margin: 0 0 20px;
+        margin: 0;
         padding: 0;
         list-style: none;
-
-        li {
-          padding: 16px 18px;
-          border-left: 2px solid var(--gold);
-          background-color: var(--surface);
-          box-shadow: var(--shadow-small);
-
-          p {
-            margin: 0 0 8px;
-            white-space: pre-wrap;
-          }
-        }
-      }
-
-      form {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid var(--line);
-
-        textarea {
-          min-height: 130px;
-          margin-bottom: 12px;
-        }
       }
     }
   }
 
-  .commission-wrapper > aside {
+  article > div > aside {
     position: sticky;
     top: 88px;
 
@@ -602,7 +277,7 @@ for (const claim of claimRows) {
 
     section {
       padding: 16px;
-      border: 1px solid color-mix(in oklch, var(--accent) 52%, var(--line));
+      border: 1px solid var(--accent-line);
       background-color: color-mix(in oklch, var(--accent) 10%, var(--surface));
 
       strong {
@@ -620,23 +295,19 @@ for (const claim of claimRows) {
         margin-top: 12px;
 
         p {
-          color: color-mix(
-            in oklch,
-            var(--accent) 78%,
-            light-dark(black, white)
-          );
+          color: var(--accent-strong);
         }
       }
     }
 
-    .note {
+    & > p {
       color: var(--text-muted);
       font-size: 0.875rem;
       line-height: 1.5;
       margin-top: 16px;
     }
 
-    .commission-owner-actions {
+    & > div {
       display: flex;
       flex-wrap: wrap;
       gap: 9px;
@@ -651,7 +322,7 @@ for (const claim of claimRows) {
   }
 
   @media (max-width: 768px) {
-    .commission-wrapper {
+    article > div {
       flex-wrap: wrap;
 
       aside {

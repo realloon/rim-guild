@@ -1,0 +1,28 @@
+---
+import Badge from './Badge.astro'
+
+interface Props {
+  items: string[]
+  variant?: 'tag' | 'muted'
+}
+
+const { items, variant = 'tag' } = Astro.props
+---
+
+<ul>
+  {items.map(item => (
+    <Badge as="li" variant={variant}>{item}</Badge>
+  ))}
+</ul>
+
+<style>
+  ul {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

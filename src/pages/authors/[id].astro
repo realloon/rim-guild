@@ -1,51 +1,25 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import CommissionListItem from '../../components/CommissionListItem.astro'
+import CommissionList from '../../components/CommissionList.astro'
+import ProfileCard from '../../components/ProfileCard.astro'
+import Section from '../../components/Section.astro'
+import Notice from '../../components/ui/Notice.astro'
+import { listCommissionsByAuthor, requirementTypeLabel } from '../../lib/commissions'
 import {
-  COMMISSION_SELECT,
-  commissionFromRow,
-  requirementTypeLabel,
-  type Commission,
-  type CommissionRow,
-  type RequirementType,
-} from '../../lib/commissions'
-import { avatarUrl } from '../../lib/avatar'
+  findProfileByAuthorId,
+  listContactMethods,
+} from '../../lib/profiles'
 import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
 const { id } = Astro.params
 
-const profile = await db
-  .prepare(
-    'SELECT token, author_name, qq, github, steam, creator_types FROM profiles WHERE author_id = ?',
-  )
-  .bind(id)
-  .first<{
-    token: string
-    author_name: string
-    qq: string
-    github: string
-    steam: string
-    creator_types: string
-  }>()
+const profile = await findProfileByAuthorId(db, id)
 
-const authorCreatorTypes: RequirementType[] = profile?.creator_types
-  ? (profile.creator_types.split(',').filter(Boolean) as RequirementType[])
+const commissions = profile
+  ? await listCommissionsByAuthor(db, profile.token)
   : []
-
-let commissions: Commission[] = []
-if (profile) {
-  const { results } = await db
-    .prepare(
-      `${COMMISSION_SELECT}
-			WHERE c.author_token = ?
-			GROUP BY c.id
-			ORDER BY c.created_at DESC, c.id DESC`,
-    )
-    .bind(profile.token)
-    .all<CommissionRow>()
-  commissions = results.map(commissionFromRow)
-}
+const contactMethods = profile ? listContactMethods(profile) : []
 
 if (!profile) {
   Astro.response.status = 404
@@ -61,95 +35,26 @@ if (!profile) {
     {
       profile ? (
         <>
-          <section class="profile-card">
-            <div class="profile-hero">
-              <div class="profile-identity">
-                <img
-                  class="author-avatar"
-                  src={avatarUrl(profile.token, 72)}
-                  width={72}
-                  height={72}
-                  alt="avatar"
-                />
-                <div>
-                  <h1>{profile.author_name}</h1>
-                  {authorCreatorTypes.length > 0 && (
-                    <div class="tags">
-                      {authorCreatorTypes.map(creatorType => (
-                        <span class="tag">
-                          {requirementTypeLabel(creatorType)}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <span class="profile-badge">注册会员</span>
-            </div>
-            {(profile.qq || profile.github || profile.steam) && (
-              <div class="profile-contacts">
-                {profile.qq && (
-                  <div class="profile-contact-item">
-                    <strong>QQ</strong>
-                    <span>{profile.qq}</span>
-                  </div>
-                )}
-                {profile.github && (
-                  <div class="profile-contact-item">
-                    <strong>GITHUB</strong>
-                    <span>{profile.github}</span>
-                  </div>
-                )}
-                {profile.steam && (
-                  <div class="profile-contact-item">
-                    <strong>STEAM</strong>
-                    <span>{profile.steam}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
+          <ProfileCard
+            seed={profile.token}
+            name={profile.author_name}
+            tags={profile.creator_types.map(requirementTypeLabel)}
+            contacts={contactMethods}
+          />
 
-          <section>
-            <header>
-              <h2>{profile.author_name}的委托</h2>
-              <span>{commissions.length}条记录</span>
-            </header>
-
-            {commissions.length > 0 ? (
-              <ul class="commission-list">
-                {commissions.map(commission => (
-                  <CommissionListItem commission={commission} />
-                ))}
-              </ul>
-            ) : (
-              <p class="empty">TA还没有发布委托</p>
-            )}
-          </section>
+          <Section
+            title={`${profile.author_name}的委托`}
+            meta={`${commissions.length}条记录`}
+          >
+            <CommissionList
+              commissions={commissions}
+              emptyMessage="TA还没有发布委托"
+            />
+          </Section>
         </>
       ) : (
-        <p class="not-found">该作者不存在</p>
+        <Notice>该作者不存在</Notice>
       )
     }
   </main>
 </Layout>
-
-<style>
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    margin-bottom: 16px;
-
-    h2 {
-      font-size: 2rem;
-      color: var(--forest);
-    }
-
-    span {
-      font-size: 0.75rem;
-      font-family: var(--mono);
-      color: var(--text-muted);
-    }
-  }
-</style>

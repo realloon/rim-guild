@@ -7,27 +7,66 @@ interface Props {
   href: string
   size?: number
   avatarSide?: 'left' | 'right'
+  showName?: boolean
+  overlap?: boolean
 }
 
-const { seed, name, href, size = 40, avatarSide = 'left' } = Astro.props
+const {
+  seed,
+  name,
+  href,
+  size = 40,
+  avatarSide = 'left',
+  showName = true,
+  overlap = false,
+} = Astro.props
 ---
 
-<a class="author" href={href}>
+<a
+  data-overlap={overlap || undefined}
+  data-side={avatarSide}
+  href={href}
+  aria-label={showName ? undefined : name + '的作者主页'}
+>
   <img
-    class:list={[
-      'author-avatar',
-      { 'author-avatar-right': avatarSide === 'right' },
-    ]}
     src={avatarUrl(seed, size)}
     width={size}
     height={size}
-    alt=""
+    alt={showName ? '' : name + '的头像'}
+    title={showName ? undefined : name}
   />
-  {name}
+  {showName && name}
 </a>
 
 <style>
-  .author-avatar-right {
+  a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-family: var(--serif);
+
+    &:hover {
+      color: var(--accent-strong);
+    }
+  }
+
+  img {
+    border-radius: 50%;
+    box-shadow: 0 0 4px 1px var(--line);
+  }
+
+  a[data-side='right'] img {
     order: 1;
+  }
+
+  a[data-overlap] + a[data-overlap] {
+    margin-left: -6px;
+  }
+
+  a[data-overlap] img {
+    border: 2px solid var(--surface);
   }
 </style>

@@ -1,20 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import Button from '../components/ui/Button.astro'
+import SiteStats from '../components/SiteStats.astro'
 import ErrorBox from '../components/ui/ErrorBox.astro'
-import Input from '../components/ui/Input.astro'
+import Control from '../components/ui/Control.astro'
+import Field from '../components/ui/Field.astro'
+import { getSiteStats } from '../lib/site'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
-const stats = await db
-  .prepare(
-    `SELECT
-      (SELECT COUNT(*) FROM commissions) AS commission_count,
-      (SELECT COUNT(*) FROM profiles) AS user_count`,
-  )
-  .first<{ commission_count: number; user_count: number }>()
-const commissionCount = stats?.commission_count ?? 0
-const registeredUserCount = stats?.user_count ?? 0
+const { commissionCount, registeredUserCount } = await getSiteStats(db)
 
 const next = Astro.url.searchParams.get('next')
 const redirectTo =
@@ -45,10 +41,11 @@ const result = mode === 'register' ? registerResult : loginResult
         <span>边缘工会</span>
       </h1>
       <p>成为工会会员，发布的委托，招揽合作者，或寻找合适你的委托。</p>
-      <span>
-        <span>注册会员<strong>{registeredUserCount}</strong></span>
-        <span>发布委托<strong>{commissionCount}</strong></span>
-      </span>
+      <SiteStats
+        variant="inline"
+        commissionCount={commissionCount}
+        registeredUserCount={registeredUserCount}
+      />
     </aside>
 
     <section>
@@ -62,9 +59,10 @@ const result = mode === 'register' ? registerResult : loginResult
       </p>
 
       <form method="POST" action={action}>
-        <label class="form-field" for="email">
+        <Field for="email">
           邮箱
-          <Input
+          <Control
+            as="input"
             id="email"
             name="email"
             type="email"
@@ -72,10 +70,11 @@ const result = mode === 'register' ? registerResult : loginResult
             maxlength="200"
             placeholder="you@example.com"
           />
-        </label>
-        <label class="form-field" for="password">
+        </Field>
+        <Field for="password">
           密码
-          <Input
+          <Control
+            as="input"
             id="password"
             name="password"
             type="password"
@@ -83,11 +82,11 @@ const result = mode === 'register' ? registerResult : loginResult
             minlength={mode === 'register' ? 8 : undefined}
             placeholder={mode === 'register' ? '至少8位' : undefined}
           />
-        </label>
+        </Field>
 
         <ErrorBox error={result?.error} />
 
-        <button class="btn btn-primary btn-block" type="submit">
+        <Button variant="primary" block type="submit">
           {mode === 'register' ? '注册' : '登录'}
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path
@@ -97,7 +96,7 @@ const result = mode === 'register' ? registerResult : loginResult
               stroke-linecap="square"
               stroke-linejoin="miter"></path>
           </svg>
-        </button>
+        </Button>
       </form>
 
       <p>
@@ -153,21 +152,6 @@ const result = mode === 'register' ? registerResult : loginResult
       margin-top: 32px;
     }
 
-    & > span {
-      display: flex;
-      gap: 36px;
-
-      color: var(--text-muted);
-      margin-top: 8px;
-
-      strong {
-        color: var(--accent);
-        font-family: var(--serif);
-        font-size: 1.5rem;
-        vertical-align: middle;
-        margin-left: 4px;
-      }
-    }
   }
 
   section:last-child {
@@ -175,7 +159,7 @@ const result = mode === 'register' ? registerResult : loginResult
     flex-shrink: 0;
 
     padding: 32px;
-    border: 1px solid color-mix(in oklch, var(--line) 50%, var(--text-muted));
+    border: 1px solid var(--line-muted);
     border-top: 4px solid var(--accent);
     background-color: var(--surface);
     box-shadow: var(--shadow);
@@ -201,11 +185,6 @@ const result = mode === 'register' ? registerResult : loginResult
       font-size: 0.87rem;
     }
 
-    button svg {
-      width: 15px;
-      height: 15px;
-    }
-
     p:last-of-type {
       margin: 24px 0 0;
       padding-top: 18px;
@@ -215,7 +194,7 @@ const result = mode === 'register' ? registerResult : loginResult
       text-align: center;
 
       a {
-        color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+        color: var(--accent-strong);
         font-weight: 700;
       }
     }
@@ -235,7 +214,4 @@ const result = mode === 'register' ? registerResult : loginResult
     }
   }
 
-  .btn {
-    justify-content: center;
-  }
 </style>

@@ -11,31 +11,33 @@ const { legend, name, options, checked } = Astro.props
 
 <fieldset>
   <legend>{legend}</legend>
-  <div>
-    {
-      Object.entries(options).map(([value, label]) => (
-        <label>
-          <input
-            type="checkbox"
-            name={name}
-            value={value}
-            checked={checked.includes(value)}
-          />
-          {label}
-        </label>
-      ))
-    }
-  </div>
+  {
+    Object.entries(options).map(([value, label]) => (
+      <label>
+        <input
+          type="checkbox"
+          name={name}
+          value={value}
+          checked={checked.includes(value)}
+        />
+        {label}
+      </label>
+    ))
+  }
 </fieldset>
 
 <style>
   fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
     margin: 0 0 28px;
     padding: 0;
     border: 0;
 
     legend {
-      margin-bottom: 10px;
+      flex-basis: 100%;
+      margin-bottom: 2px;
       padding: 0;
       color: var(--text-muted);
       font-size: 0.76rem;
@@ -43,13 +45,7 @@ const { legend, name, options, checked } = Astro.props
     }
   }
 
-  fieldset > div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  fieldset label {
+  fieldset > label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -72,7 +68,7 @@ const { legend, name, options, checked } = Astro.props
 
     &:hover {
       border-color: var(--accent);
-      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+      color: var(--accent-strong);
     }
 
     &:has(input:checked) {
@@ -82,7 +78,7 @@ const { legend, name, options, checked } = Astro.props
         var(--accent) 22%,
         light-dark(white, black)
       );
-      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+      color: var(--accent-strong);
     }
   }
 </style>

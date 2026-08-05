@@ -1,0 +1,28 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+
+interface Props extends HTMLAttributes<'label'> {
+  compact?: boolean
+}
+
+const { compact = false, class: className, ...attrs } = Astro.props
+---
+
+<label {...attrs} class={className} data-compact={compact || undefined}>
+  <slot />
+</label>
+
+<style>
+  label {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 22px;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+
+  label[data-compact] {
+    margin-bottom: 0;
+  }
+</style>

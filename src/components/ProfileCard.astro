@@ -1,0 +1,120 @@
+---
+import { avatarUrl } from '../lib/avatar'
+import BadgeList from './ui/BadgeList.astro'
+import type { ContactMethod } from '../lib/profiles'
+
+interface Props {
+  seed: string
+  name: string
+  subtitle?: string
+  tags?: string[]
+  contacts?: ContactMethod[]
+  id?: string
+}
+
+const { seed, name, subtitle, tags = [], contacts = [], id } = Astro.props
+---
+
+<section id={id}>
+  <header>
+    <img src={avatarUrl(seed, 72)} width={72} height={72} alt="" />
+    <div>
+      <h1>{name}</h1>
+      {subtitle && <span>{subtitle}</span>}
+      {tags.length > 0 && <BadgeList items={tags} />}
+    </div>
+    <span>注册会员</span>
+  </header>
+  {contacts.length > 0 && (
+    <dl>
+      {contacts.map(contact => (
+        <div>
+          <dt>{contact.label}</dt>
+          <dd>{contact.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )}
+  <slot />
+</section>
+
+<style>
+  section {
+    margin-bottom: 52px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+
+    & > img,
+    & > div {
+      align-self: center;
+    }
+
+    & > div {
+      min-width: 0;
+
+      h1 {
+        margin: 0 0 6px;
+        color: var(--forest);
+        font-size: 2.25rem;
+        font-weight: 500;
+      }
+
+      & > span {
+        color: var(--text-muted);
+        font-size: 0.82rem;
+      }
+    }
+
+    & > span {
+      flex-shrink: 0;
+      padding: 5px 9px;
+      border: 1px solid var(--accent-line);
+      color: var(--accent-strong);
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      font-weight: 700;
+    }
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 24px 0 0;
+
+    & > div {
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      background-color: var(--page);
+    }
+
+    dt {
+      margin-bottom: 4px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      text-transform: uppercase;
+    }
+
+    dd {
+      margin: 0;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 0.87rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+</style>

@@ -1,0 +1,137 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+
+type Props =
+  | (HTMLAttributes<'input'> & {
+      as: 'input'
+      variant?: 'search'
+      density?: 'compact'
+    })
+  | (HTMLAttributes<'select'> & {
+      as: 'select'
+      density?: 'compact'
+    })
+  | (HTMLAttributes<'textarea'> & {
+      as: 'textarea'
+      density?: 'compact'
+    })
+
+const { as, variant, density, class: className, ...attrs } = Astro.props
+---
+
+{as === 'select' ? (
+  <select {...attrs} class={className} data-density={density}>
+    <slot />
+  </select>
+) : as === 'textarea' ? (
+  <textarea
+    {...attrs}
+    class={className}
+    data-density={density}
+    data-auto-resize
+  ><slot /></textarea>
+) : (
+  <input
+    {...attrs}
+    class={className}
+    data-variant={variant}
+    data-density={density}
+  />
+)}
+
+<script>
+  const resize = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'auto'
+    textarea.style.overflowY = 'hidden'
+
+    const maxHeight = Number.parseFloat(getComputedStyle(textarea).maxHeight)
+    const height = Math.min(textarea.scrollHeight, maxHeight)
+    textarea.style.height = `${height}px`
+    textarea.style.overflowY =
+      textarea.scrollHeight > height ? 'auto' : 'hidden'
+  }
+
+  document.addEventListener('input', event => {
+    if (
+      event.target instanceof HTMLTextAreaElement &&
+      event.target.matches('textarea[data-auto-resize]')
+    ) {
+      resize(event.target)
+    }
+  })
+
+  document
+    .querySelectorAll<HTMLTextAreaElement>('textarea[data-auto-resize]')
+    .forEach(resize)
+</script>
+
+<style>
+  :where(input, select, textarea) {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 10px 13px;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background-color: var(--page);
+    box-shadow: none;
+    color: var(--text);
+    font-size: 1rem;
+    transition: 0.2s;
+  }
+
+  input,
+  textarea {
+    &::placeholder {
+      color: color-mix(in oklch, var(--text-muted) 55%, var(--surface));
+    }
+  }
+
+  input[data-variant='search'] {
+    flex: 1;
+    width: auto;
+    min-height: 44px;
+    padding: 0;
+    background-color: transparent;
+  }
+
+  input[data-density='compact'] {
+    flex: 0 0 76px;
+    width: 76px;
+  }
+
+  select {
+    padding: 10px 42px 10px 13px;
+    appearance: none;
+    cursor: pointer;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+      linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 17px) 50%,
+      calc(100% - 12px) 50%;
+    background-repeat: no-repeat;
+    background-size: 5px 5px;
+  }
+
+  select[data-density='compact'] {
+    flex: 0 1 132px;
+    width: 132px;
+  }
+
+  textarea {
+    min-height: calc(3.4lh + 20px);
+    max-height: calc(10.2lh + 20px);
+    line-height: 1.5;
+    overflow-y: hidden;
+    resize: none;
+  }
+
+  textarea[data-density='compact'] {
+    flex: 0 0 100%;
+    min-height: 72px;
+  }
+</style>

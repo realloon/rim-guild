@@ -1,0 +1,160 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+
+type Props = HTMLAttributes<'button'> & {
+  href?: string
+  variant?: 'accent' | 'primary' | 'ghost' | 'danger' | 'link'
+  size?: 'sm'
+  block?: boolean
+}
+
+const {
+  href,
+  variant = 'accent',
+  size,
+  block = false,
+  class: className,
+  ...attrs
+} = Astro.props
+const dataBlock = block ? 'true' : undefined
+---
+
+{
+  href ? (
+    <a
+      {...attrs}
+      href={href}
+      class={className}
+      data-variant={variant}
+      data-size={size}
+      data-block={dataBlock}
+    >
+      <slot />
+    </a>
+  ) : (
+    <button
+      {...attrs}
+      class={className}
+      data-variant={variant}
+      data-size={size}
+      data-block={dataBlock}
+    >
+      <slot />
+    </button>
+  )
+}
+
+<style>
+  :where(a, button) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    font-size: 0.875rem;
+    font-weight: bold;
+    text-decoration: none;
+
+    color: var(--on-accent);
+    background-color: var(--accent);
+
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    box-shadow: 0 3px 0
+      light-dark(rgb(151 63 45 / 0.2), rgb(0 0 0 / 0.3));
+
+    transition: 0.2s;
+
+    :global(svg) {
+      flex: 0 0 auto;
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      background-color: var(--accent-strong);
+      box-shadow: 0 4px 0
+        light-dark(rgb(151 63 45 / 0.18), rgb(0 0 0 / 0.38));
+      color: var(--on-accent);
+    }
+
+    &:active {
+      box-shadow: none;
+    }
+
+    &[data-variant='primary'] {
+      background-color: var(--forest);
+      box-shadow: 0 3px 0
+        light-dark(rgb(32 54 46 / 0.2), rgb(0 0 0 / 0.35));
+      color: var(--on-forest);
+
+      &:hover {
+        background-color: var(--forest-strong);
+        color: var(--on-forest);
+      }
+    }
+
+    &[data-variant='ghost'],
+    &[data-variant='danger'],
+    &[data-variant='link'] {
+      background-color: transparent;
+      box-shadow: none;
+    }
+
+    &[data-variant='ghost'] {
+      border-color: var(--line-muted);
+      color: var(--text);
+
+      &:hover {
+        background-color: var(--surface);
+        border-color: var(--accent);
+        color: var(--accent-strong);
+      }
+    }
+
+    &[data-variant='danger'] {
+      border-color: var(--accent-line);
+      color: var(--danger);
+
+      &:hover {
+        background-color: var(--danger);
+        border-color: var(--danger);
+        color: var(--on-danger);
+      }
+    }
+
+    &[data-variant='link'] {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      color: var(--accent-strong);
+      font-size: 0.88rem;
+      white-space: nowrap;
+
+      &:hover {
+        background-color: transparent;
+        box-shadow: none;
+        color: var(--forest);
+      }
+
+      :global(svg) {
+        transition: 0.2s;
+      }
+
+      &:hover :global(svg) {
+        transform: translateX(3px);
+      }
+    }
+
+    &[data-size='sm'] {
+      min-height: 34px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+    }
+
+    &[data-block='true'] {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

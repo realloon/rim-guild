@@ -1,0 +1,88 @@
+---
+import { actions } from 'astro:actions'
+import Button from './ui/Button.astro'
+import ErrorBox from './ui/ErrorBox.astro'
+import Control from './ui/Control.astro'
+import Section from './Section.astro'
+import { formatDate, type CommissionUpdate } from '../lib/commissions'
+
+interface Props {
+  commissionId: number
+  updates: CommissionUpdate[]
+  isOwner: boolean
+  error?: { message?: string; issues?: { message: string }[] } | null
+}
+
+const { commissionId, updates, isOwner, error } = Astro.props
+---
+
+<Section title="委托进展" meta={`${updates.length}条记录`}>
+  {
+    updates.length > 0 ? (
+      <ul>
+        {updates.map(update => (
+          <li>
+            <p>{update.content}</p>
+            <time datetime={update.created_at}>{formatDate(update.created_at)}</time>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>还没有更新</p>
+    )
+  }
+
+  {isOwner && (
+    <form method="POST" action={actions.addCommissionUpdate}>
+      <input type="hidden" name="commissionId" value={commissionId} />
+      <Control
+        as="textarea"
+        name="content"
+        required
+        maxlength="1000"
+        rows="5"
+        placeholder="发布委托进展，例如：画师已加入，还在找开发者……"
+      />
+      <ErrorBox error={error} />
+      <Button size="sm" type="submit">发布更新</Button>
+    </form>
+  )}
+</Section>
+
+<style>
+  section {
+    margin-top: 54px;
+  }
+
+  ul {
+    display: grid;
+    gap: 10px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    padding: 16px 18px;
+    border-left: 2px solid var(--gold);
+    background-color: var(--surface);
+    box-shadow: var(--shadow-small);
+
+    p {
+      margin: 0 0 8px;
+      white-space: pre-wrap;
+    }
+  }
+
+  section > p {
+    margin: 0 0 10px;
+    color: var(--text-muted);
+    font-size: 0.84rem;
+  }
+
+  form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+</style>

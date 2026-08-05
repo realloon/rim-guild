@@ -1,11 +1,16 @@
 import { env } from 'cloudflare:workers'
-import { AUTHOR_COOKIE } from './lib/commissions'
-import { clearSessionCookie, setSessionCookie, touchSession } from './lib/auth'
+import {
+  AUTHOR_COOKIE,
+  clearSessionCookie,
+  setSessionCookie,
+  touchSession,
+} from './lib/auth'
 
 export async function onRequest(
   context: import('astro').APIContext,
   next: () => Promise<Response>,
 ) {
+  context.locals.auth = null
   const sessionToken = context.cookies.get(AUTHOR_COOKIE)?.value
 
   if (sessionToken) {

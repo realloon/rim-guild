@@ -1,0 +1,171 @@
+---
+import { actions } from 'astro:actions'
+import AuthorAvatar from './AuthorAvatar.astro'
+import Button from './ui/Button.astro'
+import Badge from './ui/Badge.astro'
+import {
+  requirementStatusLabel,
+  requirementTypeLabel,
+  type CommissionClaim,
+  type CommissionRequirement,
+} from '../lib/commissions'
+
+interface Props {
+  commissionId: number
+  requirement: CommissionRequirement
+  claims: CommissionClaim[]
+  isOwner: boolean
+  profileToken: string | null
+}
+
+const { commissionId, requirement, claims, isOwner, profileToken } = Astro.props
+const registered = claims.some(claim => claim.profile_token === profileToken)
+const isOpen = requirement.status === 'open'
+const showForm = isOwner || (isOpen && profileToken !== null)
+const action = isOwner
+  ? actions.updateRequirementStatus
+  : registered
+    ? actions.cancelClaim
+    : actions.claimRequirement
+const actionLabel = isOwner
+  ? isOpen
+    ? '停止招募'
+    : '重新开放'
+  : registered
+    ? '取消认领'
+    : '认领需求'
+const actionVariant = isOwner || registered ? 'ghost' : 'accent'
+---
+
+<li data-status={requirement.status}>
+  <header>
+    <span>
+      <Badge>{requirementTypeLabel(requirement.type)}</Badge>
+      <span>
+        共需{requirement.count}人
+        {claims.length > 0 ? '，' + claims.length + '人已认领' : ''}
+      </span>
+    </span>
+    <Badge variant={requirement.status}>
+      {requirementStatusLabel(requirement.status)}
+    </Badge>
+  </header>
+  <p>{requirement.description}</p>
+
+  {claims.length > 0 && (
+    <section aria-label="已认领">
+      <span>已认领</span>
+      <div>
+        {claims.map(claim => (
+          <AuthorAvatar
+            seed={claim.profile_token}
+            name={claim.author_name}
+            href={'/authors/' + claim.author_id}
+            size={30}
+            showName={false}
+            overlap
+          />
+        ))}
+      </div>
+    </section>
+  )}
+
+  <footer>
+    {showForm ? (
+      <form method="POST" action={action}>
+        <input type="hidden" name="commissionId" value={commissionId} />
+        <input
+          type="hidden"
+          name="requirementType"
+          value={requirement.type}
+        />
+        {isOwner && (
+          <input
+            type="hidden"
+            name="status"
+            value={isOpen ? 'closed' : 'open'}
+          />
+        )}
+        <Button variant={actionVariant} size="sm" type="submit">
+          {actionLabel}
+        </Button>
+      </form>
+    ) : isOpen ? (
+      <Button
+        size="sm"
+        href={'/login?next=/commissions/' + commissionId}
+      >
+        登录后认领需求
+      </Button>
+    ) : null}
+  </footer>
+</li>
+
+<style>
+  li {
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    background-color: var(--surface);
+    box-shadow: var(--shadow-small);
+
+    &[data-status='closed'] {
+      opacity: 0.68;
+    }
+
+    & > p {
+      margin: 15px 0 0;
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+
+    & > span:first-child {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+
+      & > span:last-child {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+      }
+    }
+  }
+
+  section,
+  footer {
+    margin-top: 16px;
+  }
+
+  section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 13px;
+    border-top: 1px dashed var(--line);
+
+    & > span {
+      flex: 0 0 auto;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+    }
+
+    & > div {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  footer {
+    form {
+      display: inline-flex;
+    }
+  }
+</style>

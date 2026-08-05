@@ -1,3 +1,5 @@
+import { z } from 'astro/zod'
+
 export const REQUIREMENT_TYPES = {
   artist: '画师',
   xml: 'XML 开发',
@@ -9,8 +11,10 @@ export const REQUIREMENT_TYPES = {
 
 export type RequirementType = keyof typeof REQUIREMENT_TYPES
 
-export const CREATOR_TYPES = REQUIREMENT_TYPES
-export type CreatorType = RequirementType
+export const REQUIREMENT_TYPE_KEYS = Object.keys(REQUIREMENT_TYPES) as [
+  RequirementType,
+  ...RequirementType[],
+]
 
 export const COMMISSION_TAGS = {
   weapon: '武器',
@@ -20,12 +24,22 @@ export const COMMISSION_TAGS = {
 
 export type CommissionTag = keyof typeof COMMISSION_TAGS
 
+export const COMMISSION_TAG_KEYS = Object.keys(COMMISSION_TAGS) as [
+  CommissionTag,
+  ...CommissionTag[],
+]
+
 export const REQUIREMENT_STATUSES = {
   open: '招募中',
   closed: '已招满',
 } as const
 
 export type RequirementStatus = keyof typeof REQUIREMENT_STATUSES
+
+export const REQUIREMENT_STATUS_KEYS = Object.keys(REQUIREMENT_STATUSES) as [
+  RequirementStatus,
+  ...RequirementStatus[],
+]
 
 export interface CommissionRequirement {
   type: RequirementType
@@ -34,30 +48,106 @@ export interface CommissionRequirement {
   status: RequirementStatus
 }
 
-export interface Commission {
+export interface CommissionSummary {
   id: number
   title: string
   description: string
-  tags: CommissionTag[]
   requirements: CommissionRequirement[]
   author_name: string
   author_token: string
   author_id: string
+  created_at: string
+}
+
+export interface Commission extends CommissionSummary {
+  tags: CommissionTag[]
   author_qq: string
   author_github: string
   author_steam: string
+}
+
+export interface CommissionClaim {
+  commission_id: number
+  requirement_type: RequirementType
+  profile_token: string
+  created_at: string
+  author_name: string
+  author_id: string
+}
+
+export interface CommissionUpdate {
+  id: number
+  content: string
   created_at: string
 }
 
 export type CommissionRow = Omit<Commission, 'tags' | 'requirements'> & {
   tags: string
-  requirements: string | null
+  requirements: string
 }
 
-export const AUTHOR_COOKIE = 'guild_author'
+export const isRequirementType = (value: string): value is RequirementType =>
+  Object.hasOwn(REQUIREMENT_TYPES, value)
+
+const isCommissionTag = (value: string): value is CommissionTag =>
+  Object.hasOwn(COMMISSION_TAGS, value)
+
+function parseCsv<T>(value: string, parseValue: (value: string) => T): T[] {
+  return value ? value.split(',').map(parseValue) : []
+}
+
+export function parseRequirementType(value: string): RequirementType {
+  if (!isRequirementType(value)) {
+    throw new Error(`数据库包含未知需求类型: ${value}`)
+  }
+  return value
+}
+
+export function parseRequirementTypes(value: string): RequirementType[] {
+  return parseCsv(value, parseRequirementType)
+}
+
+function parseCommissionTag(value: string): CommissionTag {
+  if (!isCommissionTag(value)) {
+    throw new Error(`数据库包含未知委托标签: ${value}`)
+  }
+  return value
+}
+
+function parseCommissionTags(value: string): CommissionTag[] {
+  return parseCsv(value, parseCommissionTag)
+}
+
+const requirementTypeSchema = z.enum(REQUIREMENT_TYPE_KEYS)
+const requirementStatusSchema = z.enum(REQUIREMENT_STATUS_KEYS)
+const requirementSchema = z.object({
+  type: requirementTypeSchema,
+  description: z.string(),
+  count: z.number().int().min(1).max(99),
+  status: requirementStatusSchema,
+})
+
+export function parseRequirementStatus(value: string): RequirementStatus {
+  return requirementStatusSchema.parse(value)
+}
+
+function parseRequirements(value: string): CommissionRequirement[] {
+  return z.array(requirementSchema).parse(JSON.parse(value))
+}
+
+type CommissionClaimRow = Omit<CommissionClaim, 'requirement_type'> & {
+  requirement_type: string
+}
+
+function parseClaim(claim: CommissionClaimRow): CommissionClaim {
+  return {
+    ...claim,
+    requirement_type: parseRequirementType(claim.requirement_type),
+  }
+}
 
 export const COMMISSION_SELECT = `
-	SELECT c.*, prf.qq AS author_qq, prf.github AS author_github, prf.steam AS author_steam, COALESCE(
+	SELECT c.*, COALESCE(prf.qq, '') AS author_qq, COALESCE(prf.github, '') AS author_github, COALESCE(prf.steam, '') AS author_steam, COALESCE(
 		json_group_array(json_object('type', cr.requirement_type, 'description', cr.description, 'count', cr.count, 'status', cr.status))
 			FILTER (WHERE cr.commission_id IS NOT NULL),
 		'[]'
@@ -70,27 +160,189 @@ export const COMMISSION_SELECT = `
 export function commissionFromRow(row: CommissionRow): Commission {
   return {
     ...row,
-    tags: row.tags
-      ? (row.tags.split(',').filter(Boolean) as CommissionTag[])
-      : [],
-    requirements: JSON.parse(row.requirements ?? '[]') as CommissionRequirement[],
+    tags: parseCommissionTags(row.tags),
+    requirements: parseRequirements(row.requirements),
   }
 }
 
+export async function findCommission(
+  db: D1Database,
+  id: number,
+): Promise<Commission | undefined> {
+  const row = await db
+    .prepare(`${COMMISSION_SELECT} WHERE c.id = ? GROUP BY c.id`)
+    .bind(id)
+    .first<CommissionRow>()
+
+  return row ? commissionFromRow(row) : undefined
+}
+
+export async function listCommissionsByAuthor(
+  db: D1Database,
+  authorToken: string,
+): Promise<Commission[]> {
+  const { results } = await db
+    .prepare(
+      `${COMMISSION_SELECT}
+			WHERE c.author_token = ?
+			GROUP BY c.id
+			ORDER BY c.created_at DESC, c.id DESC`,
+    )
+    .bind(authorToken)
+    .all<CommissionRow>()
+
+  return results.map(commissionFromRow)
+}
+
+export async function listOpenCommissions(
+  db: D1Database,
+  {
+    requirementType,
+    search,
+  }: { requirementType?: RequirementType; search?: string } = {},
+): Promise<Commission[]> {
+  const conditions = [
+    `EXISTS (
+      SELECT 1 FROM requirements r
+      WHERE r.commission_id = c.id AND r.status = 'open'
+    )`,
+  ]
+  const params: string[] = []
+
+  if (requirementType) {
+    conditions.push(`EXISTS (
+      SELECT 1 FROM requirements r
+      WHERE r.commission_id = c.id
+        AND r.requirement_type = ?
+        AND r.status = 'open'
+    )`)
+    params.push(requirementType)
+  }
+
+  if (search) {
+    const escaped = search.replace(/[\\%_]/g, character => `\\${character}`)
+    conditions.push(`(
+      c.title LIKE ? ESCAPE '\\'
+      OR c.description LIKE ? ESCAPE '\\'
+    )`)
+    params.push(`%${escaped}%`, `%${escaped}%`)
+  }
+
+  const { results } = await db
+    .prepare(
+      `${COMMISSION_SELECT}
+       WHERE ${conditions.join('\n       AND ')}
+       GROUP BY c.id
+       ORDER BY c.created_at DESC, c.id DESC`,
+    )
+    .bind(...params)
+    .all<CommissionRow>()
+
+  return results.map(commissionFromRow)
+}
+
+export async function listCommissionUpdates(
+  db: D1Database,
+  commissionId: number,
+): Promise<CommissionUpdate[]> {
+  const { results } = await db
+    .prepare(
+      'SELECT id, content, created_at FROM commission_updates WHERE commission_id = ? ORDER BY created_at DESC, id DESC',
+    )
+    .bind(commissionId)
+    .all<CommissionUpdate>()
+
+  return results
+}
+
+export async function listCommissionClaims(
+  db: D1Database,
+  commissionId: number,
+): Promise<CommissionClaim[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT r.commission_id, r.requirement_type, r.profile_token, r.created_at, p.author_name, p.author_id
+			FROM claims r
+			JOIN profiles p ON p.token = r.profile_token
+			WHERE r.commission_id = ?
+			ORDER BY r.created_at ASC`,
+    )
+    .bind(commissionId)
+    .all<CommissionClaimRow>()
+
+  return results.map(parseClaim)
+}
+
+interface ClaimedCommissionRow {
+  commission_id: number
+  commission_title: string
+  author_name: string
+  author_token: string
+  author_id: string
+  requirement_type: string
+  created_at: string
+  requirement_status: string
+  count: number
+  description: string
+}
+
+export async function listClaimedCommissions(
+  db: D1Database,
+  profileToken: string,
+): Promise<CommissionSummary[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT c.id AS commission_id, c.title AS commission_title, c.author_name, c.author_token, c.author_id, c.created_at,
+        cr.status AS requirement_status, cr.count, cr.description, r.requirement_type
+        FROM claims r
+        JOIN commissions c ON c.id = r.commission_id
+        JOIN requirements cr
+          ON cr.commission_id = r.commission_id
+         AND cr.requirement_type = r.requirement_type
+        WHERE r.profile_token = ?
+        ORDER BY r.created_at DESC`,
+    )
+    .bind(profileToken)
+    .all<ClaimedCommissionRow>()
+
+  return results.map(claim => ({
+    id: claim.commission_id,
+    title: claim.commission_title,
+    description: claim.description,
+    requirements: [
+      {
+        type: parseRequirementType(claim.requirement_type),
+        description: claim.description,
+        count: claim.count,
+        status: parseRequirementStatus(claim.requirement_status),
+      },
+    ],
+    author_name: claim.author_name,
+    author_token: claim.author_token,
+    author_id: claim.author_id,
+    created_at: claim.created_at,
+  }))
+}
+
 export function requirementTypeLabel(type: RequirementType) {
-  return REQUIREMENT_TYPES[type] ?? type
+  return REQUIREMENT_TYPES[type]
 }
 
 export function tagLabel(tag: CommissionTag) {
-  return COMMISSION_TAGS[tag] ?? tag
+  return COMMISSION_TAGS[tag]
 }
 
 export function requirementStatusLabel(status: RequirementStatus) {
-  return REQUIREMENT_STATUSES[status] ?? status
+  return REQUIREMENT_STATUSES[status]
 }
 
 export function formatDate(iso: string) {
-  return new Date(iso + 'Z').toLocaleString('zh-CN', {
+  const date = new Date(iso + 'Z')
+  if (Number.isNaN(date.valueOf())) {
+    throw new Error(`数据库包含无效时间: ${iso}`)
+  }
+
+  return date.toLocaleString('zh-CN', {
     dateStyle: 'medium',
     timeStyle: 'short',
   })

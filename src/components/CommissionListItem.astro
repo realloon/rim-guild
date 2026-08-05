@@ -1,43 +1,32 @@
 ---
 import AuthorAvatar from './AuthorAvatar.astro'
+import BadgeList from './ui/BadgeList.astro'
 import {
   requirementTypeLabel,
   formatDate,
-  type Commission,
+  type CommissionSummary,
 } from '../lib/commissions'
 
 interface Props {
-  commission: Commission
+  commission: CommissionSummary
 }
 
 const { commission } = Astro.props
 const openRequirements = commission.requirements.filter(
   requirement => requirement.status === 'open',
 )
+const hasOpenRequirements = openRequirements.length > 0
 ---
 
 <li>
   <header>
-    <span class="commission-card-type">
-      {
-        openRequirements.length > 0 ? (
-          <>
-            <span
-              class="requirement-pin requirement-pin-open"
-              aria-hidden="true"
-            />
-            招募中
-          </>
-        ) : (
-          <>
-            <span
-              class="requirement-pin requirement-pin-closed"
-              aria-hidden="true"
-            />
-            招募已结束
-          </>
-        )
-      }
+    <span>
+      <span
+        class="requirement-pin"
+        data-status={hasOpenRequirements ? 'open' : 'closed'}
+        aria-hidden="true"
+      />
+      {hasOpenRequirements ? '招募中' : '招募已结束'}
       <time datetime={commission.created_at}>
         {formatDate(commission.created_at)}
       </time>
@@ -54,15 +43,13 @@ const openRequirements = commission.requirements.filter(
     <h2>{commission.title}</h2>
     {commission.description && <p>{commission.description}</p>}
   </a>
-  <div class="commission-card-footer">
-    <span class="tags">
-      {
-        openRequirements.map(requirement => (
-          <span class="tag">{requirementTypeLabel(requirement.type)}</span>
-        ))
-      }
-    </span>
-  </div>
+  <footer>
+    <BadgeList
+      items={openRequirements.map(requirement =>
+        requirementTypeLabel(requirement.type)
+      )}
+    />
+  </footer>
 </li>
 
 <style>
@@ -109,7 +96,7 @@ const openRequirements = commission.requirements.filter(
     flex-wrap: wrap;
     gap: 16px;
 
-    .commission-card-type {
+    & > span:first-child {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -135,7 +122,7 @@ const openRequirements = commission.requirements.filter(
     padding-block: 2px 8px;
 
     &:hover h2 {
-      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+      color: var(--accent-strong);
     }
 
     h2 {
@@ -156,7 +143,7 @@ const openRequirements = commission.requirements.filter(
     }
   }
 
-  .commission-card-footer {
+  footer {
     display: flex;
     align-items: center;
 
@@ -186,7 +173,7 @@ const openRequirements = commission.requirements.filter(
     }
   }
 
-  .requirement-pin-open {
+  .requirement-pin[data-status='open'] {
     color: var(--on-forest);
     background-color: var(--success);
     box-shadow:
@@ -195,11 +182,11 @@ const openRequirements = commission.requirements.filter(
       0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
   }
 
-  .requirement-pin-closed {
-    color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+  .requirement-pin[data-status='closed'] {
+    color: var(--line-muted);
     background-color: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
     box-shadow:
-      0 0 0 1px color-mix(in oklch, var(--line) 50%, var(--text-muted)),
+      0 0 0 1px var(--line-muted),
       0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
   }
 

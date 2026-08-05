@@ -1,0 +1,70 @@
+---
+interface Props {
+  commissionCount: number
+  registeredUserCount: number
+  variant: 'card' | 'inline'
+}
+
+const { commissionCount, registeredUserCount, variant } = Astro.props
+---
+
+<dl data-variant={variant}>
+  <div>
+    <dt>注册会员</dt>
+    <dd>{registeredUserCount}</dd>
+  </div>
+  <div>
+    <dt>委托数量</dt>
+    <dd>{commissionCount}</dd>
+  </div>
+</dl>
+
+<style>
+  dl {
+    display: flex;
+
+    & > div {
+      display: flex;
+      align-items: center;
+    }
+
+    dd {
+      margin: 0;
+      color: var(--accent-strong);
+      font-family: var(--serif);
+      font-size: 1.5rem;
+    }
+  }
+
+  dl[data-variant='card'] {
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0;
+    border-top: 1px dashed var(--line);
+    padding-top: 16px;
+
+    & > div {
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    dt {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+    }
+  }
+
+  dl[data-variant='inline'] {
+    gap: 36px;
+    margin-top: 8px;
+    color: var(--text-muted);
+
+    & > div {
+      gap: 4px;
+    }
+
+    dd {
+      margin-left: 4px;
+    }
+  }
+</style>

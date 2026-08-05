@@ -1,0 +1,61 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+
+type Props = HTMLAttributes<'span'> & {
+  as?: 'span' | 'li'
+  variant?: 'tag' | 'muted' | 'open' | 'closed'
+}
+
+const {
+  as = 'span',
+  variant = 'tag',
+  class: className,
+  ...attrs
+} = Astro.props
+---
+
+{as === 'li' ? (
+  <li {...attrs} class={className} data-variant={variant}>
+    <slot />
+  </li>
+) : (
+  <span {...attrs} class={className} data-variant={variant}>
+    <slot />
+  </span>
+)}
+
+<style>
+  :where(span, li) {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 25px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  :where(span, li)[data-variant='tag'] {
+    border: 1px solid var(--accent-line);
+    color: var(--accent-strong);
+  }
+
+  :where(span, li)[data-variant='muted'] {
+    border: 1px solid var(--line);
+    color: var(--text-muted);
+  }
+
+  :where(span, li)[data-variant='open'] {
+    border: 1px solid color-mix(in oklch, var(--success) 55%, var(--line));
+    background: color-mix(in oklch, var(--forest) 24%, light-dark(white, black));
+    color: var(--success);
+  }
+
+  :where(span, li)[data-variant='closed'] {
+    border: 1px solid var(--line);
+    background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
+    color: var(--text-muted);
+  }
+</style>

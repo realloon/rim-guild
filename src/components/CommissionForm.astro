@@ -6,15 +6,17 @@ import {
   type Commission,
 } from '../lib/commissions'
 import CheckboxGroup from './ui/CheckboxGroup.astro'
-import Input from './ui/Input.astro'
-import Select from './ui/Select.astro'
-import Textarea from './ui/Textarea.astro'
+import Button from './ui/Button.astro'
+import Control from './ui/Control.astro'
+import Field from './ui/Field.astro'
 
 interface Props {
   commission?: Commission
+  title: string
+  description: string
 }
 
-const { commission } = Astro.props
+const { commission, title, description } = Astro.props
 const action = commission ? actions.updateCommission : actions.createCommission
 const submitLabel = commission ? '保存修改' : '发布'
 const requirements = commission?.requirements ?? [
@@ -23,96 +25,99 @@ const requirements = commission?.requirements ?? [
 ---
 
 <script>
-  const form = document.querySelector(
+  const form = document.querySelector<HTMLFormElement>(
     'form[data-requirement-form]',
-  ) as HTMLFormElement | null
-  if (form) {
-    const pairs = form.querySelector('fieldset > ul') as HTMLUListElement
-    const addBtn = form.querySelector(
-      '[data-add-requirement]',
-    ) as HTMLButtonElement
+  )
+  if (!form) throw new Error('需求表单未找到')
 
-    const updateRequirementOptions = () => {
-      const selects = Array.from(pairs.querySelectorAll('select'))
-      const selectedRoles = new Set(selects.map(select => select.value))
+  const pairs = form.querySelector<HTMLUListElement>('fieldset > ul')!
+  const addBtn = form.querySelector<HTMLButtonElement>('[data-add-requirement]')!
 
-      selects.forEach(select => {
-        Array.from(select.options).forEach(option => {
-          option.disabled =
-            option.value !== select.value && selectedRoles.has(option.value)
-        })
-      })
+  const updateRequirementOptions = () => {
+    const selects = Array.from(pairs.querySelectorAll('select'))
+    const selectedRoles = new Set(selects.map(select => select.value))
 
-      addBtn.disabled =
-        selects.length >=
-        (selects[0]?.options.length ?? Number.POSITIVE_INFINITY)
-    }
-
-    const makePair = () => {
-      const template = pairs.querySelector('li') as HTMLElement
-      const pair = template.cloneNode(true) as HTMLLIElement
-      const removeBtn = pair.querySelector(
-        '[data-remove-requirement]',
-      ) as HTMLButtonElement
-      removeBtn.hidden = false
-      const select = pair.querySelector('select')!
-      const usedRoles = new Set(
-        Array.from(pairs.querySelectorAll('select')).map(
-          existingSelect => existingSelect.value,
-        ),
-      )
+    selects.forEach(select => {
       Array.from(select.options).forEach(option => {
-        option.disabled = false
+        option.disabled =
+          option.value !== select.value && selectedRoles.has(option.value)
       })
-      const nextRole = Array.from(select.options).find(
-        option => !usedRoles.has(option.value),
-      )
-      if (nextRole) {
-        select.value = nextRole.value
-      }
-      const descInput = pair.querySelector('textarea')!
-      descInput.style.height = ''
-      descInput.value = ''
-      const countInput = pair.querySelector('input')!
-      countInput.value = '1'
-      return pair
-    }
-
-    addBtn.addEventListener('click', () => {
-      const pair = makePair()
-      pairs.appendChild(pair)
-      updateRequirementOptions()
     })
 
-    pairs.addEventListener('change', event => {
-      if (
-        (event.target as HTMLElement).matches('select[name="requirementTypes"]')
-      ) {
-        updateRequirementOptions()
-      }
-    })
-
-    pairs.addEventListener('click', event => {
-      const btn = (event.target as HTMLElement).closest(
-        '[data-remove-requirement]',
-      ) as HTMLButtonElement | null
-      if (btn) {
-        const pair = btn.closest<HTMLElement>('li')!
-        if (pairs.querySelectorAll('li').length > 1) {
-          pair.remove()
-        } else {
-          const descInput = pair.querySelector('textarea')!
-          descInput.value = ''
-          const countInput = pair.querySelector('input')!
-          countInput.value = '1'
-        }
-        updateRequirementOptions()
-      }
-    })
-
-    updateRequirementOptions()
+    addBtn.disabled = selects.length >= selects[0]!.options.length
   }
+
+  const makePair = () => {
+    const template = pairs.querySelector('li')!
+    const pair = template.cloneNode(true) as HTMLLIElement
+    const removeBtn = pair.querySelector<HTMLButtonElement>(
+      '[data-remove-requirement]',
+    )!
+    removeBtn.hidden = false
+    const select = pair.querySelector<HTMLSelectElement>('select')!
+    const usedRoles = new Set(
+      Array.from(pairs.querySelectorAll('select')).map(
+        existingSelect => existingSelect.value,
+      ),
+    )
+    Array.from(select.options).forEach(option => {
+      option.disabled = false
+    })
+    const nextRole = Array.from(select.options).find(
+      option => !usedRoles.has(option.value),
+    )
+    if (nextRole) select.value = nextRole.value
+
+    const descInput = pair.querySelector<HTMLTextAreaElement>('textarea')!
+    descInput.style.height = ''
+    descInput.value = ''
+    const countInput = pair.querySelector<HTMLInputElement>(
+      'input[name="requirementCounts"]',
+    )!
+    countInput.value = '1'
+    return pair
+  }
+
+  addBtn.addEventListener('click', () => {
+    pairs.appendChild(makePair())
+    updateRequirementOptions()
+  })
+
+  pairs.addEventListener('change', event => {
+    if (
+      event.target instanceof HTMLSelectElement &&
+      event.target.name === 'requirementTypes'
+    ) {
+      updateRequirementOptions()
+    }
+  })
+
+  pairs.addEventListener('click', event => {
+    if (!(event.target instanceof Element)) return
+    const btn = event.target.closest<HTMLButtonElement>(
+      '[data-remove-requirement]',
+    )
+    if (!btn) return
+
+    const pair = btn.closest<HTMLLIElement>('li')!
+    if (pairs.querySelectorAll('li').length > 1) {
+      pair.remove()
+    } else {
+      pair.querySelector<HTMLTextAreaElement>('textarea')!.value = ''
+      pair.querySelector<HTMLInputElement>(
+        'input[name="requirementCounts"]',
+      )!.value = '1'
+    }
+    updateRequirementOptions()
+  })
+
+  updateRequirementOptions()
 </script>
+
+<header>
+  <h1>{title}</h1>
+  <p>{description}</p>
+</header>
 
 <section>
   <form method="POST" action={action} data-requirement-form>
@@ -122,9 +127,10 @@ const requirements = commission?.requirements ?? [
       )
     }
 
-    <label class="form-field" for="title">
+    <Field for="title">
       标题
-      <Input
+      <Control
+        as="input"
         id="title"
         name="title"
         required
@@ -132,17 +138,18 @@ const requirements = commission?.requirements ?? [
         value={commission?.title}
         placeholder="例如：电磁武器拓展模组"
       />
-    </label>
-    <label class="form-field" for="description">
+    </Field>
+    <Field for="description">
       描述
-      <Textarea
+      <Control
+        as="textarea"
         id="description"
         name="description"
         maxlength="5000"
         placeholder="描述模组的玩法、规模和工期，内容越详细具体越容易吸引创作者喔"
-        >{commission?.description}</Textarea
+        >{commission?.description}</Control
       >
-    </label>
+    </Field>
 
     <CheckboxGroup
       legend="标签"
@@ -157,7 +164,8 @@ const requirements = commission?.requirements ?? [
         {
           requirements.map((requirement, i) => (
             <li>
-              <Select
+              <Control
+                as="select"
                 density="compact"
                 name="requirementTypes"
                 required
@@ -168,8 +176,9 @@ const requirements = commission?.requirements ?? [
                     {label}
                   </option>
                 ))}
-              </Select>
-              <Input
+              </Control>
+              <Control
+                as="input"
                 density="compact"
                 name="requirementCounts"
                 type="number"
@@ -180,7 +189,7 @@ const requirements = commission?.requirements ?? [
                 title="需要人数"
               />
               <button
-                data-remove-requirement="true"
+                data-remove-requirement
                 type="button"
                 title="移除"
                 aria-label="移除这一项需求"
@@ -188,7 +197,8 @@ const requirements = commission?.requirements ?? [
               >
                 ×
               </button>
-              <Textarea
+              <Control
+                as="textarea"
                 density="compact"
                 name="requirementDescriptions"
                 required
@@ -198,18 +208,18 @@ const requirements = commission?.requirements ?? [
                 rows="2"
               >
                 {requirement.description}
-              </Textarea>
+              </Control>
             </li>
           ))
         }
       </ul>
-      <button data-add-requirement="true" type="button">
+      <button data-add-requirement type="button">
         + 添加需求岗位
       </button>
     </fieldset>
 
     <footer>
-      <button class="btn" type="submit">{submitLabel}</button>
+      <Button type="submit">{submitLabel}</Button>
       <small>发布后仍可随时修改</small>
     </footer>
   </form>
@@ -217,6 +227,18 @@ const requirements = commission?.requirements ?? [
 </section>
 
 <style>
+  header {
+    h1 {
+      margin-bottom: 16px;
+      color: var(--forest);
+      font-size: 2.5rem;
+    }
+
+    p {
+      color: var(--text-muted);
+    }
+  }
+
   section {
     padding: clamp(16px, 100%, 32px);
     border: 1px solid var(--line);
@@ -233,7 +255,7 @@ const requirements = commission?.requirements ?? [
   form {
     max-width: 820px;
 
-    & > fieldset {
+    & > fieldset:last-of-type {
       margin: 0 0 28px;
       padding: 0;
       border: 0;
@@ -270,20 +292,25 @@ const requirements = commission?.requirements ?? [
     }
   }
 
+  button[data-remove-requirement],
+  button[data-add-requirement] {
+    background-color: transparent;
+    color: var(--text-muted);
+    border-radius: 0;
+    transition: 0.2s;
+  }
+
   button[data-remove-requirement] {
     flex: 0 0 32px;
     width: 32px;
     height: 32px;
     padding: 0;
     box-sizing: border-box;
-    background-color: transparent;
     border: 1px solid transparent;
-    border-radius: 0;
-    color: var(--text-muted);
     font-size: 1rem;
 
     &:hover {
-      border-color: color-mix(in oklch, var(--accent) 52%, var(--line));
+      border-color: var(--accent-line);
       color: var(--danger);
     }
   }
@@ -292,19 +319,15 @@ const requirements = commission?.requirements ?? [
     margin-top: 12px;
     padding: 7px 0;
     border: 0;
-    border-radius: 0;
-    background-color: transparent;
-    color: var(--text-muted);
     font-size: 0.8rem;
     font-weight: 700;
-    transition: 0.2s;
 
     &:hover {
-      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+      color: var(--accent-strong);
     }
 
     &:disabled {
-      color: color-mix(in oklch, var(--line) 50%, var(--text-muted));
+      color: var(--line-muted);
       cursor: not-allowed;
       opacity: 0.6;
     }

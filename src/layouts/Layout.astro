@@ -1,5 +1,6 @@
 ---
 import '../assets/styles/main.css'
+import Button from '../components/ui/Button.astro'
 import { avatarUrl } from '../lib/avatar'
 import { actions } from 'astro:actions'
 
@@ -11,17 +12,6 @@ const { title = '边缘工会' } = Astro.props
 const profileToken = Astro.locals.auth?.profileToken ?? null
 const isHome = Astro.url.pathname === '/'
 ---
-
-<script>
-  const profileMenu = document.querySelector<HTMLElement>('#profile-menu')!
-  const items = profileMenu.querySelectorAll('a')
-
-  items.forEach(item =>
-    item.addEventListener('click', () => {
-      profileMenu.hidePopover()
-    }),
-  )
-</script>
 
 <html lang="zh-CN">
   <head>
@@ -51,12 +41,14 @@ const isHome = Astro.url.pathname === '/'
       </a>
 
       <nav aria-label="主导航">
-        <a class:list={{ active: isHome }} href="/#board">查看委托</a>
+        <a aria-current={isHome ? 'page' : undefined} href="/#board">
+          查看委托
+        </a>
       </nav>
 
-      <section>
-        <a
-          class="btn publish-link"
+      <div>
+        <Button
+          variant="primary"
           href={profileToken
             ? '/commissions/new'
             : '/login?next=/commissions/new'}
@@ -69,7 +61,7 @@ const isHome = Astro.url.pathname === '/'
               stroke-width="1.5"
               stroke-linecap="square"></path>
           </svg>
-        </a>
+        </Button>
         <button
           type="button"
           popovertarget="profile-menu"
@@ -102,7 +94,7 @@ const isHome = Astro.url.pathname === '/'
             )
           }
         </button>
-      </section>
+      </div>
     </header>
 
     <menu id="profile-menu" popover>
@@ -120,7 +112,7 @@ const isHome = Astro.url.pathname === '/'
             </li>
             <hr />
             <form method="POST" action={actions.logout}>
-              <button class="menu-item" type="submit">
+              <button type="submit">
                 登出
               </button>
             </form>
@@ -217,35 +209,21 @@ const isHome = Astro.url.pathname === '/'
         }
 
         &:hover,
-        &.active {
-          color: color-mix(
-            in oklch,
-            var(--accent) 78%,
-            light-dark(black, white)
-          );
+        &[aria-current='page'] {
+          color: var(--accent-strong);
         }
 
-        &.active::after,
+        &[aria-current='page']::after,
         &:hover::after {
           opacity: 1;
         }
       }
     }
 
-    section {
+    & > div:last-child {
       display: flex;
       align-items: center;
       gap: 12px;
-
-      .publish-link {
-        background-color: var(--forest);
-
-        svg {
-          width: 14px;
-          height: 14px;
-          border: unset;
-        }
-      }
 
       button {
         background-color: transparent;
@@ -254,17 +232,12 @@ const isHome = Astro.url.pathname === '/'
         place-items: center;
 
         padding: 0;
-        border: 1px solid
-          color-mix(in oklch, var(--line) 50%, var(--text-muted));
+        border: 1px solid var(--line-muted);
         border-radius: 50%;
         transition: 0.2s;
 
         &:hover {
-          color: color-mix(
-            in oklch,
-            var(--accent) 78%,
-            light-dark(black, white)
-          );
+          color: var(--accent-strong);
           border-color: var(--accent);
         }
 
@@ -274,7 +247,7 @@ const isHome = Astro.url.pathname === '/'
           width: 32px;
           height: 32px;
           border-radius: 50%;
-          border: unset;
+          border: 0;
         }
       }
     }
@@ -292,12 +265,12 @@ const isHome = Astro.url.pathname === '/'
 
     min-width: 8rem;
     padding: 4px;
-    border: 1px solid color-mix(in oklch, var(--line) 50%, transparent);
+    border: 1px solid var(--line-soft);
     border-radius: 12px;
     box-shadow: var(--shadow);
 
     a,
-    .menu-item {
+    form > button {
       display: block;
       box-sizing: border-box;
 
@@ -309,26 +282,26 @@ const isHome = Astro.url.pathname === '/'
 
       width: 100%;
       padding: 10px 12px;
-      border: unset;
+      border: 0;
       border-radius: 6px;
 
       transition: 0.2s;
     }
 
-    a:hover {
-      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
-      background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
+    a:hover,
+    form > button:hover {
+      color: var(--accent-strong);
     }
 
-    .menu-item:hover {
-      color: color-mix(in oklch, var(--accent) 78%, light-dark(black, white));
+    a:hover {
+      background: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
     }
 
     hr {
       height: 1px;
       margin: 4px -4px;
-      border: unset;
-      background: color-mix(in oklch, var(--line) 50%, transparent);
+      border: 0;
+      background: var(--line-soft);
     }
   }
 
@@ -357,7 +330,7 @@ const isHome = Astro.url.pathname === '/'
       display: none;
     }
 
-    .publish-link svg {
+    header > div:last-child > :global(a) svg {
       display: none;
     }
 

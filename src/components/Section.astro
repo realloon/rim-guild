@@ -1,0 +1,42 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+
+interface Props extends HTMLAttributes<'section'> {
+  title: string
+  meta?: string
+}
+
+const { title, meta, ...attrs } = Astro.props
+---
+
+<section {...attrs}>
+  <header>
+    <h2>{title}</h2>
+    {meta && <span>{meta}</span>}
+  </header>
+  <slot />
+</section>
+
+<style>
+  section > header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+
+    h2 {
+      margin: 0;
+      color: var(--forest);
+      font-size: 2.25rem;
+      font-weight: 500;
+    }
+
+    span {
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+  }
+</style>

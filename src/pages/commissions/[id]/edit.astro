@@ -2,11 +2,9 @@
 import Layout from '../../../layouts/Layout.astro'
 import CommissionForm from '../../../components/CommissionForm.astro'
 import ErrorBox from '../../../components/ui/ErrorBox.astro'
+import Notice from '../../../components/ui/Notice.astro'
 import {
-  COMMISSION_SELECT,
-  commissionFromRow,
-  type Commission,
-  type CommissionRow,
+  findCommission,
 } from '../../../lib/commissions'
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
@@ -14,14 +12,7 @@ import { env } from 'cloudflare:workers'
 const db = env.rim_guild_db
 const { id } = Astro.params
 
-const row = await db
-  .prepare(`${COMMISSION_SELECT} WHERE c.id = ? GROUP BY c.id`)
-  .bind(Number(id))
-  .first<CommissionRow>()
-
-const commission: Commission | undefined = row
-  ? commissionFromRow(row)
-  : undefined
+const commission = await findCommission(db, Number(id))
 const isOwner =
   !!commission && Astro.locals.auth?.profileToken === commission.author_token
 
@@ -46,23 +37,18 @@ if (result && !result.error && commission) {
     {
       commission ? (
         isOwner ? (
-          <>
-            <header>
-              <h1>编辑委托</h1>
-              <p>
-                更新委托说明、需求类型或人数，让所有正在关注这份委托的人看到最新状态。
-              </p>
-            </header>
-
-            <CommissionForm commission={commission}>
-              <ErrorBox error={result?.error} />
-            </CommissionForm>
-          </>
+          <CommissionForm
+            commission={commission}
+            title="编辑委托"
+            description="更新委托说明、需求类型或人数，让所有正在关注这份委托的人看到最新状态。"
+          >
+            <ErrorBox error={result?.error} />
+          </CommissionForm>
         ) : (
-          <p class="not-found">你没有权限编辑这份委托</p>
+          <Notice>你没有权限编辑这份委托</Notice>
         )
       ) : (
-        <p class="not-found">该委托不存在或已被删除</p>
+        <Notice>该委托不存在或已被删除</Notice>
       )
     }
   </main>

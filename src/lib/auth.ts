@@ -2,7 +2,7 @@
 // 注册/登录：注册创建账号 → 登录签发 session cookie；登出删除 session
 // cookie（guild_author）即 session token，7 天滑动过期
 
-import { AUTHOR_COOKIE } from './commissions'
+export const AUTHOR_COOKIE = 'guild_author'
 
 const ITERATIONS = 310_000
 const KEY_LEN = 32
@@ -15,7 +15,15 @@ function toHex(buffer: ArrayBuffer) {
 }
 
 function fromHex(hex: string): Uint8Array<ArrayBuffer> {
-  return new Uint8Array(hex.match(/.{2}/g)?.map(h => parseInt(h, 16)) ?? [])
+  if (!/^[\da-f]{32}$/i.test(hex)) {
+    throw new Error('密码盐值必须是 16 字节十六进制字符串')
+  }
+
+  const bytes = new Uint8Array(SALT_BYTES)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16)
+  }
+  return bytes
 }
 
 export function generateSalt() {
@@ -73,9 +81,16 @@ export function clearSessionCookie(context: CookieContext) {
   context.cookies.set(AUTHOR_COOKIE, '', { maxAge: 0, path: '/' })
 }
 
-export async function createSession(db: D1Database, profileToken: string) {
-  const token = crypto.randomUUID()
-  await db
+export function createSessionToken() {
+  return crypto.randomUUID()
+}
+
+export function insertSession(
+  db: D1Database,
+  token: string,
+  profileToken: string,
+) {
+  return db
     .prepare(
       'INSERT INTO sessions (token, profile_token, expires_at) VALUES (?, ?, ?)',
     )
@@ -84,7 +99,11 @@ export async function createSession(db: D1Database, profileToken: string) {
       profileToken,
       new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString(),
     )
-    .run()
+}
+
+export async function createSession(db: D1Database, profileToken: string) {
+  const token = createSessionToken()
+  await insertSession(db, token, profileToken).run()
   return token
 }
 
@@ -97,7 +116,10 @@ export async function touchSession(db: D1Database, token: string) {
   if (!row) return null
 
   const expiresAt = Date.parse(row.expires_at)
-  if (Number.isNaN(expiresAt) || expiresAt <= Date.now()) {
+  if (Number.isNaN(expiresAt)) {
+    throw new Error('会话过期时间无效')
+  }
+  if (expiresAt <= Date.now()) {
     await db.prepare('DELETE FROM sessions WHERE token = ?').bind(token).run()
     return null
   }
