@@ -11,9 +11,9 @@ import Control from './ui/Control.astro'
 import Field from './ui/Field.astro'
 
 interface Props {
-  commission?: Commission
   title: string
   description: string
+  commission?: Commission
 }
 
 const { commission, title, description } = Astro.props
@@ -31,7 +31,9 @@ const requirements = commission?.requirements ?? [
   if (!form) throw new Error('需求表单未找到')
 
   const pairs = form.querySelector<HTMLUListElement>('fieldset > ul')!
-  const addBtn = form.querySelector<HTMLButtonElement>('[data-add-requirement]')!
+  const addBtn = form.querySelector<HTMLButtonElement>(
+    '[data-add-requirement]',
+  )!
 
   const updateRequirementOptions = () => {
     const selects = Array.from(pairs.querySelectorAll('select'))
@@ -139,8 +141,9 @@ const requirements = commission?.requirements ?? [
         placeholder="例如：电磁武器拓展模组"
       />
     </Field>
+
     <Field for="description">
-      描述
+      介绍
       <Control
         as="textarea"
         id="description"
@@ -213,9 +216,7 @@ const requirements = commission?.requirements ?? [
           ))
         }
       </ul>
-      <button data-add-requirement type="button">
-        + 添加需求岗位
-      </button>
+      <button data-add-requirement type="button"> + 添加需求岗位 </button>
     </fieldset>
 
     <footer>
@@ -240,11 +241,12 @@ const requirements = commission?.requirements ?? [
   }
 
   section {
-    padding: clamp(16px, 100%, 32px);
+    background-color: var(--surface);
+    padding: 32px;
     border: 1px solid var(--line);
     border-top: 3px solid var(--forest);
-    background-color: var(--surface);
     box-shadow: var(--shadow);
+    margin-top: -32px;
 
     @media (max-width: 768px) {
       padding-inline: 16px;
@@ -253,50 +255,49 @@ const requirements = commission?.requirements ?? [
   }
 
   form {
-    max-width: 820px;
-
-    & > fieldset:last-of-type {
-      margin: 0 0 28px;
-      padding: 0;
-      border: 0;
-      background: transparent;
-
-      legend {
-        margin-bottom: 16px;
-      }
-    }
-  }
-
-  fieldset > ul {
     display: flex;
     flex-direction: column;
-    gap: 0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    gap: 24px;
   }
 
-  fieldset > ul > li {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    padding-bottom: 16px;
+  fieldset {
+    &:last-of-type {
+      padding: unset;
+      margin-inline: unset;
+      border: unset;
 
-    & + & {
-      padding-top: 16px;
+      legend {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
     }
 
-    &:last-child {
-      padding-bottom: 0;
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      list-style: none;
+      margin-block: unset;
+      padding-inline-start: unset;
+
+      li {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
     }
   }
 
   button[data-remove-requirement],
   button[data-add-requirement] {
-    background-color: transparent;
     color: var(--text-muted);
+    background-color: transparent;
     border-radius: 0;
+    margin-top: 8px;
     transition: 0.2s;
   }
 
@@ -316,7 +317,6 @@ const requirements = commission?.requirements ?? [
   }
 
   button[data-add-requirement] {
-    margin-top: 12px;
     padding: 7px 0;
     border: 0;
     font-size: 0.8rem;

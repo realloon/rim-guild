@@ -9,17 +9,16 @@ type Props = HTMLAttributes<'span'> & {
 const {
   as = 'span',
   variant = 'tag',
-  class: className,
   ...attrs
 } = Astro.props
 ---
 
 {as === 'li' ? (
-  <li {...attrs} class={className} data-variant={variant}>
+  <li {...attrs} data-variant={variant}>
     <slot />
   </li>
 ) : (
-  <span {...attrs} class={className} data-variant={variant}>
+  <span {...attrs} data-variant={variant}>
     <slot />
   </span>
 )}

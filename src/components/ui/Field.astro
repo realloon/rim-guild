@@ -2,11 +2,9 @@
 import type { HTMLAttributes } from 'astro/types'
 
 type Props = HTMLAttributes<'label'>
-
-const { class: className, ...attrs } = Astro.props
 ---
 
-<label {...attrs} class={className}>
+<label {...Astro.props}>
   <slot />
 </label>
 
@@ -21,5 +19,4 @@ const { class: className, ...attrs } = Astro.props
     font-size: 0.75rem;
     font-weight: bold;
   }
-
 </style>

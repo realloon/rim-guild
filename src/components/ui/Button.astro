@@ -13,7 +13,6 @@ const {
   variant = 'accent',
   size,
   block = false,
-  class: className,
   ...attrs
 } = Astro.props
 const dataBlock = block ? 'true' : undefined
@@ -24,7 +23,6 @@ const dataBlock = block ? 'true' : undefined
     <a
       {...attrs}
       href={href}
-      class={className}
       data-variant={variant}
       data-size={size}
       data-block={dataBlock}
@@ -34,7 +32,6 @@ const dataBlock = block ? 'true' : undefined
   ) : (
     <button
       {...attrs}
-      class={className}
       data-variant={variant}
       data-size={size}
       data-block={dataBlock}

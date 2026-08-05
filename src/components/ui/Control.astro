@@ -18,24 +18,22 @@ type Props =
       density?: 'compact'
     })
 
-const { as, variant, density, class: className, ...attrs } = Astro.props
+const { as, variant, density, ...attrs } = Astro.props
 ---
 
 {as === 'select' ? (
-  <select {...attrs} class={className} data-density={density}>
+  <select {...attrs} data-density={density}>
     <slot />
   </select>
 ) : as === 'textarea' ? (
   <textarea
     {...attrs}
-    class={className}
     data-density={density}
     data-auto-resize
   ><slot /></textarea>
 ) : (
   <input
     {...attrs}
-    class={className}
     data-variant={variant}
     data-density={density}
   />
