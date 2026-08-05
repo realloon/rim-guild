@@ -33,6 +33,84 @@ if (
 const result = mode === 'register' ? registerResult : loginResult
 ---
 
+<script>
+  type Mode = 'login' | 'register'
+
+  const form = document.querySelector('form[data-auth-form]') as HTMLFormElement
+  const title = document.querySelector('[data-auth-title]') as HTMLElement
+  const description = document.querySelector(
+    '[data-auth-description]',
+  ) as HTMLElement
+  const submit = document.querySelector('[data-auth-submit]') as HTMLElement
+  const switchLabel = document.querySelector(
+    '[data-auth-switch-label]',
+  ) as HTMLElement
+  const switchLink = document.querySelector(
+    '[data-auth-switch]',
+  ) as HTMLAnchorElement
+  const password = form.elements.namedItem('password') as HTMLInputElement
+  const loginAction = form.dataset.loginAction!
+  const registerAction = form.dataset.registerAction!
+
+  const copy = {
+    login: {
+      title: '登录',
+      description: '登录后继续管理你的委托和协作记录',
+      submit: '登录',
+      switchLabel: '没有账号？',
+      switchText: '去注册',
+    },
+    register: {
+      title: '注册账号',
+      description: '注册后，你可以发布委托、认领需求并维护个人资料',
+      submit: '注册',
+      switchLabel: '已有账号？',
+      switchText: '去登录',
+    },
+  } as const
+
+  const updateMode = (mode: Mode) => {
+    const isRegister = mode === 'register'
+    const content = copy[mode]
+
+    form.dataset.mode = mode
+    form.action = isRegister ? registerAction : loginAction
+    title.textContent = content.title
+    description.textContent = content.description
+    submit.textContent = content.submit
+    switchLabel.textContent = content.switchLabel
+    switchLink.textContent = content.switchText
+    password.toggleAttribute('minlength', isRegister)
+    password.placeholder = isRegister ? '至少8位' : ''
+
+    const url = new URL(window.location.href)
+    if (isRegister) {
+      url.searchParams.set('mode', 'register')
+    } else {
+      url.searchParams.delete('mode')
+    }
+    window.history.replaceState(null, '', url)
+
+    const switchUrl = new URL(url)
+    if (isRegister) {
+      switchUrl.searchParams.delete('mode')
+    } else {
+      switchUrl.searchParams.set('mode', 'register')
+    }
+    switchLink.href = `${switchUrl.pathname}${switchUrl.search}`
+
+    const error = form.querySelector('[role="alert"]') as HTMLElement | null
+    error?.setAttribute('hidden', '')
+    document.title = `${content.title} · 边缘工会`
+  }
+
+  switchLink.addEventListener('click', event => {
+    event.preventDefault()
+    const currentMode = form.dataset.mode === 'register' ? 'register' : 'login'
+    updateMode(currentMode === 'register' ? 'login' : 'register')
+  })
+</script>
+
 <Layout title={mode === 'register' ? '注册 · 边缘工会' : '登录 · 边缘工会'}>
   <main>
     <header>
@@ -49,8 +127,8 @@ const result = mode === 'register' ? registerResult : loginResult
     </header>
 
     <section>
-      <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
-      <p>
+      <h2 data-auth-title>{mode === 'register' ? '注册账号' : '登录'}</h2>
+      <p data-auth-description>
         {
           mode === 'register'
             ? '注册后，你可以发布委托、认领需求并维护个人资料'
@@ -58,7 +136,14 @@ const result = mode === 'register' ? registerResult : loginResult
         }
       </p>
 
-      <form method="POST" action={action}>
+      <form
+        method="POST"
+        action={action}
+        data-auth-form
+        data-mode={mode}
+        data-login-action={actions.login}
+        data-register-action={actions.register}
+      >
         <Field for="email">
           邮箱
           <Control
@@ -87,7 +172,7 @@ const result = mode === 'register' ? registerResult : loginResult
         <ErrorBox error={result?.error} />
 
         <Button variant="primary" block type="submit">
-          {mode === 'register' ? '注册' : '登录'}
+          <span data-auth-submit>{mode === 'register' ? '注册' : '登录'}</span>
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path
               d="M3 8h10m-4-4 4 4-4 4"
@@ -100,25 +185,17 @@ const result = mode === 'register' ? registerResult : loginResult
       </form>
 
       <span>
-        {
-          mode === 'register' ? (
-            <>
-              已有账号？
-              <a href={`/login?next=${encodeURIComponent(redirectTo)}`}>
-                去登录
-              </a>
-            </>
-          ) : (
-            <>
-              没有账号？
-              <a
-                href={`/login?mode=register&next=${encodeURIComponent(redirectTo)}`}
-              >
-                去注册
-              </a>
-            </>
-          )
-        }
+        <span data-auth-switch-label>
+          {mode === 'register' ? '已有账号？' : '没有账号？'}
+        </span>
+        <a
+          data-auth-switch
+          href={mode === 'register'
+            ? `/login?next=${encodeURIComponent(redirectTo)}`
+            : `/login?mode=register&next=${encodeURIComponent(redirectTo)}`}
+        >
+          {mode === 'register' ? '去登录' : '去注册'}
+        </a>
       </span>
     </section>
   </main>
@@ -185,7 +262,6 @@ const result = mode === 'register' ? registerResult : loginResult
     }
 
     p {
-      /* margin: 14px 0 28px; */
       color: var(--text-muted);
       font-size: 0.87rem;
     }
@@ -196,7 +272,7 @@ const result = mode === 'register' ? registerResult : loginResult
       gap: 8px;
     }
 
-    span {
+    & > span {
       color: var(--text-muted);
       font-size: 0.875rem;
       text-align: center;
