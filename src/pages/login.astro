@@ -1,13 +1,13 @@
 ---
+import { actions } from 'astro:actions'
+import { env } from 'cloudflare:workers'
+import { getSiteStats } from '../lib/site'
 import Layout from '../layouts/Layout.astro'
 import Button from '../components/ui/Button.astro'
 import SiteStats from '../components/SiteStats.astro'
 import ErrorBox from '../components/ui/ErrorBox.astro'
 import Control from '../components/ui/Control.astro'
 import Field from '../components/ui/Field.astro'
-import { getSiteStats } from '../lib/site'
-import { actions } from 'astro:actions'
-import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
 const { commissionCount, registeredUserCount } = await getSiteStats(db)
@@ -35,7 +35,7 @@ const result = mode === 'register' ? registerResult : loginResult
 
 <Layout title={mode === 'register' ? '注册 · 边缘工会' : '登录 · 边缘工会'}>
   <main>
-    <aside>
+    <header>
       <h1>
         <span>加入</span>
         <span>边缘工会</span>
@@ -43,10 +43,10 @@ const result = mode === 'register' ? registerResult : loginResult
       <p>成为工会会员，发布的委托，招揽合作者，或寻找合适你的委托。</p>
       <SiteStats
         variant="inline"
-        commissionCount={commissionCount}
         registeredUserCount={registeredUserCount}
+        commissionCount={commissionCount}
       />
-    </aside>
+    </header>
 
     <section>
       <h2>{mode === 'register' ? '注册账号' : '登录'}</h2>
@@ -130,13 +130,25 @@ const result = mode === 'register' ? registerResult : loginResult
     align-items: center;
     flex-direction: row;
     gap: 40px 16px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
   }
 
-  aside {
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
     h1 {
       color: var(--forest);
       font-size: 4rem;
       line-height: 1.25;
+
+      @media (max-width: 768px) {
+        text-align: center;
+      }
 
       span {
         text-wrap-mode: nowrap;
@@ -149,9 +161,7 @@ const result = mode === 'register' ? registerResult : loginResult
     p {
       color: var(--text-muted);
       line-height: 1.5;
-      margin-top: 32px;
     }
-
   }
 
   section:last-child {
@@ -199,19 +209,4 @@ const result = mode === 'register' ? registerResult : loginResult
       }
     }
   }
-
-  @media (max-width: 768px) {
-    main {
-      flex-direction: column;
-    }
-
-    aside h1 {
-      text-align: center;
-    }
-
-    section:last-child {
-      align-self: stretch;
-    }
-  }
-
 </style>
