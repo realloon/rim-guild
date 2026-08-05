@@ -25,7 +25,7 @@ export function avatarSvg(seed: string, cell = 5) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cell} ${cell}" shape-rendering="crispEdges"><rect width="${cell}" height="${cell}" fill="${bg}"/>${cells.join('')}</svg>`
 }
 
-export function avatarUrl(seed: string, size = 64) {
+export function avatarUrl(seed: string) {
   const svg = avatarSvg(seed)
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }

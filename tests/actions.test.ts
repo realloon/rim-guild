@@ -112,8 +112,8 @@ function addCommission(
 ) {
   const result = database
     .query(
-      `INSERT INTO commissions (title, author_token, author_id)
-       VALUES ('测试委托', ?, 'author')`,
+      `INSERT INTO commissions (title, description, tags, author_token)
+       VALUES ('测试委托', '测试描述', '', ?)`,
     )
     .run(authorToken)
   const commissionId = Number(result.lastInsertRowid)
@@ -142,12 +142,22 @@ function addClaim(
 }
 
 function addProfile(database: Database, profileToken = 'owner') {
+  const passwordHash = '0'.repeat(64)
+  const passwordSalt = '0'.repeat(32)
   database
     .query(
-      `INSERT INTO profiles (token, author_id, author_name, email)
-       VALUES (?, 'author', '测试作者', 'owner@example.com')`,
+      `INSERT INTO profiles
+       (token, author_id, author_name, qq, github, steam, creator_types,
+        email, password_hash, password_salt)
+       VALUES (?, ?, '测试作者', '', '', '', '', ?, ?, ?)`,
     )
-    .run(profileToken)
+    .run(
+      profileToken,
+      `author-${profileToken}`,
+      `${profileToken}@example.com`,
+      passwordHash,
+      passwordSalt,
+    )
 }
 
 function context(profileToken?: string) {
@@ -210,6 +220,10 @@ describe('commission actions', () => {
 
   test('claimRequirement respects capacity and duplicate claims', async () => {
     const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member-1')
+    addProfile(database, 'member-2')
+    addProfile(database, 'member-3')
     const commissionId = addCommission(database, { count: 2 })
 
     await expect(
@@ -249,6 +263,8 @@ describe('commission actions', () => {
 
   test('claimRequirement rejects the owner and closed requirements', async () => {
     const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member')
     const ownCommissionId = addCommission(database)
     const closedCommissionId = addCommission(database, { status: 'closed' })
 
@@ -272,6 +288,9 @@ describe('commission actions', () => {
 
   test('cancelClaim removes only the current member claim', async () => {
     const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member-1')
+    addProfile(database, 'member-2')
     const commissionId = addCommission(database, { count: 2 })
     addClaim(database, commissionId, 'artist', 'member-1')
     addClaim(database, commissionId, 'artist', 'member-2')
@@ -300,6 +319,8 @@ describe('commission actions', () => {
 
   test('updateRequirementStatus requires the owner', async () => {
     const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member')
     const commissionId = addCommission(database)
 
     await expectActionError(
@@ -325,6 +346,9 @@ describe('commission actions', () => {
 
   test('updateCommission cannot reduce a claimed requirement', async () => {
     const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member')
+    addProfile(database, 'member-2')
     const commissionId = addCommission(database, { count: 2 })
     addClaim(database, commissionId, 'artist', 'member')
     addClaim(database, commissionId, 'artist', 'member-2')
@@ -349,6 +373,8 @@ describe('commission actions', () => {
 
   test('deleteCommission removes the commission and dependent records', async () => {
     const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member')
     const commissionId = addCommission(database)
     addClaim(database, commissionId, 'artist', 'member')
     database

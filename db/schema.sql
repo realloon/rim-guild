@@ -1,78 +1,71 @@
--- 委托（模组创作任务）
-CREATE TABLE IF NOT EXISTS commissions (
+CREATE TABLE profiles (
+  token TEXT PRIMARY KEY,
+  author_id TEXT NOT NULL UNIQUE,
+  author_name TEXT NOT NULL,
+  qq TEXT NOT NULL,
+  github TEXT NOT NULL,
+  steam TEXT NOT NULL,
+  creator_types TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL CHECK (length(password_hash) = 64),
+  password_salt TEXT NOT NULL CHECK (length(password_salt) = 32),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE commissions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
-  description TEXT NOT NULL DEFAULT '',
-  tags TEXT NOT NULL DEFAULT '',
-  author_name TEXT NOT NULL DEFAULT '匿名',
-  author_token TEXT NOT NULL DEFAULT '',
-  author_id TEXT NOT NULL DEFAULT '',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  description TEXT NOT NULL,
+  tags TEXT NOT NULL,
+  author_token TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (author_token) REFERENCES profiles(token)
 );
 
--- 委托需求（一个委托可包含多项需求，每项需求有独立的类型、要求、人数与状态）
-CREATE TABLE IF NOT EXISTS requirements (
+CREATE TABLE requirements (
   commission_id INTEGER NOT NULL,
   requirement_type TEXT NOT NULL,
-  description TEXT NOT NULL DEFAULT '',
-  count INTEGER NOT NULL DEFAULT 1,
-  status TEXT NOT NULL DEFAULT 'open',
+  description TEXT NOT NULL CHECK (length(description) > 0),
+  count INTEGER NOT NULL CHECK (count BETWEEN 1 AND 99),
+  status TEXT NOT NULL CHECK (status IN ('open', 'closed')),
   PRIMARY KEY (commission_id, requirement_type),
-  FOREIGN KEY (commission_id) REFERENCES commissions(id)
+  FOREIGN KEY (commission_id) REFERENCES commissions(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_requirements_type ON requirements(requirement_type);
-CREATE INDEX IF NOT EXISTS idx_commissions_created_at ON commissions(created_at DESC);
+CREATE INDEX idx_requirements_type ON requirements(requirement_type);
+CREATE INDEX idx_commissions_created_at ON commissions(created_at DESC);
 
--- 用户资料（guest 匿名身份或已注册账号）
-CREATE TABLE IF NOT EXISTS profiles (
-  token TEXT PRIMARY KEY,
-  author_id TEXT NOT NULL DEFAULT '',
-  author_name TEXT NOT NULL DEFAULT '匿名',
-  qq TEXT NOT NULL DEFAULT '',
-  github TEXT NOT NULL DEFAULT '',
-  steam TEXT NOT NULL DEFAULT '',
-  creator_types TEXT NOT NULL DEFAULT '',
-  email TEXT NOT NULL DEFAULT '',
-  password_hash TEXT NOT NULL DEFAULT '',
-  password_salt TEXT NOT NULL DEFAULT '',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_author_id ON profiles(author_id) WHERE author_id != '';
-CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email) WHERE email != '';
-
--- 会话（cookie 值即 session token；7 天滑动过期）
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE sessions (
   token TEXT PRIMARY KEY,
   profile_token TEXT NOT NULL,
   expires_at TEXT NOT NULL,
-  last_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  last_seen_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (profile_token) REFERENCES profiles(token) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_sessions_profile ON sessions(profile_token);
+CREATE INDEX idx_sessions_profile ON sessions(profile_token);
 
--- 认领（用户对某委托某项需求登记自己）
-CREATE TABLE IF NOT EXISTS claims (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE claims (
   commission_id INTEGER NOT NULL,
   requirement_type TEXT NOT NULL,
   profile_token TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  UNIQUE (commission_id, requirement_type, profile_token),
-  FOREIGN KEY (commission_id) REFERENCES commissions(id)
+  PRIMARY KEY (commission_id, requirement_type, profile_token),
+  FOREIGN KEY (commission_id, requirement_type)
+    REFERENCES requirements(commission_id, requirement_type) ON DELETE CASCADE,
+  FOREIGN KEY (profile_token) REFERENCES profiles(token) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_claims_commission ON claims(commission_id);
+CREATE INDEX idx_claims_profile ON claims(profile_token);
 
--- 委托更新记录（发布者发布进度）
-CREATE TABLE IF NOT EXISTS commission_updates (
+CREATE TABLE commission_updates (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   commission_id INTEGER NOT NULL,
-  content TEXT NOT NULL,
+  content TEXT NOT NULL CHECK (length(content) > 0),
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (commission_id) REFERENCES commissions(id)
+  FOREIGN KEY (commission_id) REFERENCES commissions(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_commission_updates_commission ON commission_updates(commission_id);
+CREATE INDEX idx_commission_updates_commission
+  ON commission_updates(commission_id);

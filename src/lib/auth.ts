@@ -90,14 +90,16 @@ export function insertSession(
   token: string,
   profileToken: string,
 ) {
+  const now = new Date().toISOString()
   return db
     .prepare(
-      'INSERT INTO sessions (token, profile_token, expires_at) VALUES (?, ?, ?)',
+      'INSERT INTO sessions (token, profile_token, expires_at, last_seen_at) VALUES (?, ?, ?, ?)',
     )
     .bind(
       token,
       profileToken,
       new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString(),
+      now,
     )
 }
 

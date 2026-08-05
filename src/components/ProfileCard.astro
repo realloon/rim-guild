@@ -17,7 +17,7 @@ const { seed, name, subtitle, tags = [], contacts = [], id } = Astro.props
 
 <section id={id}>
   <header>
-    <img src={avatarUrl(seed, 72)} width={72} height={72} alt="" />
+    <img src={avatarUrl(seed)} width={72} height={72} alt="" />
     <div>
       <h1>{name}</h1>
       {subtitle && <span>{subtitle}</span>}

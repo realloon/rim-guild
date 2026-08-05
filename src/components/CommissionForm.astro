@@ -54,7 +54,7 @@ const requirements = commission?.requirements ?? [
       '[data-remove-requirement]',
     )!
     removeBtn.hidden = false
-    const select = pair.querySelector<HTMLSelectElement>('select')!
+    const select = pair.querySelector('select') as HTMLSelectElement
     const usedRoles = new Set(
       Array.from(pairs.querySelectorAll('select')).map(
         existingSelect => existingSelect.value,

@@ -10,11 +10,15 @@
 # 本地启动（D1 本地数据持久化在 .wrangler/state）
 astro dev --background
 
-# 本地 D1 迁移
-wrangler d1 execute rim-guild-db --local --file=db/schema.sql
+# 重置本地 D1（会删除全部本地数据）
+bunx wrangler d1 execute rim-guild-db --local --command="DROP TABLE commission_updates; DROP TABLE claims; DROP TABLE sessions; DROP TABLE requirements; DROP TABLE commissions; DROP TABLE profiles;"
 
-# 同步本地种子数据到远程
-wrangler d1 execute rim-guild-db --remote --file=db/schema.sql
+# 初始化最终数据库结构与种子数据
+bunx wrangler d1 execute rim-guild-db --local --file=db/schema.sql
+bunx wrangler d1 execute rim-guild-db --local --file=db/seed.sql
+
+# 在确认远程数据库为空后初始化远程结构
+bunx wrangler d1 execute rim-guild-db --remote --file=db/schema.sql
 
 # 重新生成 wrangler 类型（修改 wrangler.jsonc 后）
 npm run generate-types

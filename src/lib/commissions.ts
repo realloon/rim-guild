@@ -147,14 +147,20 @@ function parseClaim(claim: CommissionClaimRow): CommissionClaim {
 }
 
 export const COMMISSION_SELECT = `
-	SELECT c.*, COALESCE(prf.qq, '') AS author_qq, COALESCE(prf.github, '') AS author_github, COALESCE(prf.steam, '') AS author_steam, COALESCE(
-		json_group_array(json_object('type', cr.requirement_type, 'description', cr.description, 'count', cr.count, 'status', cr.status))
-			FILTER (WHERE cr.commission_id IS NOT NULL),
-		'[]'
-	) AS requirements
-	FROM commissions c
-	LEFT JOIN profiles prf ON prf.token = c.author_token
-	LEFT JOIN requirements cr ON cr.commission_id = c.id
+  SELECT c.id, c.title, c.description, c.tags, c.created_at,
+    p.author_name, p.token AS author_token, p.author_id,
+    p.qq AS author_qq, p.github AS author_github, p.steam AS author_steam,
+    json_group_array(
+      json_object(
+        'type', r.requirement_type,
+        'description', r.description,
+        'count', r.count,
+        'status', r.status
+      )
+    ) FILTER (WHERE r.commission_id IS NOT NULL) AS requirements
+  FROM commissions c
+  JOIN profiles p ON p.token = c.author_token
+  LEFT JOIN requirements r ON r.commission_id = c.id
 `
 
 export function commissionFromRow(row: CommissionRow): Commission {
@@ -276,6 +282,7 @@ export async function listCommissionClaims(
 interface ClaimedCommissionRow {
   commission_id: number
   commission_title: string
+  commission_description: string
   author_name: string
   author_token: string
   author_id: string
@@ -283,7 +290,7 @@ interface ClaimedCommissionRow {
   created_at: string
   requirement_status: string
   count: number
-  description: string
+  requirement_description: string
 }
 
 export async function listClaimedCommissions(
@@ -292,10 +299,14 @@ export async function listClaimedCommissions(
 ): Promise<CommissionSummary[]> {
   const { results } = await db
     .prepare(
-      `SELECT c.id AS commission_id, c.title AS commission_title, c.author_name, c.author_token, c.author_id, c.created_at,
-        cr.status AS requirement_status, cr.count, cr.description, r.requirement_type
+      `SELECT c.id AS commission_id, c.title AS commission_title,
+        c.description AS commission_description,
+        p.author_name, p.token AS author_token, p.author_id, c.created_at,
+        cr.status AS requirement_status, cr.count,
+        cr.description AS requirement_description, r.requirement_type
         FROM claims r
         JOIN commissions c ON c.id = r.commission_id
+        JOIN profiles p ON p.token = c.author_token
         JOIN requirements cr
           ON cr.commission_id = r.commission_id
          AND cr.requirement_type = r.requirement_type
@@ -308,11 +319,11 @@ export async function listClaimedCommissions(
   return results.map(claim => ({
     id: claim.commission_id,
     title: claim.commission_title,
-    description: claim.description,
+    description: claim.commission_description,
     requirements: [
       {
         type: parseRequirementType(claim.requirement_type),
-        description: claim.description,
+        description: claim.requirement_description,
         count: claim.count,
         status: parseRequirementStatus(claim.requirement_status),
       },

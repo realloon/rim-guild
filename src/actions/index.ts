@@ -85,9 +85,9 @@ export const server = {
       const profileToken = requireAuth(context)
 
       const profile = await db
-        .prepare('SELECT author_id, author_name FROM profiles WHERE token = ?')
+        .prepare('SELECT token FROM profiles WHERE token = ?')
         .bind(profileToken)
-        .first<{ author_id: string; author_name: string }>()
+        .first<{ token: string }>()
 
       if (!profile) {
         throw new ActionError({
@@ -97,30 +97,29 @@ export const server = {
       }
 
       const requirementValues = requirements
-        .map(() => '(last_insert_rowid(), ?, ?, ?)')
+        .map(() => '(last_insert_rowid(), ?, ?, ?, ?)')
         .join(', ')
       const [commissionResult] = await db.batch([
         db
           .prepare(
-            'INSERT INTO commissions (title, description, tags, author_name, author_token, author_id) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO commissions (title, description, tags, author_token) VALUES (?, ?, ?, ?)',
           )
           .bind(
             input.title,
             input.description,
             input.tags.join(','),
-            profile.author_name,
             profileToken,
-            profile.author_id,
           ),
         db
           .prepare(
-            `INSERT INTO requirements (commission_id, requirement_type, description, count) VALUES ${requirementValues}`,
+            `INSERT INTO requirements (commission_id, requirement_type, description, count, status) VALUES ${requirementValues}`,
           )
           .bind(
             ...requirements.flatMap(({ type, description, count }) => [
               type,
               description,
               count,
+              'open',
             ]),
           ),
       ])
@@ -140,7 +139,7 @@ export const server = {
       const db = env.rim_guild_db
       const existingRequirementRows = await db
         .prepare(
-          `SELECT r.requirement_type, r.status, COUNT(c.id) AS claim_count
+          `SELECT r.requirement_type, r.status, COUNT(c.profile_token) AS claim_count
            FROM requirements r
            LEFT JOIN claims c
              ON c.commission_id = r.commission_id
@@ -213,13 +212,6 @@ export const server = {
         ...removedRequirements.map(requirement =>
           db
             .prepare(
-              'DELETE FROM claims WHERE commission_id = ? AND requirement_type = ?',
-            )
-            .bind(input.commissionId, requirement.type),
-        ),
-        ...removedRequirements.map(requirement =>
-          db
-            .prepare(
               'DELETE FROM requirements WHERE commission_id = ? AND requirement_type = ?',
             )
             .bind(input.commissionId, requirement.type),
@@ -266,17 +258,11 @@ export const server = {
       await assertOwner(input.commissionId, context)
 
       const db = env.rim_guild_db
-      const [, , , result] = await db.batch([
-        db.prepare('DELETE FROM claims WHERE commission_id = ?').bind(input.commissionId),
-        db
-          .prepare('DELETE FROM commission_updates WHERE commission_id = ?')
-          .bind(input.commissionId),
-        db
-          .prepare('DELETE FROM requirements WHERE commission_id = ?')
-          .bind(input.commissionId),
-        db.prepare('DELETE FROM commissions WHERE id = ?').bind(input.commissionId),
-      ])
-      if (result.meta.changes !== 1) {
+      const result = await db
+        .prepare('DELETE FROM commissions WHERE id = ?')
+        .bind(input.commissionId)
+        .run()
+      if (result.meta.changes < 1) {
         throw new ActionError({ code: 'NOT_FOUND', message: '该委托不存在' })
       }
 
@@ -324,7 +310,7 @@ export const server = {
       }
       const result = await db
         .prepare(
-          `INSERT OR IGNORE INTO claims (commission_id, requirement_type, profile_token)
+          `INSERT INTO claims (commission_id, requirement_type, profile_token)
            SELECT ?, ?, ?
            WHERE EXISTS (
              SELECT 1
@@ -338,7 +324,8 @@ export const server = {
                  WHERE c.commission_id = r.commission_id
                    AND c.requirement_type = r.requirement_type
                ) < r.count
-           )`,
+           )
+           ON CONFLICT (commission_id, requirement_type, profile_token) DO NOTHING`,
         )
         .bind(
           input.commissionId,
@@ -352,7 +339,7 @@ export const server = {
       if (result.meta.changes !== 1) {
         const currentRequirement = await db
           .prepare(
-            `SELECT r.status, r.count, COUNT(c.id) AS claim_count,
+            `SELECT r.status, r.count, COUNT(c.profile_token) AS claim_count,
                     EXISTS (
                       SELECT 1 FROM claims own_claim
                       WHERE own_claim.commission_id = r.commission_id
@@ -437,27 +424,15 @@ export const server = {
       ),
     }),
     handler: async (input, context) => {
-      const profileToken = await assertOwner(input.commissionId, context)
+      await assertOwner(input.commissionId, context)
 
       const db = env.rim_guild_db
-      const result = await db
+      await db
         .prepare(
-          `INSERT INTO commission_updates (commission_id, content)
-           SELECT ?, ?
-           WHERE EXISTS (
-             SELECT 1 FROM commissions WHERE id = ? AND author_token = ?
-           )`,
+          'INSERT INTO commission_updates (commission_id, content) VALUES (?, ?)',
         )
-        .bind(
-          input.commissionId,
-          input.content,
-          input.commissionId,
-          profileToken,
-        )
+        .bind(input.commissionId, input.content)
         .run()
-      if (result.meta.changes !== 1) {
-        throw new ActionError({ code: 'NOT_FOUND', message: '该委托不存在' })
-      }
 
       return { ok: true }
     },

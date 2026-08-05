@@ -50,26 +50,19 @@ export const accountActions = {
       const profileToken = requireAuth(context)
 
       const creatorTypes = input.creatorTypes.join(',')
-      const [profileResult] = await db.batch([
-        db
-          .prepare(
-            'UPDATE profiles SET author_name = ?, qq = ?, github = ?, steam = ?, creator_types = ? WHERE token = ?',
-          )
-          .bind(
-            input.authorName,
-            input.qq,
-            input.github,
-            input.steam,
-            creatorTypes,
-            profileToken,
-          ),
-        db
-          .prepare(
-            `UPDATE commissions SET author_name = ?
-             WHERE author_token = ?`,
-          )
-          .bind(input.authorName, profileToken),
-      ])
+      const profileResult = await db
+        .prepare(
+          'UPDATE profiles SET author_name = ?, qq = ?, github = ?, steam = ?, creator_types = ? WHERE token = ?',
+        )
+        .bind(
+          input.authorName,
+          input.qq,
+          input.github,
+          input.steam,
+          creatorTypes,
+          profileToken,
+        )
+        .run()
       if (profileResult.meta.changes !== 1) {
         throw new ActionError({ code: 'NOT_FOUND', message: '个人资料不存在' })
       }
@@ -95,19 +88,21 @@ export const accountActions = {
       const expiresAt = new Date(
         Date.now() + SESSION_TTL_SECONDS * 1000,
       ).toISOString()
+      const now = new Date().toISOString()
       const [profileResult, sessionResult] = await db.batch([
         db
           .prepare(
             `INSERT INTO profiles
-              (token, author_id, author_name, email, password_hash, password_salt)
-             VALUES (?, ?, ?, ?, ?, ?)
-             ON CONFLICT (email) WHERE email != '' DO NOTHING`,
+              (token, author_id, author_name, qq, github, steam, creator_types,
+               email, password_hash, password_salt)
+             VALUES (?, ?, ?, '', '', '', '', ?, ?, ?)
+             ON CONFLICT (email) DO NOTHING`,
           )
           .bind(profileToken, authorId, defaultName, input.email, hash, salt),
         db
           .prepare(
-            `INSERT INTO sessions (token, profile_token, expires_at)
-             SELECT ?, ?, ?
+            `INSERT INTO sessions (token, profile_token, expires_at, last_seen_at)
+             SELECT ?, ?, ?, ?
              WHERE EXISTS (
                SELECT 1 FROM profiles WHERE token = ? AND email = ?
              )`,
@@ -116,6 +111,7 @@ export const accountActions = {
             sessionToken,
             profileToken,
             expiresAt,
+            now,
             profileToken,
             input.email,
           ),
@@ -153,7 +149,7 @@ export const accountActions = {
           password_salt: string
         }>()
 
-      if (!profile || !profile.password_hash) {
+      if (!profile) {
         throw new ActionError({
           code: 'BAD_REQUEST',
           message: '邮箱或密码不正确',

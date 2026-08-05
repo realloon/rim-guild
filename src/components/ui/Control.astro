@@ -9,10 +9,12 @@ type Props =
     })
   | (HTMLAttributes<'select'> & {
       as: 'select'
+      variant?: never
       density?: 'compact'
     })
   | (HTMLAttributes<'textarea'> & {
       as: 'textarea'
+      variant?: never
       density?: 'compact'
     })
 

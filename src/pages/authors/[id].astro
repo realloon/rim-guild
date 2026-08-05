@@ -13,6 +13,7 @@ import { env } from 'cloudflare:workers'
 
 const db = env.rim_guild_db
 const { id } = Astro.params
+if (!id) throw new Error('作者 ID 缺失')
 
 const profile = await findProfileByAuthorId(db, id)
 
