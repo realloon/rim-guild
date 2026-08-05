@@ -99,7 +99,7 @@ const result = mode === 'register' ? registerResult : loginResult
         </Button>
       </form>
 
-      <p>
+      <span>
         {
           mode === 'register' ? (
             <>
@@ -119,7 +119,7 @@ const result = mode === 'register' ? registerResult : loginResult
             </>
           )
         }
-      </p>
+      </span>
     </section>
   </main>
 </Layout>
@@ -164,9 +164,13 @@ const result = mode === 'register' ? registerResult : loginResult
     }
   }
 
-  section:last-child {
+  section {
     flex-grow: 1;
     flex-shrink: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 
     padding: 32px;
     border: 1px solid var(--line-muted);
@@ -174,34 +178,31 @@ const result = mode === 'register' ? registerResult : loginResult
     background-color: var(--surface);
     box-shadow: var(--shadow);
 
-    @media (min-width: 768px) {
-      transform: rotate(1deg);
-      transition: 0.2s;
-      &:hover {
-        transform: rotate(0);
-      }
-    }
-
     h2 {
-      margin: 0;
       color: var(--forest);
       font-size: 2rem;
-      font-weight: 500;
+      font-weight: normal;
     }
 
-    p:first-of-type {
-      margin: 14px 0 28px;
+    p {
+      /* margin: 14px 0 28px; */
       color: var(--text-muted);
       font-size: 0.87rem;
     }
 
-    p:last-of-type {
-      margin: 24px 0 0;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    span {
       color: var(--text-muted);
-      font-size: 0.83rem;
+      font-size: 0.875rem;
       text-align: center;
+
+      padding-top: 16px;
+      border-top: 1px dashed var(--line);
 
       a {
         color: var(--accent-strong);
