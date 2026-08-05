@@ -26,11 +26,10 @@ npm run generate-types
 
 ## 部署
 
-```bash
-bun run deploy
-```
+Cloudflare Workers 设置：
 
-Cloudflare 的部署命令使用 `bun run deploy`。该命令会先构建 Astro，再部署 Wrangler；不要直接使用 `npx wrangler deploy`。
+- Build command：`bun run build`
+- Deploy command：`npx wrangler deploy`
 
 ## 结构
 

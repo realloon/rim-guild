@@ -17,7 +17,10 @@ const redirectTo =
   next && next.startsWith('/') && !next.startsWith('//') ? next : '/me'
 
 const mode =
-  Astro.url.searchParams.get('mode') === 'register' ? 'register' : 'login'
+  Astro.url.searchParams.get('mode') === 'register' ||
+  Astro.url.searchParams.get('_action') === 'register'
+    ? 'register'
+    : 'login'
 const action = mode === 'register' ? actions.register : actions.login
 
 const loginResult = Astro.getActionResult(actions.login)

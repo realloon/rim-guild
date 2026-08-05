@@ -1,7 +1,7 @@
 -- 种子数据（账号密码均为 seedpass123）
 INSERT INTO profiles (token, author_id, author_name, qq, github, steam, creator_types, email, password_hash, password_salt) VALUES
-  ('7f9c0a1b-2d3e-4f5a-6b7c-8d9e0f1a2b3c', 'a1b2c3d4e5f6', '阿哲', '12345678', 'azhe-dev', 'azhe_mods', 'artist,csharp', 'azhe@example.com', '29ddcd6480320a0d63933168ba133ea7dd9f2b003e18d67b3319d604141d64d2', '0f4a2c9d8e7b6a5f4e3d2c1b0a9f8e7d'),
-  ('f4e3d2c1-b0a9-8f7e-6d5c-4b3a2f1e0d9c', 'f6e5d4c3b2a1', '边缘行者', '', 'edge-walker', 'edgewalker', 'writer,translator', 'edge@example.com', '29ddcd6480320a0d63933168ba133ea7dd9f2b003e18d67b3319d604141d64d2', '0f4a2c9d8e7b6a5f4e3d2c1b0a9f8e7d');
+  ('7f9c0a1b-2d3e-4f5a-6b7c-8d9e0f1a2b3c', 'a1b2c3d4e5f6', '阿哲', '12345678', 'azhe-dev', 'azhe_mods', 'artist,csharp', 'azhe@example.com', '0a72b284371e6afe08ad1be22100bf3683e6edd53d51fb1e0fd3e0051bb72f9a', '0f4a2c9d8e7b6a5f4e3d2c1b0a9f8e7d'),
+  ('f4e3d2c1-b0a9-8f7e-6d5c-4b3a2f1e0d9c', 'f6e5d4c3b2a1', '边缘行者', '', 'edge-walker', 'edgewalker', 'writer,translator', 'edge@example.com', '0a72b284371e6afe08ad1be22100bf3683e6edd53d51fb1e0fd3e0051bb72f9a', '0f4a2c9d8e7b6a5f4e3d2c1b0a9f8e7d');
 
 INSERT INTO commissions (title, description, tags, author_token, created_at) VALUES
   ('寻找像素风画师为武器贴图补全', '我做的武器扩展模组需要补充 20 张贴图，风格为原版像素风，报酬可议。', 'weapon', '7f9c0a1b-2d3e-4f5a-6b7c-8d9e0f1a2b3c', datetime('now', '-3 days')),

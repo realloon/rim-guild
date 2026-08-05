@@ -4,7 +4,8 @@
 
 export const AUTHOR_COOKIE = 'guild_author'
 
-const ITERATIONS = 310_000
+// Cloudflare Workers WebCrypto supports at most 100,000 PBKDF2 iterations.
+const ITERATIONS = 100_000
 const KEY_LEN = 32
 const SALT_BYTES = 16
 
