@@ -24,6 +24,14 @@ bunx wrangler d1 execute rim-guild-db --remote --file=db/schema.sql
 npm run generate-types
 ```
 
+## 部署
+
+```bash
+bun run deploy
+```
+
+Cloudflare 的部署命令使用 `bun run deploy`。该命令会先构建 Astro，再部署 Wrangler；不要直接使用 `npx wrangler deploy`。
+
 ## 结构
 
 - `db/schema.sql` — D1 表结构
