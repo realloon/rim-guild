@@ -1,9 +1,10 @@
 ---
+import type { HTMLAttributes } from 'astro/types'
 import { avatarUrl } from '../lib/avatar'
 import BadgeList from './ui/BadgeList.astro'
 import type { ContactMethod } from '../lib/profiles'
 
-interface Props {
+interface Props extends HTMLAttributes<'section'> {
   seed: string
   name: string
   subtitle?: string
@@ -12,10 +13,18 @@ interface Props {
   id?: string
 }
 
-const { seed, name, subtitle, tags = [], contacts = [], id } = Astro.props
+const {
+  seed,
+  name,
+  subtitle,
+  tags = [],
+  contacts = [],
+  id,
+  ...attrs
+} = Astro.props
 ---
 
-<section id={id}>
+<section id={id} {...attrs}>
   <header>
     <img src={avatarUrl(seed)} width={72} height={72} alt="" />
     <div>
@@ -25,22 +34,23 @@ const { seed, name, subtitle, tags = [], contacts = [], id } = Astro.props
     </div>
     <span>注册会员</span>
   </header>
-  {contacts.length > 0 && (
-    <dl>
-      {contacts.map(contact => (
-        <div>
-          <dt>{contact.label}</dt>
-          <dd>{contact.value}</dd>
-        </div>
-      ))}
-    </dl>
-  )}
+  {
+    contacts.length > 0 && (
+      <dl>
+        {contacts.map(contact => (
+          <div>
+            <dt>{contact.label}</dt>
+            <dd>{contact.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
   <slot />
 </section>
 
 <style>
   section {
-    margin-bottom: 52px;
     padding: 32px;
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -49,8 +59,7 @@ const { seed, name, subtitle, tags = [], contacts = [], id } = Astro.props
   }
 
   header {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    display: flex;
     align-items: flex-start;
     gap: 24px;
     padding-bottom: 24px;
@@ -62,6 +71,7 @@ const { seed, name, subtitle, tags = [], contacts = [], id } = Astro.props
     }
 
     & > div {
+      flex: 1;
       min-width: 0;
 
       h1 {
@@ -89,12 +99,13 @@ const { seed, name, subtitle, tags = [], contacts = [], id } = Astro.props
   }
 
   dl {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
     gap: 16px;
     margin: 24px 0 0;
 
     & > div {
+      flex: 1;
+      min-width: 0;
       padding: 13px 14px;
       border: 1px solid var(--line);
       background-color: var(--page);

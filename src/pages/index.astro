@@ -361,11 +361,13 @@ const clearSearchHref = activeRequirementType
     }
 
     .empty-state {
-      display: grid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       min-height: 230px;
       padding: 42px 24px;
       border: 1px dashed var(--line-muted);
-      place-items: center;
       text-align: center;
 
       & > span {

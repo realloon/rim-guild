@@ -226,10 +226,12 @@ const isHome = Astro.url.pathname === '/'
       gap: 12px;
 
       button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         background-color: transparent;
 
         anchor-name: --profile-anchor;
-        place-items: center;
 
         padding: 0;
         border: 1px solid var(--line-muted);

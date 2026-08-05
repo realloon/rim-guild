@@ -31,32 +31,37 @@ const { legend, name, options, checked } = Astro.props
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin: 0 0 28px;
-    padding: 0;
-    border: 0;
+    padding: unset;
+    border: unset;
+    margin-inline: unset;
 
     legend {
-      flex-basis: 100%;
-      margin-bottom: 2px;
-      padding: 0;
       color: var(--text-muted);
-      font-size: 0.76rem;
-      font-weight: 700;
+
+      font-size: 0.75rem;
+      font-weight: bold;
+
+      padding-inline: unset;
+      margin-bottom: 8px;
     }
   }
 
-  fieldset > label {
-    display: inline-flex;
+  label {
+    display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 36px;
+
+    color: var(--text-muted);
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
+
+    font-size: 0.875rem;
+    line-height: 1.5;
+
     padding: 6px 12px;
     border: 1px solid var(--line);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--surface) 68%, transparent);
-    color: var(--text-muted);
+    border-radius: 12px;
+
     cursor: pointer;
-    font-size: 0.84rem;
     transition: 0.2s;
 
     input {
