@@ -123,9 +123,7 @@ for (const claim of claimRows) {
 
           <div>
             <section>
-              {commission.description && (
-                <p>{commission.description}</p>
-              )}
+              {commission.description && <p>{commission.description}</p>}
 
               {commission.tags.length > 0 && (
                 <BadgeList
@@ -167,7 +165,9 @@ for (const claim of claimRows) {
                 <address>
                   {contactMethods.length > 0 ? (
                     contactMethods.map(contact => (
-                      <p>{contact.label}：{contact.value}</p>
+                      <p>
+                        {contact.label}：{contact.value}
+                      </p>
                     ))
                   ) : (
                     <p>未填写</p>
@@ -176,7 +176,7 @@ for (const claim of claimRows) {
               </section>
 
               <p>
-                如果你对这份委托感兴趣，可以先认领一项开放需求，再通过联系方式开始交流。
+                如果你对这份委托感兴趣，可以先认领一项需求，再通过联系方式开始交流。
               </p>
 
               {isOwner && (
@@ -249,6 +249,7 @@ for (const claim of claimRows) {
 
     & > p {
       line-height: 1.5;
+      margin-bottom: 8px;
     }
 
     & > ul {

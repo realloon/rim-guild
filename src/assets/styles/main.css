@@ -45,6 +45,10 @@
 
   scroll-behavior: smooth;
   scrollbar-gutter: stable both-edges;
+
+  @media (prefers-color-scheme: dark) {
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 body {
@@ -85,7 +89,7 @@ h5,
 h6,
 p {
   font-weight: normal;
-  margin: 0;
+  margin-block: unset;
 }
 
 h1,
