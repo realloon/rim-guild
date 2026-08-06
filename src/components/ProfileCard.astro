@@ -1,8 +1,8 @@
 ---
 import type { HTMLAttributes } from 'astro/types'
+import type { ContactMethod } from '../lib/profiles'
 import { avatarUrl } from '../lib/avatar'
 import BadgeList from './ui/BadgeList.astro'
-import type { ContactMethod } from '../lib/profiles'
 
 interface Props extends HTMLAttributes<'section'> {
   seed: string
@@ -10,21 +10,12 @@ interface Props extends HTMLAttributes<'section'> {
   subtitle?: string
   tags?: string[]
   contacts?: ContactMethod[]
-  id?: string
 }
 
-const {
-  seed,
-  name,
-  subtitle,
-  tags = [],
-  contacts = [],
-  id,
-  ...attrs
-} = Astro.props
+const { seed, name, subtitle, tags = [], contacts = [], ...attrs } = Astro.props
 ---
 
-<section id={id} {...attrs}>
+<section {...attrs}>
   <header>
     <img src={avatarUrl(seed)} width={72} height={72} alt="" />
     <div>
