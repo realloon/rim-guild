@@ -1,4 +1,15 @@
 ---
+import { actions } from 'astro:actions'
+import { env } from 'cloudflare:workers'
+import { listContactMethods } from '../../lib/profiles'
+import {
+  findCommission,
+  listCommissionClaims,
+  listCommissionUpdates,
+  tagLabel,
+  formatDate,
+  type CommissionClaim,
+} from '../../lib/commissions'
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
 import CommissionUpdates from '../../components/CommissionUpdates.astro'
@@ -8,17 +19,9 @@ import Button from '../../components/ui/Button.astro'
 import BadgeList from '../../components/ui/BadgeList.astro'
 import ErrorBox from '../../components/ui/ErrorBox.astro'
 import Notice from '../../components/ui/Notice.astro'
-import {
-  findCommission,
-  listCommissionClaims,
-  listCommissionUpdates,
-  tagLabel,
-  formatDate,
-  type CommissionClaim,
-} from '../../lib/commissions'
-import { actions } from 'astro:actions'
-import { env } from 'cloudflare:workers'
-import { listContactMethods } from '../../lib/profiles'
+import IconQq from '../../components/icon/IconQq.astro'
+import IconGithub from '../../components/icon/IconGithub.astro'
+import IconSteam from '../../components/icon/IconSteam.astro'
 
 const db = env.rim_guild_db
 const { id } = Astro.params
