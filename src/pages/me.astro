@@ -1,4 +1,12 @@
 ---
+import { actions } from 'astro:actions'
+import { env } from 'cloudflare:workers'
+import {
+  REQUIREMENT_TYPES,
+  listClaimedCommissions,
+  listCommissionsByAuthor,
+} from '../lib/commissions'
+import { findProfileByToken } from '../lib/profiles'
 import Layout from '../layouts/Layout.astro'
 import Button from '../components/ui/Button.astro'
 import CommissionList from '../components/CommissionList.astro'
@@ -8,14 +16,7 @@ import ErrorBox from '../components/ui/ErrorBox.astro'
 import CheckboxGroup from '../components/ui/CheckboxGroup.astro'
 import Control from '../components/ui/Control.astro'
 import Field from '../components/ui/Field.astro'
-import {
-  REQUIREMENT_TYPES,
-  listClaimedCommissions,
-  listCommissionsByAuthor,
-} from '../lib/commissions'
-import { findProfileByToken } from '../lib/profiles'
-import { actions } from 'astro:actions'
-import { env } from 'cloudflare:workers'
+import TocNav from '../components/TocNav.astro'
 
 const db = env.rim_guild_db
 const profileToken = Astro.locals.auth?.profileToken
@@ -47,25 +48,18 @@ const result = Astro.getActionResult(actions.updateProfile)
 if (result && !result.error) {
   return Astro.redirect('/me')
 }
+
+const navs = [
+  { label: '个人资料', href: '#profile' },
+  { label: '我的委托', href: '#commissions' },
+  { label: '我认领的', href: '#claims' },
+]
 ---
 
 <Layout title="我的主页 · 边缘公会">
   <main>
     <aside>
-      <nav aria-label="个人主页索引">
-        <a href="#profile">
-          <span>01</span>
-          个人资料
-        </a>
-        <a href="#commissions">
-          <span>02</span>
-          我的委托
-        </a>
-        <a href="#claims">
-          <span>03</span>
-          我认领的
-        </a>
-      </nav>
+      <TocNav navs={navs} />
     </aside>
 
     <div>
@@ -179,44 +173,6 @@ if (result && !result.error) {
   aside {
     position: sticky;
     top: 136px;
-
-    nav {
-      display: flex;
-      flex-direction: column;
-
-      a {
-        display: flex;
-        align-items: center;
-        gap: 1em;
-
-        color: var(--text-muted);
-        font-size: 0.875rem;
-        text-wrap-mode: nowrap;
-
-        padding-inline: 1em 2em;
-        padding-block: 12px;
-        border-left: 1px solid var(--line-muted);
-
-        transition: 0.2s;
-
-        span {
-          color: var(--accent);
-          font-family: var(--mono);
-          font-size: 0.75rem;
-          font-weight: bolder;
-        }
-
-        &:hover {
-          border-color: var(--accent);
-          background-color: color-mix(
-            in oklch,
-            var(--accent) 22%,
-            light-dark(white, black)
-          );
-          color: var(--accent-strong);
-        }
-      }
-    }
 
     @media (max-width: 768px) {
       display: none;

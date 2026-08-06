@@ -19,6 +19,7 @@ import Button from '../../components/ui/Button.astro'
 import BadgeList from '../../components/ui/BadgeList.astro'
 import ErrorBox from '../../components/ui/ErrorBox.astro'
 import Notice from '../../components/ui/Notice.astro'
+import TocNav from '../../components/TocNav.astro'
 import IconQq from '../../components/icon/IconQq.astro'
 import IconGithub from '../../components/icon/IconGithub.astro'
 import IconSteam from '../../components/icon/IconSteam.astro'
@@ -90,6 +91,11 @@ claimRows.forEach(claim => {
   list.push(claim)
   claimsByRequirement.set(claim.requirement_type, list)
 })
+
+const navs = [
+  { label: '需求', href: '#requirements' },
+  { label: '委托进展', href: '#updates' },
+]
 ---
 
 <script>
@@ -144,6 +150,7 @@ claimRows.forEach(claim => {
               )}
 
               <Section
+                id="requirements"
                 title="需求"
                 meta={`${commission.requirements.length}项需求`}
               >
@@ -200,29 +207,30 @@ claimRows.forEach(claim => {
                 如果你对这份委托感兴趣，可以先认领一项需求，再通过联系方式开始交流。
               </p>
 
+              <TocNav navs={navs} />
+
               {isOwner && (
-                <div>
+                <form
+                  method="POST"
+                  action={actions.deleteCommission}
+                  data-confirm="确定删除这份委托吗？删除后不可恢复。"
+                >
                   <Button
+                    type="button"
                     variant="ghost"
                     href={`/commissions/${commission.id}/edit`}
                   >
                     编辑委托
                   </Button>
-                  <form
-                    method="POST"
-                    action={actions.deleteCommission}
-                    data-confirm="确定删除这份委托吗？删除后不可恢复。"
-                  >
-                    <input
-                      type="hidden"
-                      name="commissionId"
-                      value={commission.id}
-                    />
-                    <Button variant="danger" type="submit">
-                      删除
-                    </Button>
-                  </form>
-                </div>
+                  <input
+                    type="hidden"
+                    name="commissionId"
+                    value={commission.id}
+                  />
+                  <Button variant="danger" type="submit">
+                    删除
+                  </Button>
+                </form>
               )}
             </aside>
           </div>
@@ -284,15 +292,14 @@ claimRows.forEach(claim => {
       }
     }
 
-    & > section:first-of-type {
-      & > ul {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
+    & > section[id] {
+      scroll-margin-top: 80px;
+    }
+
+    #requirements ul {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
   }
 
@@ -300,14 +307,22 @@ claimRows.forEach(claim => {
     position: sticky;
     top: 88px;
 
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
     flex-basis: 280px;
     align-self: start;
 
     @media (max-width: 768px) {
       flex-grow: 1;
+
+      nav {
+        display: none;
+      }
     }
 
-    section {
+    & > section {
       padding: 16px;
       background-color: var(--surface);
       border: 1px solid var(--line);
@@ -342,20 +357,12 @@ claimRows.forEach(claim => {
       color: var(--text-muted);
       font-size: 0.875rem;
       line-height: 1.5;
-      margin-top: 12px;
     }
 
-    & > div {
+    & > form {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 28px;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
-
-      form {
-        display: inline-flex;
-      }
     }
   }
 </style>

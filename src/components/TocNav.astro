@@ -1,0 +1,58 @@
+---
+interface Props {
+  navs: Array<{
+    label: string
+    href: string
+  }>
+}
+
+const { navs, ...attrs } = Astro.props
+---
+
+<nav {...attrs}>
+  {navs.map(nav => <a href={nav.href}>{nav.label}</a>)}
+</nav>
+
+<style>
+  nav {
+    display: flex;
+    flex-direction: column;
+    counter-reset: counter;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      text-wrap-mode: nowrap;
+
+      padding-inline: 1em 2em;
+      padding-block: 12px;
+      border-left: 1px solid var(--line-muted);
+
+      transition: 0.2s;
+
+      &::before {
+        counter-increment: counter;
+        content: counter(counter, decimal-leading-zero);
+
+        color: var(--accent);
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        font-weight: bolder;
+      }
+
+      &:hover {
+        border-color: var(--accent);
+        background-color: color-mix(
+          in oklch,
+          var(--accent) 22%,
+          light-dark(white, black)
+        );
+        color: var(--accent-strong);
+      }
+    }
+  }
+</style>

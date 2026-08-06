@@ -16,7 +16,7 @@ interface Props {
 const { commissionId, updates, isOwner, error } = Astro.props
 ---
 
-<Section title="委托进展" meta={`${updates.length}条记录`}>
+<Section id="updates" title="委托进展" meta={`${updates.length}条记录`}>
   {
     updates.length > 0 ? (
       <ul>
@@ -61,8 +61,6 @@ const { commissionId, updates, isOwner, error } = Astro.props
     flex-direction: column;
     gap: 10px;
     margin: 0 0 20px;
-    padding: 0;
-    list-style: none;
   }
 
   li {
