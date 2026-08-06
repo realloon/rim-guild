@@ -269,6 +269,10 @@ for (const claim of claimRows) {
     & > p {
       line-height: 1.5;
       margin-bottom: 8px;
+
+      &:has(+ ul) {
+        margin-bottom: -40px;
+      }
     }
 
     & > section:first-of-type {
