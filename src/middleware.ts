@@ -12,17 +12,16 @@ export async function onRequest(
 ) {
   context.locals.auth = null
   const sessionToken = context.cookies.get(AUTHOR_COOKIE)?.value
+  if (!sessionToken) return
 
-  if (sessionToken) {
-    const result = await touchSession(env.rim_guild_db, sessionToken)
-    if (result) {
-      context.locals.auth = { sessionToken, profileToken: result.profileToken }
-      if (result.renewed) {
-        setSessionCookie(context, sessionToken)
-      }
-    } else {
-      clearSessionCookie(context)
+  const result = await touchSession(env.rim_guild_db, sessionToken)
+  if (result) {
+    context.locals.auth = { sessionToken, profileToken: result.profileToken }
+    if (result.renewed) {
+      setSessionCookie(context, sessionToken)
     }
+  } else {
+    clearSessionCookie(context)
   }
 
   return next()
