@@ -124,7 +124,7 @@ for (const claim of claimRows) {
             </address>
           </header>
 
-          <div>
+          <div class="main-wrapper">
             <section>
               {commission.description && <p>{commission.description}</p>}
 
@@ -169,7 +169,16 @@ for (const claim of claimRows) {
                   {contactMethods.length > 0 ? (
                     contactMethods.map(contact => (
                       <p>
-                        {contact.label}：{contact.value}
+                        {contact.label === 'QQ' && (
+                          <IconQq aria-hidden="true" />
+                        )}
+                        {contact.label === 'GitHub' && (
+                          <IconGithub aria-hidden="true" />
+                        )}
+                        {contact.label === 'Steam' && (
+                          <IconSteam aria-hidden="true" />
+                        )}
+                        <span>{contact.value}</span>
                       </p>
                     ))
                   ) : (
@@ -217,7 +226,7 @@ for (const claim of claimRows) {
 </Layout>
 
 <style>
-  article > header {
+  header {
     border-bottom: 1px solid var(--line);
     margin-bottom: 16px;
 
@@ -242,26 +251,27 @@ for (const claim of claimRows) {
     }
   }
 
-  article > div {
+  .main-wrapper {
     display: flex;
     gap: 32px;
+
+    @media (max-width: 768px) {
+      flex-wrap: wrap;
+    }
   }
 
-  article > div > section {
+  .main-wrapper > section {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
 
     & > p {
       line-height: 1.5;
       margin-bottom: 8px;
     }
 
-    & > ul {
-      margin-top: 16px;
-    }
-
     & > section:first-of-type {
-      margin-top: 40px;
-
       & > ul {
         display: flex;
         flex-direction: column;
@@ -273,17 +283,21 @@ for (const claim of claimRows) {
     }
   }
 
-  article > div > aside {
+  .main-wrapper aside {
     position: sticky;
     top: 88px;
 
     flex-basis: 280px;
     align-self: start;
 
+    @media (max-width: 768px) {
+      flex-grow: 1;
+    }
+
     section {
       padding: 16px;
-      border: 1px solid var(--accent-line);
-      background-color: color-mix(in oklch, var(--accent) 10%, var(--surface));
+      background-color: var(--surface);
+      border: 1px solid var(--line);
 
       strong {
         color: var(--forest);
@@ -300,7 +314,13 @@ for (const claim of claimRows) {
         margin-top: 12px;
 
         p {
-          color: var(--accent-strong);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          span {
+            color: var(--accent-strong);
+          }
         }
       }
     }
@@ -309,29 +329,19 @@ for (const claim of claimRows) {
       color: var(--text-muted);
       font-size: 0.875rem;
       line-height: 1.5;
-      margin-top: 16px;
+      margin-top: 12px;
     }
 
     & > div {
       display: flex;
       flex-wrap: wrap;
-      gap: 9px;
+      gap: 8px;
       margin-top: 28px;
       padding-top: 20px;
       border-top: 1px solid var(--line);
 
       form {
         display: inline-flex;
-      }
-    }
-  }
-
-  @media (max-width: 768px) {
-    article > div {
-      flex-wrap: wrap;
-
-      aside {
-        flex-grow: 1;
       }
     }
   }
