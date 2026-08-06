@@ -40,6 +40,79 @@ const clearSearchHref = activeRequirementType
   : '/'
 ---
 
+<script>
+  const nav = document.querySelector(
+    'nav[aria-label="按类型筛选"]',
+  ) as HTMLElement
+  const list = document.querySelector(
+    'ul[data-filter-list]',
+  ) as HTMLUListElement
+  const emptyState = document.querySelector('.empty-state') as HTMLElement
+  const filterInput = document.querySelector(
+    'input[data-requirement-filter]',
+  ) as HTMLInputElement
+  const links = Array.from(nav.querySelectorAll('a')) as HTMLAnchorElement[]
+  const items = Array.from(
+    list.querySelectorAll('li[data-requirements]'),
+  ) as HTMLLIElement[]
+  const clearSearchLink = emptyState.querySelector(
+    'a',
+  ) as HTMLAnchorElement | null
+
+  const filterFromLink = (link: HTMLAnchorElement) =>
+    new URL(link.href, window.location.href).searchParams.get('requirement')
+
+  const initialFilter = filterFromLink(
+    nav.querySelector('a[aria-current="page"]') as HTMLAnchorElement,
+  )
+
+  const applyFilter = (filter: string | null, updateUrl = true) => {
+    let visibleCount = 0
+
+    for (const item of items) {
+      const visible =
+        !filter || item.dataset.requirements?.split(' ').includes(filter)
+      item.hidden = !visible
+      if (visible) visibleCount++
+    }
+
+    emptyState.hidden = visibleCount > 0
+    filterInput.value = filter ?? ''
+    for (const link of links) {
+      if (filterFromLink(link) === filter) {
+        link.setAttribute('aria-current', 'page')
+      } else {
+        link.removeAttribute('aria-current')
+      }
+    }
+
+    if (updateUrl) {
+      const url = new URL(window.location.href)
+      if (filter) {
+        url.searchParams.set('requirement', filter)
+      } else {
+        url.searchParams.delete('requirement')
+      }
+      window.history.replaceState(null, '', url)
+    }
+
+    if (clearSearchLink) {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('q')
+      clearSearchLink.href = `${url.pathname}${url.search}`
+    }
+  }
+
+  for (const link of links) {
+    link.addEventListener('click', event => {
+      event.preventDefault()
+      applyFilter(filterFromLink(link))
+    })
+  }
+
+  applyFilter(initialFilter, false)
+</script>
+
 <Layout title="边缘工会 · RimWorld模组委托平台">
   <main>
     <section>
@@ -198,79 +271,6 @@ const clearSearchHref = activeRequirementType
   </main>
 </Layout>
 
-<script>
-  const nav = document.querySelector(
-    'nav[aria-label="按类型筛选"]',
-  ) as HTMLElement
-  const list = document.querySelector(
-    'ul[data-filter-list]',
-  ) as HTMLUListElement
-  const emptyState = document.querySelector('.empty-state') as HTMLElement
-  const filterInput = document.querySelector(
-    'input[data-requirement-filter]',
-  ) as HTMLInputElement
-  const links = Array.from(nav.querySelectorAll('a')) as HTMLAnchorElement[]
-  const items = Array.from(
-    list.querySelectorAll('li[data-requirements]'),
-  ) as HTMLLIElement[]
-  const clearSearchLink = emptyState.querySelector(
-    'a',
-  ) as HTMLAnchorElement | null
-
-  const filterFromLink = (link: HTMLAnchorElement) =>
-    new URL(link.href, window.location.href).searchParams.get('requirement')
-
-  const initialFilter = filterFromLink(
-    nav.querySelector('a[aria-current="page"]') as HTMLAnchorElement,
-  )
-
-  const applyFilter = (filter: string | null, updateUrl = true) => {
-    let visibleCount = 0
-
-    for (const item of items) {
-      const visible =
-        !filter || item.dataset.requirements?.split(' ').includes(filter)
-      item.hidden = !visible
-      if (visible) visibleCount++
-    }
-
-    emptyState.hidden = visibleCount > 0
-    filterInput.value = filter ?? ''
-    for (const link of links) {
-      if (filterFromLink(link) === filter) {
-        link.setAttribute('aria-current', 'page')
-      } else {
-        link.removeAttribute('aria-current')
-      }
-    }
-
-    if (updateUrl) {
-      const url = new URL(window.location.href)
-      if (filter) {
-        url.searchParams.set('requirement', filter)
-      } else {
-        url.searchParams.delete('requirement')
-      }
-      window.history.replaceState(null, '', url)
-    }
-
-    if (clearSearchLink) {
-      const url = new URL(window.location.href)
-      url.searchParams.delete('q')
-      clearSearchLink.href = `${url.pathname}${url.search}`
-    }
-  }
-
-  for (const link of links) {
-    link.addEventListener('click', event => {
-      event.preventDefault()
-      applyFilter(filterFromLink(link))
-    })
-  }
-
-  applyFilter(initialFilter, false)
-</script>
-
 <style>
   main > section:first-child {
     display: flex;
@@ -414,7 +414,7 @@ const clearSearchHref = activeRequirementType
         min-width: 0;
         min-height: 48px;
         padding: 0 14px;
-        border: 1px solid var(--line-muted);
+        border: 1px solid var(--line);
         border-radius: 3px;
         background-color: var(--surface);
         color: var(--text-muted);
