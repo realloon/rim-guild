@@ -67,7 +67,8 @@ const hasOpenRequirements = openRequirements.length > 0
   li {
     background-color: var(--surface);
 
-    padding: 16px 24px;
+    padding-inline: 24px;
+    padding-block: 8px 16px;
     border: 1px solid var(--line);
     border-radius: 4px;
     box-shadow: var(--shadow-small);
@@ -109,7 +110,7 @@ const hasOpenRequirements = openRequirements.length > 0
     flex-direction: column;
     gap: 4px;
 
-    padding-block: 8px;
+    padding-block: 4px 8px;
 
     &:hover h2 {
       color: var(--accent-strong);
@@ -138,7 +139,7 @@ const hasOpenRequirements = openRequirements.length > 0
     display: flex;
     align-items: center;
 
-    padding-top: 12px;
+    padding-top: 14px;
     border-top: 1px dashed color-mix(in srgb, var(--line) 75%, transparent);
   }
 
@@ -162,22 +163,23 @@ const hasOpenRequirements = openRequirements.length > 0
       border-radius: 50%;
       background-color: currentColor;
     }
-  }
 
-  .requirement-pin[data-status='open'] {
-    color: var(--on-forest);
-    background-color: var(--success);
-    box-shadow:
-      0 0 0 1px var(--success),
-      0 0 0 3px color-mix(in oklch, var(--forest) 24%, light-dark(white, black)),
-      0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
-  }
+    &[data-status='open'] {
+      color: var(--on-forest);
+      background-color: var(--success);
+      box-shadow:
+        0 0 0 1px var(--success),
+        0 0 0 3px
+          color-mix(in oklch, var(--forest) 24%, light-dark(white, black)),
+        0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
+    }
 
-  .requirement-pin[data-status='closed'] {
-    color: var(--line-muted);
-    background-color: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
-    box-shadow:
-      0 0 0 1px var(--line-muted),
-      0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
+    &[data-status='closed'] {
+      color: var(--line-muted);
+      background-color: color-mix(in oklch, var(--page) 80%, var(--line) 20%);
+      box-shadow:
+        0 0 0 1px var(--line-muted),
+        0 1px 3px light-dark(rgb(73 57 40 / 0.07), rgb(0 0 0 / 0.25));
+    }
   }
 </style>
