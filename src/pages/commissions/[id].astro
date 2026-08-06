@@ -93,8 +93,6 @@ claimRows.forEach(claim => {
 ---
 
 <script>
-  import { actions } from 'astro:actions'
-
   const forms = Array.from(document.forms).filter(form =>
     form.hasAttribute('data-confirm'),
   )
@@ -104,74 +102,6 @@ claimRows.forEach(claim => {
       const message = form.dataset.confirm
       if (!confirm(message)) {
         event.preventDefault()
-      }
-    })
-  })
-
-  const claimForms = Array.from(
-    document.querySelectorAll<HTMLFormElement>('form[data-claim-action]'),
-  )
-
-  claimForms.forEach(form => {
-    form.addEventListener('submit', async event => {
-      event.preventDefault()
-
-      const button = form.querySelector<HTMLButtonElement>(
-        '[data-claim-button]',
-      )!
-      const errorMessage =
-        form.parentElement!.querySelector<HTMLParagraphElement>(
-          '[data-claim-error]',
-        )!
-      const card = form.closest<HTMLLIElement>('li')!
-      const summary = card.querySelector<HTMLElement>('[data-claim-summary]')!
-      const avatars = card.querySelector<HTMLElement>('[data-claim-avatars]')!
-      const count = card.querySelector<HTMLElement>('[data-claim-count]')!
-      const action = form.dataset.claimAction
-      const isClaim = action === 'claim'
-
-      button.disabled = true
-      form.setAttribute('aria-busy', 'true')
-      errorMessage.hidden = true
-      errorMessage.textContent = ''
-
-      try {
-        const result = isClaim
-          ? await actions.claimRequirement(new FormData(form))
-          : await actions.cancelClaim(new FormData(form))
-
-        if (result.error) {
-          errorMessage.textContent = result.error.message
-          errorMessage.hidden = false
-          return
-        }
-
-        const isClaimed = result.data.claimed
-        summary.hidden = result.data.claimCount === 0
-        count.textContent = `${result.data.claimCount}人已认领`
-
-        const currentAvatar = avatars.querySelector('[data-claim-current]')
-        if (isClaimed) {
-          if (!currentAvatar) {
-            const template = card.querySelector<HTMLTemplateElement>(
-              '[data-claim-avatar-template]',
-            )!
-            avatars.appendChild(template.content.cloneNode(true))
-          }
-        } else {
-          currentAvatar?.remove()
-        }
-
-        form.dataset.claimAction = isClaimed ? 'cancel' : 'claim'
-        button.dataset.variant = isClaimed ? 'ghost' : 'accent'
-        button.setAttribute('aria-pressed', String(isClaimed))
-        button.textContent = isClaimed ? '取消认领' : '认领需求'
-      } catch {
-        errorMessage.textContent = '操作失败，请稍后重试'
-        errorMessage.hidden = false
-      } finally {
-        button.disabled = false
-        form.removeAttribute('aria-busy')
       }
     })
   })

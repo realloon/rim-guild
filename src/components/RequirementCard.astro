@@ -56,36 +56,28 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
 
   <p>{requirement.description}</p>
 
-  {
-    (
-      <section
-        aria-label="已认领"
-        data-claim-summary
-        hidden={claims.length === 0}
-      >
-        <div data-claim-avatars>
-          {claims.map(claim => (
-            <AuthorAvatar
-              seed={claim.profile_token}
-              name={claim.author_name}
-              href={'/authors/' + claim.author_id}
-              size={30}
-              showName={false}
-              overlap
-              data-claim-current={
-                claim.profile_token === profileToken ? 'true' : undefined
-              }
-            />
-          ))}
-        </div>
-        <span data-claim-count>{claims.length}人已认领</span>
-      </section>
-    )
-  }
+  <section aria-label="已认领" hidden={claims.length === 0}>
+    <div>
+      {claims.map(claim => (
+        <AuthorAvatar
+          seed={claim.profile_token}
+          name={claim.author_name}
+          href={'/authors/' + claim.author_id}
+          size={30}
+          showName={false}
+          overlap
+          data-claim-current={
+            claim.profile_token === profileToken ? 'true' : undefined
+          }
+        />
+      ))}
+    </div>
+    <span>{claims.length}人已认领</span>
+  </section>
 
   {
-    viewer && (
-      <template data-claim-avatar-template>
+    viewer && isOpen && (
+      <template data-claim-avatar>
         <AuthorAvatar
           seed={viewer.token}
           name={viewer.author_name}
@@ -125,7 +117,6 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
                 />
               )}
               <Button
-                data-claim-button={!isOwner ? 'true' : undefined}
                 aria-pressed={!isOwner ? registered : undefined}
                 variant={actionVariant}
                 size="sm"
@@ -134,7 +125,7 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
                 {actionLabel}
               </Button>
             </form>
-            {!isOwner && <p data-claim-error role="alert" hidden />}
+            {!isOwner && <p role="alert" hidden />}
           </>
         ) : (
           <Button size="sm" href={'/login?next=/commissions/' + commissionId}>
@@ -145,6 +136,81 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
     )
   }
 </li>
+
+<script>
+  import { actions } from 'astro:actions'
+
+  const claimForms = Array.from(
+    document.querySelectorAll<HTMLFormElement>('form[data-claim-action]'),
+  )
+
+  claimForms.forEach(form => {
+    form.addEventListener('submit', async event => {
+      event.preventDefault()
+
+      const button = form.querySelector<HTMLButtonElement>(
+        'button[type="submit"]',
+      )!
+      const errorMessage = form.nextElementSibling as HTMLParagraphElement
+      const card = form.closest<HTMLLIElement>('li')!
+      const summary = card.querySelector<HTMLElement>(
+        'section[aria-label="已认领"]',
+      )!
+      const avatars = summary.firstElementChild as HTMLElement
+      const count = summary.lastElementChild as HTMLElement
+      const isClaim = form.dataset.claimAction === 'claim'
+      const action = isClaim
+        ? actions.claimRequirement
+        : actions.cancelClaim
+
+      button.disabled = true
+      form.setAttribute('aria-busy', 'true')
+      errorMessage.hidden = true
+      errorMessage.textContent = ''
+
+      try {
+        const result = await action(new FormData(form)).catch(error => {
+          if (!(error instanceof TypeError)) throw error
+          errorMessage.textContent = '网络请求失败，请稍后重试'
+          errorMessage.hidden = false
+          return null
+        })
+
+        if (!result) return
+
+        if (result.error) {
+          errorMessage.textContent = result.error.message
+          errorMessage.hidden = false
+          return
+        }
+
+        const isClaimed = result.data.claimed
+        summary.hidden = result.data.claimCount === 0
+        count.textContent = `${result.data.claimCount}人已认领`
+
+        const currentAvatar = avatars.querySelector('[data-claim-current]')
+        if (isClaimed) {
+          if (!currentAvatar) {
+            const template = card.querySelector<HTMLTemplateElement>(
+              'template[data-claim-avatar]',
+            )!
+            avatars.appendChild(template.content.cloneNode(true))
+          }
+        } else {
+          currentAvatar?.remove()
+        }
+
+        form.dataset.claimAction = isClaimed ? 'cancel' : 'claim'
+        button.dataset.variant = isClaimed ? 'ghost' : 'accent'
+        button.setAttribute('aria-pressed', String(isClaimed))
+        button.textContent = isClaimed ? '取消认领' : '认领需求'
+      } finally {
+        button.disabled = false
+        form.removeAttribute('aria-busy')
+      }
+    })
+  })
+</script>
 
 <style>
   li {
@@ -166,7 +232,8 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
     color: var(--text);
     line-height: 1.5;
 
-    &:has(+ *) {
+    &:has(~ section:not([hidden])),
+    &:has(~ footer) {
       padding-bottom: 8px;
       border-bottom: 1px dashed var(--line);
     }
@@ -191,8 +258,14 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
     }
   }
 
-  p[data-claim-error] {
-    margin-top: 8px;
+  footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  p[role='alert'] {
     color: var(--danger);
     font-size: 0.875rem;
   }

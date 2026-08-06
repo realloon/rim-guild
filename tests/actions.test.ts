@@ -1,3 +1,5 @@
+import type { ActionClient, ActionInputSchema } from 'astro:actions'
+import type { z } from 'astro/zod'
 import { Database, type SQLQueryBindings } from 'bun:sqlite'
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 
@@ -170,13 +172,28 @@ function context(profileToken?: string) {
   }
 }
 
-type TestActionHandler = (
-  input: unknown,
-  actionContext: ReturnType<typeof context>,
-) => Promise<unknown>
+type TestActionContext = ReturnType<typeof context>
+type ActionName = keyof typeof actionServer & string
+type ActionClientFor<Name extends ActionName> = Extract<
+  (typeof actionServer)[Name],
+  ActionClient<any, any, any>
+>
+type ActionInput<Name extends ActionName> = z.infer<
+  ActionInputSchema<ActionClientFor<Name>>
+>
+type ActionOutput<Name extends ActionName> = Awaited<
+  ReturnType<ActionClientFor<Name>['orThrow']>
+>
+type TestAction<Name extends ActionName> = (
+  input: ActionInput<Name>,
+  actionContext: TestActionContext,
+) => Promise<ActionOutput<Name>>
+type TestServer = {
+  [Name in ActionName]: TestAction<Name>
+}
 
-// The mock turns Astro actions back into their server handlers for these tests.
-const server = actionServer as unknown as Record<string, TestActionHandler>
+// The mock turns these Astro actions back into their server handlers for tests.
+const server = actionServer as unknown as TestServer
 
 async function expectActionError(
   action: Promise<unknown>,
@@ -201,8 +218,8 @@ describe('commission actions', () => {
     const database = createDatabase()
     addProfile(database)
 
-    await expect(
-      server.createCommission(
+    expect(
+      await server.createCommission(
         {
           title: '新的测试委托',
           description: '测试描述',
@@ -213,7 +230,7 @@ describe('commission actions', () => {
         },
         context('owner'),
       ),
-    ).resolves.toEqual({ id: 1 })
+    ).toEqual({ id: 1 })
 
     expect(
       database
@@ -236,24 +253,24 @@ describe('commission actions', () => {
     addProfile(database, 'member-3')
     const commissionId = addCommission(database, { count: 2 })
 
-    await expect(
-      server.claimRequirement(
+    expect(
+      await server.claimRequirement(
         { commissionId, requirementType: 'artist' },
         context('member-1'),
       ),
-    ).resolves.toEqual({ ok: true, claimed: true, claimCount: 1 })
-    await expect(
-      server.claimRequirement(
+    ).toEqual({ ok: true, claimed: true, claimCount: 1 })
+    expect(
+      await server.claimRequirement(
         { commissionId, requirementType: 'artist' },
         context('member-1'),
       ),
-    ).resolves.toEqual({ ok: true, claimed: true, claimCount: 1 })
-    await expect(
-      server.claimRequirement(
+    ).toEqual({ ok: true, claimed: true, claimCount: 1 })
+    expect(
+      await server.claimRequirement(
         { commissionId, requirementType: 'artist' },
         context('member-2'),
       ),
-    ).resolves.toEqual({ ok: true, claimed: true, claimCount: 2 })
+    ).toEqual({ ok: true, claimed: true, claimCount: 2 })
 
     await expectActionError(
       server.claimRequirement(
@@ -307,12 +324,12 @@ describe('commission actions', () => {
     addClaim(database, commissionId, 'artist', 'member-1')
     addClaim(database, commissionId, 'artist', 'member-2')
 
-    await expect(
-      server.cancelClaim(
+    expect(
+      await server.cancelClaim(
         { commissionId, requirementType: 'artist' },
         context('member-1'),
       ),
-    ).resolves.toEqual({ ok: true, claimed: false, claimCount: 1 })
+    ).toEqual({ ok: true, claimed: false, claimCount: 1 })
     expect(
       database
         .query<{ profile_token: string }, SQLQueryBindings[]>(
@@ -345,12 +362,12 @@ describe('commission actions', () => {
       'FORBIDDEN',
       '无权操作',
     )
-    await expect(
-      server.updateRequirementStatus(
+    expect(
+      await server.updateRequirementStatus(
         { commissionId, requirementType: 'artist', status: 'closed' },
         context('owner'),
       ),
-    ).resolves.toEqual({ id: commissionId })
+    ).toEqual({ id: commissionId })
     expect(
       database
         .query<{ status: string }, SQLQueryBindings[]>(
@@ -400,9 +417,9 @@ describe('commission actions', () => {
       )
       .run(commissionId)
 
-    await expect(
-      server.deleteCommission({ commissionId }, context('owner')),
-    ).resolves.toEqual({ ok: true })
+    expect(
+      await server.deleteCommission({ commissionId }, context('owner')),
+    ).toEqual({ ok: true })
 
     for (const table of [
       'commissions',
