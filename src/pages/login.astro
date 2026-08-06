@@ -104,7 +104,7 @@ const result = mode === 'register' ? registerResult : loginResult
 
     const error = form.querySelector('[role="alert"]') as HTMLElement | null
     error?.setAttribute('hidden', '')
-    document.title = `${content.title} · 边缘工会`
+    document.title = `${content.title} · 边缘公会`
   }
 
   switchLink.addEventListener('click', event => {
@@ -114,14 +114,14 @@ const result = mode === 'register' ? registerResult : loginResult
   })
 </script>
 
-<Layout title={mode === 'register' ? '注册 · 边缘工会' : '登录 · 边缘工会'}>
+<Layout title={mode === 'register' ? '注册 · 边缘公会' : '登录 · 边缘公会'}>
   <main>
     <header>
       <h1>
         <span>加入</span>
-        <span>边缘工会</span>
+        <span>边缘公会</span>
       </h1>
-      <p>成为工会会员，发布的委托，招揽合作者，或寻找合适你的委托。</p>
+      <p>成为公会会员，发布的委托，招揽合作者，或寻找合适你的委托。</p>
       <SiteStats
         variant="inline"
         registeredUserCount={registeredUserCount}
