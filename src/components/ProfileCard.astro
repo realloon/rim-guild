@@ -15,16 +15,16 @@ interface Props extends HTMLAttributes<'section'> {
 const { seed, name, subtitle, tags = [], contacts = [], ...attrs } = Astro.props
 ---
 
-<section {...attrs}>
+<section class="profile-card" {...attrs}>
   <header>
-    <img src={avatarUrl(seed)} width={72} height={72} alt="" />
+    <img src={avatarUrl(seed)} width={64} height={64} alt="avatar" />
     <div>
       <h1>{name}</h1>
       {subtitle && <span>{subtitle}</span>}
       {tags.length > 0 && <BadgeList items={tags} />}
     </div>
-    <span>注册会员</span>
   </header>
+
   {
     contacts.length > 0 && (
       <dl>
@@ -41,7 +41,7 @@ const { seed, name, subtitle, tags = [], contacts = [], ...attrs } = Astro.props
 </section>
 
 <style>
-  section {
+  .profile-card {
     padding: 32px;
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -50,42 +50,32 @@ const { seed, name, subtitle, tags = [], contacts = [], ...attrs } = Astro.props
   }
 
   header {
+    position: relative;
+
     display: flex;
-    align-items: flex-start;
+    align-items: start;
     gap: 24px;
     padding-bottom: 24px;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px dashed var(--line);
 
-    & > img,
-    & > div {
-      align-self: center;
-    }
-
-    & > div {
-      flex: 1;
-      min-width: 0;
+    div {
+      flex-grow: 1;
 
       h1 {
-        margin: 0 0 6px;
         color: var(--forest);
-        font-size: 2.25rem;
-        font-weight: 500;
+        font-size: 2.5rem;
+        font-weight: normal;
       }
 
-      & > span {
+      span {
         color: var(--text-muted);
-        font-size: 0.82rem;
+        font-size: 0.875rem;
+        font-family: var(--mono);
       }
-    }
 
-    & > span {
-      flex-shrink: 0;
-      padding: 5px 9px;
-      border: 1px solid var(--accent-line);
-      color: var(--accent-strong);
-      font-family: var(--mono);
-      font-size: 0.64rem;
-      font-weight: 700;
+      ul {
+        margin-top: 6px;
+      }
     }
   }
 
@@ -96,7 +86,6 @@ const { seed, name, subtitle, tags = [], contacts = [], ...attrs } = Astro.props
 
     & > div {
       flex: 1;
-      min-width: 0;
       padding: 13px 14px;
       border: 1px solid var(--line);
       background-color: var(--page);
