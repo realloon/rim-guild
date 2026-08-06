@@ -16,9 +16,15 @@ interface Props {
   claims: CommissionClaim[]
   isOwner: boolean
   profileToken: string | null
+  viewer: {
+    token: string
+    author_id: string
+    author_name: string
+  } | null
 }
 
-const { commissionId, requirement, claims, isOwner, profileToken } = Astro.props
+const { commissionId, requirement, claims, isOwner, profileToken, viewer } =
+  Astro.props
 const registered = claims.some(claim => claim.profile_token === profileToken)
 const isOpen = requirement.status === 'open'
 const showForm = isOwner || (isOpen && profileToken !== null)
@@ -51,9 +57,13 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
   <p>{requirement.description}</p>
 
   {
-    claims.length > 0 && (
-      <section aria-label="已认领">
-        <div>
+    (
+      <section
+        aria-label="已认领"
+        data-claim-summary
+        hidden={claims.length === 0}
+      >
+        <div data-claim-avatars>
           {claims.map(claim => (
             <AuthorAvatar
               seed={claim.profile_token}
@@ -62,11 +72,30 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
               size={30}
               showName={false}
               overlap
+              data-claim-current={
+                claim.profile_token === profileToken ? 'true' : undefined
+              }
             />
           ))}
         </div>
-        <span>{claims.length}人已认领</span>
+        <span data-claim-count>{claims.length}人已认领</span>
       </section>
+    )
+  }
+
+  {
+    viewer && (
+      <template data-claim-avatar-template>
+        <AuthorAvatar
+          seed={viewer.token}
+          name={viewer.author_name}
+          href={'/authors/' + viewer.author_id}
+          size={30}
+          showName={false}
+          overlap
+          data-claim-current="true"
+        />
+      </template>
     )
   }
 
@@ -172,6 +201,10 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
     display: flex;
     align-items: center;
     gap: 12px;
+
+    &[hidden] {
+      display: none;
+    }
 
     & > span {
       color: var(--text-muted);

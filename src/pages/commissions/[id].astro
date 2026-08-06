@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions'
 import { env } from 'cloudflare:workers'
-import { listContactMethods } from '../../lib/profiles'
+import { findProfileByToken, listContactMethods } from '../../lib/profiles'
 import {
   findCommission,
   listCommissionClaims,
@@ -35,6 +35,13 @@ if (!commission) {
 const isOwner =
   !!commission && Astro.locals.auth?.profileToken === commission.author_token
 const myProfileToken = Astro.locals.auth?.profileToken ?? null
+const viewer =
+  commission && myProfileToken && !isOwner
+    ? ((await findProfileByToken(db, myProfileToken)) ?? null)
+    : null
+if (commission && myProfileToken && !isOwner && !viewer) {
+  throw new Error('登录会话对应的个人资料不存在')
+}
 const contactMethods = commission
   ? listContactMethods({
       qq: commission.author_qq,
@@ -116,6 +123,10 @@ claimRows.forEach(claim => {
         form.parentElement!.querySelector<HTMLParagraphElement>(
           '[data-claim-error]',
         )!
+      const card = form.closest<HTMLLIElement>('li')!
+      const summary = card.querySelector<HTMLElement>('[data-claim-summary]')!
+      const avatars = card.querySelector<HTMLElement>('[data-claim-avatars]')!
+      const count = card.querySelector<HTMLElement>('[data-claim-count]')!
       const action = form.dataset.claimAction
       const isClaim = action === 'claim'
 
@@ -135,10 +146,26 @@ claimRows.forEach(claim => {
           return
         }
 
-        form.dataset.claimAction = isClaim ? 'cancel' : 'claim'
-        button.dataset.variant = isClaim ? 'ghost' : 'accent'
-        button.setAttribute('aria-pressed', String(isClaim))
-        button.textContent = isClaim ? '取消认领' : '认领需求'
+        const isClaimed = result.data.claimed
+        summary.hidden = result.data.claimCount === 0
+        count.textContent = `${result.data.claimCount}人已认领`
+
+        const currentAvatar = avatars.querySelector('[data-claim-current]')
+        if (isClaimed) {
+          if (!currentAvatar) {
+            const template = card.querySelector<HTMLTemplateElement>(
+              '[data-claim-avatar-template]',
+            )!
+            avatars.appendChild(template.content.cloneNode(true))
+          }
+        } else {
+          currentAvatar?.remove()
+        }
+
+        form.dataset.claimAction = isClaimed ? 'cancel' : 'claim'
+        button.dataset.variant = isClaimed ? 'ghost' : 'accent'
+        button.setAttribute('aria-pressed', String(isClaimed))
+        button.textContent = isClaimed ? '取消认领' : '认领需求'
       } catch {
         errorMessage.textContent = '操作失败，请稍后重试'
         errorMessage.hidden = false
@@ -198,6 +225,7 @@ claimRows.forEach(claim => {
                       claims={claimsByRequirement.get(requirement.type) ?? []}
                       isOwner={isOwner}
                       profileToken={myProfileToken}
+                      viewer={viewer}
                     />
                   ))}
                 </ul>

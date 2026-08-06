@@ -30,16 +30,10 @@ const commissionSchema = z.object({
   tags: z.array(z.enum(COMMISSION_TAG_KEYS)).default([]),
   requirementTypes: z.array(z.enum(REQUIREMENT_TYPE_KEYS)),
   requirementDescriptions: z.array(
-    z.preprocess(
-      formText,
-      z.string().min(1, '每项需求请填写具体要求'),
-    ),
+    z.preprocess(formText, z.string().min(1, '每项需求请填写具体要求')),
   ),
   requirementCounts: z.array(
-    z.preprocess(
-      v => Number(v),
-      z.number().int().min(1).max(99),
-    ),
+    z.preprocess(v => Number(v), z.number().int().min(1).max(99)),
   ),
 })
 
@@ -71,6 +65,45 @@ async function assertOwner(commissionId: number, context: ActionAPIContext) {
   }
 
   return profileToken
+}
+
+async function getRequirementClaimState(
+  db: D1Database,
+  commissionId: number,
+  requirementType: (typeof REQUIREMENT_TYPE_KEYS)[number],
+  profileToken: string,
+) {
+  const row = await db
+    .prepare(
+      `SELECT COUNT(*) AS claim_count,
+              EXISTS (
+                SELECT 1
+                FROM claims own_claim
+                WHERE own_claim.commission_id = ?
+                  AND own_claim.requirement_type = ?
+                  AND own_claim.profile_token = ?
+              ) AS claimed
+       FROM claims
+       WHERE commission_id = ? AND requirement_type = ?`,
+    )
+    .bind(
+      commissionId,
+      requirementType,
+      profileToken,
+      commissionId,
+      requirementType,
+    )
+    .first<{ claim_count: number; claimed: number }>()
+
+  if (!row) {
+    throw new Error('读取需求认领状态时数据库未返回结果')
+  }
+
+  return {
+    ok: true as const,
+    claimed: row.claimed === 1,
+    claimCount: row.claim_count,
+  }
 }
 
 export const server = {
@@ -153,15 +186,16 @@ export const server = {
           status: string
           claim_count: number
         }>()
-      const existingRequirements = existingRequirementRows.results.map(
-        row => ({
-          type: parseRequirementType(row.requirement_type),
-          status: parseRequirementStatus(row.status),
-          claimCount: row.claim_count,
-        }),
-      )
+      const existingRequirements = existingRequirementRows.results.map(row => ({
+        type: parseRequirementType(row.requirement_type),
+        status: parseRequirementStatus(row.status),
+        claimCount: row.claim_count,
+      }))
       const existingRequirementsByType = new Map(
-        existingRequirements.map(requirement => [requirement.type, requirement]),
+        existingRequirements.map(requirement => [
+          requirement.type,
+          requirement,
+        ]),
       )
       for (const requirement of requirements) {
         const existingRequirement = existingRequirementsByType.get(
@@ -194,7 +228,7 @@ export const server = {
             input.description,
             input.tags.join(','),
             input.commissionId,
-        ),
+          ),
         ...requirements.map(requirement =>
           db
             .prepare(
@@ -206,9 +240,10 @@ export const server = {
               requirement.type,
               requirement.description,
               requirement.count,
-              existingRequirementsByType.get(requirement.type)?.status ?? 'open',
+              existingRequirementsByType.get(requirement.type)?.status ??
+                'open',
             ),
-          ),
+        ),
         ...removedRequirements.map(requirement =>
           db
             .prepare(
@@ -354,11 +389,7 @@ export const server = {
                AND r.requirement_type = ?
              GROUP BY r.status, r.count`,
           )
-          .bind(
-            profileToken,
-            input.commissionId,
-            input.requirementType,
-          )
+          .bind(profileToken, input.commissionId, input.requirementType)
           .first<{
             status: string
             count: number
@@ -368,7 +399,14 @@ export const server = {
         if (!currentRequirement) {
           throw new ActionError({ code: 'NOT_FOUND', message: '该需求不存在' })
         }
-        if (currentRequirement.already_claimed) return { ok: true }
+        if (currentRequirement.already_claimed) {
+          return getRequirementClaimState(
+            db,
+            input.commissionId,
+            input.requirementType,
+            profileToken,
+          )
+        }
         if (parseRequirementStatus(currentRequirement.status) !== 'open') {
           throw new ActionError({
             code: 'BAD_REQUEST',
@@ -385,7 +423,12 @@ export const server = {
         })
       }
 
-      return { ok: true }
+      return getRequirementClaimState(
+        db,
+        input.commissionId,
+        input.requirementType,
+        profileToken,
+      )
     },
   }),
   cancelClaim: defineAction({
@@ -411,7 +454,12 @@ export const server = {
         })
       }
 
-      return { ok: true }
+      return getRequirementClaimState(
+        db,
+        input.commissionId,
+        input.requirementType,
+        profileToken,
+      )
     },
   }),
   addCommissionUpdate: defineAction({

@@ -1,7 +1,8 @@
 ---
+import type { HTMLAttributes } from 'astro/types'
 import { avatarUrl } from '../lib/avatar'
 
-interface Props {
+type Props = HTMLAttributes<'a'> & {
   seed: string
   name: string
   href: string
@@ -19,10 +20,12 @@ const {
   avatarSide = 'left',
   showName = true,
   overlap = false,
+  ...attrs
 } = Astro.props
 ---
 
 <a
+  {...attrs}
   data-overlap={overlap || undefined}
   data-side={avatarSide}
   href={href}

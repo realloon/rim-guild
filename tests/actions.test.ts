@@ -2,9 +2,7 @@ import { Database } from 'bun:sqlite'
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 
 class TestActionError extends Error {
-  constructor(
-    readonly details: { code: string; message: string },
-  ) {
+  constructor(readonly details: { code: string; message: string }) {
     super(details.message)
   }
 }
@@ -231,19 +229,19 @@ describe('commission actions', () => {
         { commissionId, requirementType: 'artist' },
         context('member-1'),
       ),
-    ).resolves.toEqual({ ok: true })
+    ).resolves.toEqual({ ok: true, claimed: true, claimCount: 1 })
     await expect(
       server.claimRequirement(
         { commissionId, requirementType: 'artist' },
         context('member-1'),
       ),
-    ).resolves.toEqual({ ok: true })
+    ).resolves.toEqual({ ok: true, claimed: true, claimCount: 1 })
     await expect(
       server.claimRequirement(
         { commissionId, requirementType: 'artist' },
         context('member-2'),
       ),
-    ).resolves.toEqual({ ok: true })
+    ).resolves.toEqual({ ok: true, claimed: true, claimCount: 2 })
 
     await expectActionError(
       server.claimRequirement(
@@ -300,7 +298,7 @@ describe('commission actions', () => {
         { commissionId, requirementType: 'artist' },
         context('member-1'),
       ),
-    ).resolves.toEqual({ ok: true })
+    ).resolves.toEqual({ ok: true, claimed: false, claimCount: 1 })
     expect(
       database
         .query('SELECT profile_token FROM claims ORDER BY profile_token')
