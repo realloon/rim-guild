@@ -1,17 +1,18 @@
 ---
-import Layout from '../layouts/Layout.astro'
-import Button from '../components/ui/Button.astro'
-import CommissionList from '../components/CommissionList.astro'
-import SiteStats from '../components/SiteStats.astro'
-import Control from '../components/ui/Control.astro'
+import { env } from 'cloudflare:workers'
+import { getSiteStats } from '../lib/site'
 import {
   REQUIREMENT_TYPES,
   isRequirementType,
   listOpenCommissions,
   type RequirementType,
 } from '../lib/commissions'
-import { getSiteStats } from '../lib/site'
-import { env } from 'cloudflare:workers'
+import Layout from '../layouts/Layout.astro'
+import Button from '../components/ui/Button.astro'
+import CommissionList from '../components/CommissionList.astro'
+import SiteStats from '../components/SiteStats.astro'
+import Control from '../components/ui/Control.astro'
+import EmptyState from '../components/EmptyState.astro'
 
 const db = env.rim_guild_db
 const requirementParam = Astro.url.searchParams.get('requirement')
@@ -255,18 +256,8 @@ const clearSearchHref = activeRequirementType
       <CommissionList
         commissions={commissions}
         requirementFilter={activeRequirementType}
-      >
-        <div slot="empty" class="empty-state" hidden={hasVisibleCommissions}>
-          <span>没有匹配的委托</span>
-          {
-            q && (
-              <Button variant="link" href={clearSearchHref}>
-                清除搜索
-              </Button>
-            )
-          }
-        </div>
-      </CommissionList>
+        emptyMessage="没有匹配的委托"
+      />
     </section>
   </main>
 </Layout>
@@ -417,43 +408,21 @@ const clearSearchHref = activeRequirementType
         border-radius: 3px;
         background-color: var(--surface);
         color: var(--text-muted);
-        box-shadow: inset 0 1px 2px
-          light-dark(rgb(73 57 40 / 0.04), rgb(0 0 0 / 0.2));
+        box-shadow: inset 0 1px 2px light-dark(#4939280a, #00000033);
 
         &:focus-within {
           border-color: var(--accent);
-          box-shadow: 0 0 0 3px
-            light-dark(rgb(189 93 67 / 0.13), rgb(232 140 108 / 0.22));
+          box-shadow: 0 0 0 3px light-dark(#bd5d4321, #e88c6c38);
         }
 
         svg {
-          width: 19px;
-          height: 19px;
-          flex: 0 0 auto;
+          width: 18px;
+          height: 18px;
         }
       }
 
       button {
         padding-inline: 24px;
-      }
-    }
-
-    .empty-state:not([hidden]) {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 16px;
-
-      text-align: center;
-      padding-block: 56px;
-      border: 1px dashed var(--line-muted);
-      border-radius: 4px;
-
-      span {
-        color: var(--accent);
-        font-size: 0.875rem;
-        font-weight: bold;
       }
     }
   }

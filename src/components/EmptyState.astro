@@ -1,0 +1,23 @@
+---
+interface Props {
+  label: string
+  hidden: boolean
+}
+
+const { label, hidden, ...attrs } = Astro.props
+---
+
+<div class="empty-state" hidden={hidden} {...attrs}>{label}</div>
+
+<style>
+  .empty-state:not([hidden]) {
+    color: var(--accent-muted);
+    font-size: 0.875rem;
+    font-weight: bold;
+    text-align: center;
+
+    padding-block: 56px;
+    border: 1px dashed var(--line-muted);
+    border-radius: 4px;
+  }
+</style>
