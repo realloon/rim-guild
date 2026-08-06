@@ -76,8 +76,7 @@ if (result && !result.error) {
         subtitle={loggedEmail}
       >
         <form method="POST" action={actions.updateProfile}>
-          <Field for="authorName">
-            昵称
+          <Field label="昵称" for="authorName">
             <Control
               as="input"
               id="authorName"
@@ -97,8 +96,7 @@ if (result && !result.error) {
           <fieldset class="social-contacts">
             <legend>联系方式</legend>
             <div>
-              <Field for="qq">
-                QQ
+              <Field label="QQ" for="qq">
                 <Control
                   as="input"
                   id="qq"
@@ -108,8 +106,7 @@ if (result && !result.error) {
                   placeholder="选填"
                 />
               </Field>
-              <Field for="github">
-                GitHub
+              <Field label="GitHub" for="github">
                 <Control
                   as="input"
                   id="github"
@@ -119,8 +116,7 @@ if (result && !result.error) {
                   placeholder="选填"
                 />
               </Field>
-              <Field for="steam">
-                Steam
+              <Field label="Steam" for="steam">
                 <Control
                   as="input"
                   id="steam"

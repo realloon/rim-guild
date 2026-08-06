@@ -1,10 +1,15 @@
 ---
 import type { HTMLAttributes } from 'astro/types'
 
-type Props = HTMLAttributes<'label'>
+interface Props extends HTMLAttributes<'label'> {
+  label: string
+}
+
+const { label, ...attrs } = Astro.props
 ---
 
-<label {...Astro.props}>
+<label {...attrs}>
+  <span>{label}</span>
   <slot />
 </label>
 
@@ -13,9 +18,10 @@ type Props = HTMLAttributes<'label'>
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
 
+  span {
     color: var(--text-muted);
-
     font-size: 0.75rem;
     font-weight: bold;
   }

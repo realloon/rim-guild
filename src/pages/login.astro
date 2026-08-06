@@ -147,8 +147,7 @@ const result = mode === 'register' ? registerResult : loginResult
         data-login-action={actions.login}
         data-register-action={actions.register}
       >
-        <Field for="email">
-          邮箱
+        <Field label="邮箱" for="email">
           <Control
             as="input"
             id="email"
@@ -159,8 +158,7 @@ const result = mode === 'register' ? registerResult : loginResult
             placeholder="you@example.com"
           />
         </Field>
-        <Field for="password">
-          密码
+        <Field label="密码" for="password">
           <Control
             as="input"
             id="password"
