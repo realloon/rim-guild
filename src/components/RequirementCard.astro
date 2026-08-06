@@ -41,81 +41,90 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
   <header>
     <span>
       <Badge>{requirementTypeLabel(requirement.type)}</Badge>
-      <span>
-        共需{requirement.count}人
-        {claims.length > 0 ? '，' + claims.length + '人已认领' : ''}
-      </span>
+      <span>需{requirement.count}人</span>
     </span>
     <Badge variant={requirement.status}>
       {requirementStatusLabel(requirement.status)}
     </Badge>
   </header>
+
   <p>{requirement.description}</p>
 
-  {claims.length > 0 && (
-    <section aria-label="已认领">
-      <span>已认领</span>
-      <div>
-        {claims.map(claim => (
-          <AuthorAvatar
-            seed={claim.profile_token}
-            name={claim.author_name}
-            href={'/authors/' + claim.author_id}
-            size={30}
-            showName={false}
-            overlap
-          />
-        ))}
-      </div>
-    </section>
-  )}
+  {
+    claims.length > 0 && (
+      <section aria-label="已认领">
+        <div>
+          {claims.map(claim => (
+            <AuthorAvatar
+              seed={claim.profile_token}
+              name={claim.author_name}
+              href={'/authors/' + claim.author_id}
+              size={30}
+              showName={false}
+              overlap
+            />
+          ))}
+        </div>
+        <span>{claims.length}人已认领</span>
+      </section>
+    )
+  }
 
-  <footer>
-    {showForm ? (
-      <form method="POST" action={action}>
-        <input type="hidden" name="commissionId" value={commissionId} />
-        <input
-          type="hidden"
-          name="requirementType"
-          value={requirement.type}
-        />
-        {isOwner && (
-          <input
-            type="hidden"
-            name="status"
-            value={isOpen ? 'closed' : 'open'}
-          />
+  {
+    (showForm || isOpen) && (
+      <footer>
+        {showForm ? (
+          <form method="POST" action={action}>
+            <input type="hidden" name="commissionId" value={commissionId} />
+            <input
+              type="hidden"
+              name="requirementType"
+              value={requirement.type}
+            />
+            {isOwner && (
+              <input
+                type="hidden"
+                name="status"
+                value={isOpen ? 'closed' : 'open'}
+              />
+            )}
+            <Button variant={actionVariant} size="sm" type="submit">
+              {actionLabel}
+            </Button>
+          </form>
+        ) : (
+          <Button size="sm" href={'/login?next=/commissions/' + commissionId}>
+            登录后认领需求
+          </Button>
         )}
-        <Button variant={actionVariant} size="sm" type="submit">
-          {actionLabel}
-        </Button>
-      </form>
-    ) : isOpen ? (
-      <Button
-        size="sm"
-        href={'/login?next=/commissions/' + commissionId}
-      >
-        登录后认领需求
-      </Button>
-    ) : null}
-  </footer>
+      </footer>
+    )
+  }
 </li>
 
 <style>
   li {
-    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    padding: 16px;
     border: 1px solid var(--line);
     background-color: var(--surface);
     box-shadow: var(--shadow-small);
 
     &[data-status='closed'] {
-      opacity: 0.68;
+      opacity: 0.7;
     }
+  }
 
-    & > p {
-      margin: 15px 0 0;
-      white-space: pre-wrap;
-      color: var(--text);
+  p {
+    color: var(--text);
+    line-height: 1.5;
+
+    &:has(+ *) {
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--line);
     }
   }
 
@@ -124,48 +133,33 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin: 0;
 
-    & > span:first-child {
+    span:first-child {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       gap: 9px;
 
-      & > span:last-child {
+      span:last-child {
         color: var(--text-muted);
-        font-size: 0.8rem;
+        font-size: 0.875rem;
       }
     }
-  }
-
-  section,
-  footer {
-    margin-top: 16px;
   }
 
   section {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-top: 13px;
-    border-top: 1px dashed var(--line);
 
     & > span {
-      flex: 0 0 auto;
       color: var(--text-muted);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
     }
 
     & > div {
       display: flex;
       align-items: center;
-    }
-  }
-
-  footer {
-    form {
-      display: inline-flex;
     }
   }
 </style>

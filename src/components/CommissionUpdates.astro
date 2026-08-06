@@ -23,7 +23,9 @@ const { commissionId, updates, isOwner, error } = Astro.props
         {updates.map(update => (
           <li>
             <p>{update.content}</p>
-            <time datetime={update.created_at}>{formatDate(update.created_at)}</time>
+            <time datetime={update.created_at}>
+              {formatDate(update.created_at)}
+            </time>
           </li>
         ))}
       </ul>
@@ -32,21 +34,25 @@ const { commissionId, updates, isOwner, error } = Astro.props
     )
   }
 
-  {isOwner && (
-    <form method="POST" action={actions.addCommissionUpdate}>
-      <input type="hidden" name="commissionId" value={commissionId} />
-      <Control
-        as="textarea"
-        name="content"
-        required
-        maxlength="1000"
-        rows="5"
-        placeholder="发布委托进展，例如：画师已加入，还在找开发者……"
-      />
-      <ErrorBox error={error} />
-      <Button size="sm" type="submit">发布更新</Button>
-    </form>
-  )}
+  {
+    isOwner && (
+      <form method="POST" action={actions.addCommissionUpdate}>
+        <input type="hidden" name="commissionId" value={commissionId} />
+        <Control
+          as="textarea"
+          name="content"
+          required
+          maxlength="1000"
+          rows="5"
+          placeholder="发布委托进展，例如：画师已加入，还在找开发者……"
+        />
+        <ErrorBox error={error} />
+        <Button size="sm" type="submit">
+          发布更新
+        </Button>
+      </form>
+    )
+  }
 </Section>
 
 <style>
@@ -64,14 +70,17 @@ const { commissionId, updates, isOwner, error } = Astro.props
   }
 
   li {
-    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    padding: 16px;
     border-left: 2px solid var(--gold);
     background-color: var(--surface);
     box-shadow: var(--shadow-small);
 
     p {
-      margin: 0 0 8px;
-      white-space: pre-wrap;
+      line-height: 1.5;
     }
   }
 
