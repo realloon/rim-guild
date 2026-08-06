@@ -74,24 +74,39 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
     (showForm || isOpen) && (
       <footer>
         {showForm ? (
-          <form method="POST" action={action}>
-            <input type="hidden" name="commissionId" value={commissionId} />
-            <input
-              type="hidden"
-              name="requirementType"
-              value={requirement.type}
-            />
-            {isOwner && (
+          <>
+            <form
+              method="POST"
+              action={action}
+              data-claim-action={
+                !isOwner ? (registered ? 'cancel' : 'claim') : undefined
+              }
+            >
+              <input type="hidden" name="commissionId" value={commissionId} />
               <input
                 type="hidden"
-                name="status"
-                value={isOpen ? 'closed' : 'open'}
+                name="requirementType"
+                value={requirement.type}
               />
-            )}
-            <Button variant={actionVariant} size="sm" type="submit">
-              {actionLabel}
-            </Button>
-          </form>
+              {isOwner && (
+                <input
+                  type="hidden"
+                  name="status"
+                  value={isOpen ? 'closed' : 'open'}
+                />
+              )}
+              <Button
+                data-claim-button={!isOwner ? 'true' : undefined}
+                aria-pressed={!isOwner ? registered : undefined}
+                variant={actionVariant}
+                size="sm"
+                type="submit"
+              >
+                {actionLabel}
+              </Button>
+            </form>
+            {!isOwner && <p data-claim-error role="alert" hidden />}
+          </>
         ) : (
           <Button size="sm" href={'/login?next=/commissions/' + commissionId}>
             登录后认领需求
@@ -138,13 +153,19 @@ const actionVariant = isOwner || registered ? 'ghost' : 'accent'
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 9px;
+      gap: 8px;
 
       span:last-child {
         color: var(--text-muted);
         font-size: 0.875rem;
       }
     }
+  }
+
+  p[data-claim-error] {
+    margin-top: 8px;
+    color: var(--danger);
+    font-size: 0.875rem;
   }
 
   section {

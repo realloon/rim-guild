@@ -77,14 +77,17 @@ const claimsByRequirement = new Map<
   CommissionClaim['requirement_type'],
   CommissionClaim[]
 >()
-for (const claim of claimRows) {
+
+claimRows.forEach(claim => {
   const list = claimsByRequirement.get(claim.requirement_type) ?? []
   list.push(claim)
   claimsByRequirement.set(claim.requirement_type, list)
-}
+})
 ---
 
 <script>
+  import { actions } from 'astro:actions'
+
   const forms = Array.from(document.forms).filter(form =>
     form.hasAttribute('data-confirm'),
   )
@@ -94,6 +97,54 @@ for (const claim of claimRows) {
       const message = form.dataset.confirm
       if (!confirm(message)) {
         event.preventDefault()
+      }
+    })
+  })
+
+  const claimForms = Array.from(
+    document.querySelectorAll<HTMLFormElement>('form[data-claim-action]'),
+  )
+
+  claimForms.forEach(form => {
+    form.addEventListener('submit', async event => {
+      event.preventDefault()
+
+      const button = form.querySelector<HTMLButtonElement>(
+        '[data-claim-button]',
+      )!
+      const errorMessage =
+        form.parentElement!.querySelector<HTMLParagraphElement>(
+          '[data-claim-error]',
+        )!
+      const action = form.dataset.claimAction
+      const isClaim = action === 'claim'
+
+      button.disabled = true
+      form.setAttribute('aria-busy', 'true')
+      errorMessage.hidden = true
+      errorMessage.textContent = ''
+
+      try {
+        const result = isClaim
+          ? await actions.claimRequirement(new FormData(form))
+          : await actions.cancelClaim(new FormData(form))
+
+        if (result.error) {
+          errorMessage.textContent = result.error.message
+          errorMessage.hidden = false
+          return
+        }
+
+        form.dataset.claimAction = isClaim ? 'cancel' : 'claim'
+        button.dataset.variant = isClaim ? 'ghost' : 'accent'
+        button.setAttribute('aria-pressed', String(isClaim))
+        button.textContent = isClaim ? '取消认领' : '认领需求'
+      } catch {
+        errorMessage.textContent = '操作失败，请稍后重试'
+        errorMessage.hidden = false
+      } finally {
+        button.disabled = false
+        form.removeAttribute('aria-busy')
       }
     })
   })
