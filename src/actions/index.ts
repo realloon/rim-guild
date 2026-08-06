@@ -8,7 +8,6 @@ import {
   REQUIREMENT_STATUS_KEYS,
   parseRequirementStatus,
   parseRequirementType,
-  requirementTypeLabel,
 } from '../lib/commissions'
 import {
   requirementInputError,
@@ -172,24 +171,16 @@ export const server = {
       const db = env.rim_guild_db
       const existingRequirementRows = await db
         .prepare(
-          `SELECT r.requirement_type, r.status, COUNT(c.profile_token) AS claim_count
-           FROM requirements r
-           LEFT JOIN claims c
-             ON c.commission_id = r.commission_id
-            AND c.requirement_type = r.requirement_type
-           WHERE r.commission_id = ?
-           GROUP BY r.requirement_type, r.status`,
+          'SELECT requirement_type, status FROM requirements WHERE commission_id = ?',
         )
         .bind(input.commissionId)
         .all<{
           requirement_type: string
           status: string
-          claim_count: number
         }>()
       const existingRequirements = existingRequirementRows.results.map(row => ({
         type: parseRequirementType(row.requirement_type),
         status: parseRequirementStatus(row.status),
-        claimCount: row.claim_count,
       }))
       const existingRequirementsByType = new Map(
         existingRequirements.map(requirement => [
@@ -197,20 +188,6 @@ export const server = {
           requirement,
         ]),
       )
-      for (const requirement of requirements) {
-        const existingRequirement = existingRequirementsByType.get(
-          requirement.type,
-        )
-        if (
-          existingRequirement &&
-          requirement.count < existingRequirement.claimCount
-        ) {
-          throw new ActionError({
-            code: 'BAD_REQUEST',
-            message: `${requirementTypeLabel(requirement.type)}的需要人数不能少于已认领人数`,
-          })
-        }
-      }
       const requestedTypes = new Set(
         requirements.map(requirement => requirement.type),
       )
@@ -347,19 +324,10 @@ export const server = {
         .prepare(
           `INSERT INTO claims (commission_id, requirement_type, profile_token)
            SELECT ?, ?, ?
-           WHERE EXISTS (
-             SELECT 1
-             FROM requirements r
-             WHERE r.commission_id = ?
-               AND r.requirement_type = ?
-               AND r.status = 'open'
-               AND (
-                 SELECT COUNT(*)
-                 FROM claims c
-                 WHERE c.commission_id = r.commission_id
-                   AND c.requirement_type = r.requirement_type
-               ) < r.count
-           )
+           FROM requirements r
+           WHERE r.commission_id = ?
+             AND r.requirement_type = ?
+             AND r.status = 'open'
            ON CONFLICT (commission_id, requirement_type, profile_token) DO NOTHING`,
         )
         .bind(
@@ -374,7 +342,7 @@ export const server = {
       if (result.meta.changes !== 1) {
         const currentRequirement = await db
           .prepare(
-            `SELECT r.status, r.count, COUNT(c.profile_token) AS claim_count,
+            `SELECT r.status,
                     EXISTS (
                       SELECT 1 FROM claims own_claim
                       WHERE own_claim.commission_id = r.commission_id
@@ -382,18 +350,12 @@ export const server = {
                         AND own_claim.profile_token = ?
                     ) AS already_claimed
              FROM requirements r
-             LEFT JOIN claims c
-               ON c.commission_id = r.commission_id
-              AND c.requirement_type = r.requirement_type
              WHERE r.commission_id = ?
-               AND r.requirement_type = ?
-             GROUP BY r.status, r.count`,
+               AND r.requirement_type = ?`,
           )
           .bind(profileToken, input.commissionId, input.requirementType)
           .first<{
             status: string
-            count: number
-            claim_count: number
             already_claimed: number
           }>()
         if (!currentRequirement) {
@@ -413,14 +375,7 @@ export const server = {
             message: '该需求已停止招募',
           })
         }
-        if (currentRequirement.claim_count < currentRequirement.count) {
-          throw new Error('认领需求时数据库状态发生变化')
-        }
-
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: '该需求已招满',
-        })
+        throw new Error('认领需求时数据库状态发生变化')
       }
 
       return getRequirementClaimState(

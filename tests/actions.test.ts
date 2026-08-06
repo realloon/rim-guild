@@ -245,7 +245,7 @@ describe('commission actions', () => {
     ])
   })
 
-  test('claimRequirement respects capacity and duplicate claims', async () => {
+  test('claimRequirement allows claims beyond the target and duplicate claims', async () => {
     const database = createDatabase()
     addProfile(database, 'owner')
     addProfile(database, 'member-1')
@@ -272,14 +272,12 @@ describe('commission actions', () => {
       ),
     ).toEqual({ ok: true, claimed: true, claimCount: 2 })
 
-    await expectActionError(
-      server.claimRequirement(
+    expect(
+      await server.claimRequirement(
         { commissionId, requirementType: 'artist' },
         context('member-3'),
       ),
-      'BAD_REQUEST',
-      '该需求已招满',
-    )
+    ).toEqual({ ok: true, claimed: true, claimCount: 3 })
 
     expect(
       database
@@ -287,7 +285,7 @@ describe('commission actions', () => {
           'SELECT COUNT(*) AS count FROM claims',
         )
         .get()!.count,
-    ).toBe(2)
+    ).toBe(3)
   })
 
   test('claimRequirement rejects the owner and closed requirements', async () => {
@@ -377,7 +375,7 @@ describe('commission actions', () => {
     ).toBe('closed')
   })
 
-  test('updateCommission cannot reduce a claimed requirement', async () => {
+  test('updateCommission can reduce the target below existing claims', async () => {
     const database = createDatabase()
     addProfile(database, 'owner')
     addProfile(database, 'member')
@@ -386,8 +384,8 @@ describe('commission actions', () => {
     addClaim(database, commissionId, 'artist', 'member')
     addClaim(database, commissionId, 'artist', 'member-2')
 
-    await expectActionError(
-      server.updateCommission(
+    expect(
+      await server.updateCommission(
         {
           commissionId,
           title: '更新后的委托',
@@ -399,9 +397,21 @@ describe('commission actions', () => {
         },
         context('owner'),
       ),
-      'BAD_REQUEST',
-      '画师的需要人数不能少于已认领人数',
-    )
+    ).toEqual({ id: commissionId })
+    expect(
+      database
+        .query<{ count: number }, SQLQueryBindings[]>(
+          'SELECT count FROM requirements',
+        )
+        .get()!.count,
+    ).toBe(1)
+    expect(
+      database
+        .query<{ count: number }, SQLQueryBindings[]>(
+          'SELECT COUNT(*) AS count FROM claims',
+        )
+        .get()!.count,
+    ).toBe(2)
   })
 
   test('deleteCommission removes the commission and dependent records', async () => {

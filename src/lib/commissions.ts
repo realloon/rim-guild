@@ -31,7 +31,7 @@ export const COMMISSION_TAG_KEYS = Object.keys(COMMISSION_TAGS) as [
 
 export const REQUIREMENT_STATUSES = {
   open: '招募中',
-  closed: '已招满',
+  closed: '已停止',
 } as const
 
 export type RequirementStatus = keyof typeof REQUIREMENT_STATUSES
