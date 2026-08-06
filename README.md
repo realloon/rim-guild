@@ -1,39 +1,39 @@
-# 边缘工会
+# Rim Guild
 
-面向 RimWorld 模组创作者的委托平台：发布委托，招募画师、开发者等。
+A commission platform for RimWorld mod creators: post commissions and recruit artists, developers, and more.
 
-技术栈：Astro 7 + Cloudflare (D1 + Workers) + wrangler
+Tech stack: Astro 7 + Cloudflare (D1 + Workers) + Wrangler
 
-## 开发
+## Development
 
 ```bash
-# 本地启动（D1 本地数据持久化在 .wrangler/state）
+# Start the local development server (local D1 data is persisted in .wrangler/state)
 astro dev --background
 
-# 重置本地 D1（会删除全部本地数据）
+# Reset the local D1 database (deletes all local data)
 bunx wrangler d1 execute rim-guild-db --local --command="DROP TABLE commission_updates; DROP TABLE claims; DROP TABLE sessions; DROP TABLE requirements; DROP TABLE commissions; DROP TABLE profiles;"
 
-# 初始化最终数据库结构与种子数据
+# Initialize the final database schema and seed data
 bunx wrangler d1 execute rim-guild-db --local --file=db/schema.sql
 bunx wrangler d1 execute rim-guild-db --local --file=db/seed.sql
 
-# 在确认远程数据库为空后初始化远程结构
+# Initialize the remote schema after confirming that the remote database is empty
 bunx wrangler d1 execute rim-guild-db --remote --file=db/schema.sql
 
-# 重新生成 wrangler 类型（修改 wrangler.jsonc 后）
+# Regenerate Wrangler types (after modifying wrangler.jsonc)
 npm run generate-types
 ```
 
-## 部署
+## Deployment
 
-Cloudflare Workers 设置：
+Cloudflare Workers configuration:
 
-- Build command：`bun run build`
-- Deploy command：`npx wrangler deploy`
+- Build command: `bun run build`
+- Deploy command: `npx wrangler deploy`
 
-## 结构
+## Structure
 
-- `db/schema.sql` — D1 表结构
-- `src/actions/index.ts` — 表单处理（Astro Actions）
-- `src/lib/commissions.ts` — 委托类型与常量
-- `src/pages/` — 首页列表、`/commissions/new` 发布、`/commissions/[id]` 详情
+- `db/schema.sql` — D1 table schema
+- `src/actions/index.ts` — Form handling (Astro Actions)
+- `src/lib/commissions.ts` — Commission types and constants
+- `src/pages/` — Homepage listing, `/commissions/new` creation, and `/commissions/[id]` details
