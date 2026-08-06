@@ -1,4 +1,4 @@
-import { Database } from 'bun:sqlite'
+import { Database, type SQLQueryBindings } from 'bun:sqlite'
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 
 class TestActionError extends Error {
@@ -19,31 +19,35 @@ const environment: { rim_guild_db: SQLiteD1 | null } = {
 
 mock.module('cloudflare:workers', () => ({ env: environment }))
 
-const { server } = await import('../src/actions/index')
+const { server: actionServer } = await import('../src/actions/index')
 const schema = await Bun.file(
   new URL('../db/schema.sql', import.meta.url),
 ).text()
 
 class SQLitePreparedStatement {
-  private parameters: unknown[] = []
+  private parameters: SQLQueryBindings[] = []
 
   constructor(
     private readonly database: Database,
     private readonly sql: string,
   ) {}
 
-  bind(...parameters: unknown[]) {
+  bind(...parameters: SQLQueryBindings[]) {
     this.parameters = parameters
     return this
   }
 
   async first<T>() {
-    return this.database.query(this.sql).get(...this.parameters) as T | null
+    return this.database
+      .query<T, SQLQueryBindings[]>(this.sql)
+      .get(...this.parameters)
   }
 
   async all<T>() {
     return {
-      results: this.database.query(this.sql).all(...this.parameters) as T[],
+      results: this.database
+        .query<T, SQLQueryBindings[]>(this.sql)
+        .all(...this.parameters),
     }
   }
 
@@ -166,6 +170,14 @@ function context(profileToken?: string) {
   }
 }
 
+type TestActionHandler = (
+  input: unknown,
+  actionContext: ReturnType<typeof context>,
+) => Promise<unknown>
+
+// The mock turns Astro actions back into their server handlers for these tests.
+const server = actionServer as unknown as Record<string, TestActionHandler>
+
 async function expectActionError(
   action: Promise<unknown>,
   code: string,
@@ -254,8 +266,10 @@ describe('commission actions', () => {
 
     expect(
       database
-        .query('SELECT COUNT(*) AS count FROM claims')
-        .get<{ count: number }>()!.count,
+        .query<{ count: number }, SQLQueryBindings[]>(
+          'SELECT COUNT(*) AS count FROM claims',
+        )
+        .get()!.count,
     ).toBe(2)
   })
 
@@ -301,8 +315,10 @@ describe('commission actions', () => {
     ).resolves.toEqual({ ok: true, claimed: false, claimCount: 1 })
     expect(
       database
-        .query('SELECT profile_token FROM claims ORDER BY profile_token')
-        .all<{ profile_token: string }>(),
+        .query<{ profile_token: string }, SQLQueryBindings[]>(
+          'SELECT profile_token FROM claims ORDER BY profile_token',
+        )
+        .all(),
     ).toEqual([{ profile_token: 'member-2' }])
 
     await expectActionError(
@@ -337,8 +353,10 @@ describe('commission actions', () => {
     ).resolves.toEqual({ id: commissionId })
     expect(
       database
-        .query('SELECT status FROM requirements')
-        .get<{ status: string }>()!.status,
+        .query<{ status: string }, SQLQueryBindings[]>(
+          'SELECT status FROM requirements',
+        )
+        .get()!.status,
     ).toBe('closed')
   })
 
@@ -393,8 +411,10 @@ describe('commission actions', () => {
       'commission_updates',
     ]) {
       const count = database
-        .query(`SELECT COUNT(*) AS count FROM ${table}`)
-        .get<{ count: number }>()!.count
+        .query<{ count: number }, SQLQueryBindings[]>(
+          `SELECT COUNT(*) AS count FROM ${table}`,
+        )
+        .get()!.count
       expect(count).toBe(0)
     }
   })
