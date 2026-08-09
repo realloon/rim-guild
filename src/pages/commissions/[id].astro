@@ -79,7 +79,7 @@ const viewCount = commission
   ? ((await incrementCommissionViews(
       db,
       commission.id,
-      commission.author_token,
+      myProfileToken,
     )) ?? commission.view_count)
   : 0
 
