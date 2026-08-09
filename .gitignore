@@ -26,3 +26,6 @@ pnpm-debug.log*
 # Cloudflare Workers
 .wrangler
 .dev.vars*
+
+# database backups
+backups/
