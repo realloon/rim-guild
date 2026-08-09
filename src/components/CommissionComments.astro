@@ -5,10 +5,7 @@ import Button from './ui/Button.astro'
 import Control from './ui/Control.astro'
 import ErrorBox from './ui/ErrorBox.astro'
 import Section from './Section.astro'
-import {
-  formatDate,
-  type CommissionComment,
-} from '../lib/commissions'
+import { formatDate, type CommissionComment } from '../lib/commissions'
 
 interface Props {
   commissionId: number
@@ -23,7 +20,7 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
 
 <Section id="comments" title="评论" meta={`${comments.length}条评论`}>
   {
-    comments.length > 0 ? (
+    comments.length > 0 && (
       <ul>
         {comments.map(comment => (
           <li>
@@ -32,7 +29,7 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
                 seed={comment.profile_token}
                 name={comment.author_name}
                 href={`/authors/${comment.author_id}`}
-                size={24}
+                size={20}
               />
               <time datetime={comment.created_at}>
                 {formatDate(comment.created_at)}
@@ -50,12 +47,11 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
                 </form>
               )}
             </header>
+
             <p>{comment.content}</p>
           </li>
         ))}
       </ul>
-    ) : (
-      <p>还没有评论</p>
     )
   }
 
@@ -69,15 +65,19 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
           required
           maxlength="500"
           rows="4"
-          placeholder="写下你的看法或问题……"
+          placeholder="留下你的评论……"
         />
         <ErrorBox error={error} />
         <Button size="sm" type="submit">
-          发表评论
+          发表
         </Button>
       </form>
     ) : (
-      <Button size="sm" variant="ghost" href={'/login?next=/commissions/' + commissionId}>
+      <Button
+        size="sm"
+        variant="ghost"
+        href={'/login?next=/commissions/' + commissionId}
+      >
         登录后参与评论
       </Button>
     )
@@ -88,8 +88,7 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
   ul {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin: 0 0 20px;
+    gap: 16px;
   }
 
   li {
@@ -97,10 +96,9 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
     flex-direction: column;
     gap: 8px;
 
-    padding: 16px;
-    border-left: 2px solid var(--line-muted);
     background-color: var(--surface);
-    box-shadow: var(--shadow-small);
+    padding: 16px;
+    border: 1px solid var(--line);
 
     header {
       display: flex;
@@ -108,11 +106,11 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
       gap: 8px;
 
       time {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        font-family: var(--mono);
         margin-right: auto;
-      }
-
-      form {
-        display: inline-flex;
+        margin-bottom: -2px;
       }
     }
 
@@ -121,15 +119,19 @@ const { commissionId, comments, profileToken, isOwner, error } = Astro.props
     }
   }
 
-  section > p {
-    margin: 0 0 10px;
-    color: var(--text-muted);
-    font-size: 0.84rem;
-  }
+  section > form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 
-  form {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
+    margin-top: 16px;
+
+    textarea {
+      border: 1px solid var(--line);
+    }
+
+    button {
+      align-self: end;
+    }
   }
 </style>
