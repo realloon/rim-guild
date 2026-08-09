@@ -15,10 +15,16 @@ interface Props {
   error?: { message?: string; issues?: { message: string }[] } | null
 }
 
-const { commissionId, comments, profileToken, isOwner, error } = Astro.props
+const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
+  Astro.props
 ---
 
-<Section id="comments" title="评论" meta={`${comments.length}条评论`}>
+<Section
+  id="comments"
+  title="评论区"
+  meta={`${comments.length}条评论`}
+  {...attrs}
+>
   {
     comments.length > 0 && (
       <ul>

@@ -88,11 +88,8 @@ if (commentDeleteResult && !commentDeleteResult.error && commission) {
 }
 
 const viewCount = commission
-  ? ((await incrementCommissionViews(
-      db,
-      commission.id,
-      myProfileToken,
-    )) ?? commission.view_count)
+  ? ((await incrementCommissionViews(db, commission.id, myProfileToken)) ??
+    commission.view_count)
   : 0
 
 const commissionUpdates = commission
@@ -119,6 +116,7 @@ claimRows.forEach(claim => {
 const navs = [
   { label: '需求', href: '#requirements' },
   { label: '委托进展', href: '#updates' },
+  { label: '评论区', href: '#comments' },
 ]
 ---
 
