@@ -145,6 +145,21 @@ function addClaim(
     .run(commissionId, requirementType, profileToken)
 }
 
+function addComment(
+  database: Database,
+  commissionId: number,
+  profileToken: string,
+  content = '测试评论',
+) {
+  const result = database
+    .query(
+      `INSERT INTO commission_comments (commission_id, profile_token, content)
+       VALUES (?, ?, ?)`,
+    )
+    .run(commissionId, profileToken, content)
+  return Number(result.lastInsertRowid)
+}
+
 function addProfile(database: Database, profileToken = 'owner') {
   const passwordHash = '0'.repeat(64)
   const passwordSalt = '0'.repeat(32)
@@ -414,6 +429,77 @@ describe('commission actions', () => {
     ).toBe(2)
   })
 
+  test('addCommissionComment requires login and stores the comment', async () => {
+    const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member')
+    const commissionId = addCommission(database)
+
+    await expectActionError(
+      server.addCommissionComment(
+        { commissionId, content: '这条评论' },
+        context(),
+      ),
+      'UNAUTHORIZED',
+      '请先登录',
+    )
+
+    expect(
+      await server.addCommissionComment(
+        { commissionId, content: '这条评论' },
+        context('member'),
+      ),
+    ).toEqual({ ok: true })
+
+    expect(
+      database
+        .query(
+          `SELECT commission_id, profile_token, content
+           FROM commission_comments`,
+        )
+        .all(),
+    ).toEqual([
+      {
+        commission_id: commissionId,
+        profile_token: 'member',
+        content: '这条评论',
+      },
+    ])
+  })
+
+  test('deleteCommissionComment allows only the commenter or the publisher', async () => {
+    const database = createDatabase()
+    addProfile(database, 'owner')
+    addProfile(database, 'member')
+    addProfile(database, 'other')
+    const commissionId = addCommission(database)
+    const commentId = addComment(database, commissionId, 'member')
+
+    await expectActionError(
+      server.deleteCommissionComment({ commentId }, context('other')),
+      'FORBIDDEN',
+      '无权删除该评论',
+    )
+
+    expect(
+      await server.deleteCommissionComment({ commentId }, context('owner')),
+    ).toEqual({ ok: true })
+
+    const secondCommentId = addComment(database, commissionId, 'member')
+    expect(
+      await server.deleteCommissionComment(
+        { commentId: secondCommentId },
+        context('member'),
+      ),
+    ).toEqual({ ok: true })
+
+    await expectActionError(
+      server.deleteCommissionComment({ commentId }, context('member')),
+      'NOT_FOUND',
+      '评论不存在',
+    )
+  })
+
   test('deleteCommission removes the commission and dependent records', async () => {
     const database = createDatabase()
     addProfile(database, 'owner')
@@ -426,6 +512,7 @@ describe('commission actions', () => {
          VALUES (?, '测试更新')`,
       )
       .run(commissionId)
+    addComment(database, commissionId, 'member')
 
     expect(
       await server.deleteCommission({ commissionId }, context('owner')),
@@ -436,6 +523,7 @@ describe('commission actions', () => {
       'requirements',
       'claims',
       'commission_updates',
+      'commission_comments',
     ]) {
       const count = database
         .query<{ count: number }, SQLQueryBindings[]>(

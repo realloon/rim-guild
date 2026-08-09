@@ -440,4 +440,76 @@ export const server = {
       return { ok: true }
     },
   }),
+  addCommissionComment: defineAction({
+    accept: 'form',
+    input: z.object({
+      commissionId: z.number(),
+      content: z.preprocess(
+        formText,
+        z.string().min(1, '请输入评论内容').max(500, '评论最多 500 个字'),
+      ),
+    }),
+    handler: async (input, context) => {
+      const db = env.rim_guild_db
+      const profileToken = requireAuth(context)
+
+      const commission = await db
+        .prepare('SELECT id FROM commissions WHERE id = ?')
+        .bind(input.commissionId)
+        .first<{ id: number }>()
+      if (!commission) {
+        throw new ActionError({ code: 'NOT_FOUND', message: '该委托不存在' })
+      }
+
+      await db
+        .prepare(
+          'INSERT INTO commission_comments (commission_id, profile_token, content) VALUES (?, ?, ?)',
+        )
+        .bind(input.commissionId, profileToken, input.content)
+        .run()
+
+      return { ok: true }
+    },
+  }),
+  deleteCommissionComment: defineAction({
+    accept: 'form',
+    input: z.object({
+      commentId: z.number(),
+    }),
+    handler: async (input, context) => {
+      const db = env.rim_guild_db
+      const profileToken = requireAuth(context)
+
+      const comment = await db
+        .prepare(
+          `SELECT c.id, c.commission_id, c.profile_token, co.author_token
+           FROM commission_comments c
+           JOIN commissions co ON co.id = c.commission_id
+           WHERE c.id = ?`,
+        )
+        .bind(input.commentId)
+        .first<{
+          id: number
+          commission_id: number
+          profile_token: string
+          author_token: string
+        }>()
+      if (!comment) {
+        throw new ActionError({ code: 'NOT_FOUND', message: '评论不存在' })
+      }
+      if (
+        comment.profile_token !== profileToken &&
+        comment.author_token !== profileToken
+      ) {
+        throw new ActionError({ code: 'FORBIDDEN', message: '无权删除该评论' })
+      }
+
+      await db
+        .prepare('DELETE FROM commission_comments WHERE id = ?')
+        .bind(input.commentId)
+        .run()
+
+      return { ok: true }
+    },
+  }),
 }

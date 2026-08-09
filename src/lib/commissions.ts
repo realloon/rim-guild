@@ -82,6 +82,16 @@ export interface CommissionUpdate {
   created_at: string
 }
 
+export interface CommissionComment {
+  id: number
+  commission_id: number
+  profile_token: string
+  author_name: string
+  author_id: string
+  content: string
+  created_at: string
+}
+
 export type CommissionRow = Omit<Commission, 'tags' | 'requirements'> & {
   tags: string
   requirements: string
@@ -277,6 +287,25 @@ export async function listCommissionUpdates(
     )
     .bind(commissionId)
     .all<CommissionUpdate>()
+
+  return results
+}
+
+export async function listCommissionComments(
+  db: D1Database,
+  commissionId: number,
+): Promise<CommissionComment[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT c.id, c.commission_id, c.profile_token, c.content, c.created_at,
+              p.author_name, p.author_id
+       FROM commission_comments c
+       JOIN profiles p ON p.token = c.profile_token
+       WHERE c.commission_id = ?
+       ORDER BY c.created_at ASC, c.id ASC`,
+    )
+    .bind(commissionId)
+    .all<CommissionComment>()
 
   return results
 }

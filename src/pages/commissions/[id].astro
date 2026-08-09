@@ -6,6 +6,7 @@ import {
   findCommission,
   incrementCommissionViews,
   listCommissionClaims,
+  listCommissionComments,
   listCommissionUpdates,
   tagLabel,
   formatDate,
@@ -13,6 +14,7 @@ import {
 } from '../../lib/commissions'
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
+import CommissionComments from '../../components/CommissionComments.astro'
 import CommissionUpdates from '../../components/CommissionUpdates.astro'
 import RequirementCard from '../../components/RequirementCard.astro'
 import Section from '../../components/Section.astro'
@@ -74,6 +76,16 @@ const updateResult = Astro.getActionResult(actions.addCommissionUpdate)
 if (updateResult && !updateResult.error && commission) {
   return Astro.redirect(`/commissions/${commission.id}`)
 }
+const commentResult = Astro.getActionResult(actions.addCommissionComment)
+if (commentResult && !commentResult.error && commission) {
+  return Astro.redirect(`/commissions/${commission.id}`)
+}
+const commentDeleteResult = Astro.getActionResult(
+  actions.deleteCommissionComment,
+)
+if (commentDeleteResult && !commentDeleteResult.error && commission) {
+  return Astro.redirect(`/commissions/${commission.id}`)
+}
 
 const viewCount = commission
   ? ((await incrementCommissionViews(
@@ -85,6 +97,9 @@ const viewCount = commission
 
 const commissionUpdates = commission
   ? await listCommissionUpdates(db, commission.id)
+  : []
+const commissionComments = commission
+  ? await listCommissionComments(db, commission.id)
   : []
 const claimRows: CommissionClaim[] = commission
   ? await listCommissionClaims(db, commission.id)
@@ -183,6 +198,14 @@ const navs = [
                 updates={commissionUpdates}
                 isOwner={isOwner}
                 error={updateResult?.error}
+              />
+
+              <CommissionComments
+                commissionId={commission.id}
+                comments={commissionComments}
+                profileToken={myProfileToken}
+                isOwner={isOwner}
+                error={commentResult?.error ?? commentDeleteResult?.error}
               />
 
               <ErrorBox error={requirementError ?? deleteResult?.error} />

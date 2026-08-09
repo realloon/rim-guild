@@ -70,3 +70,16 @@ CREATE TABLE commission_updates (
 
 CREATE INDEX idx_commission_updates_commission
   ON commission_updates(commission_id);
+
+CREATE TABLE commission_comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  commission_id INTEGER NOT NULL,
+  profile_token TEXT NOT NULL,
+  content TEXT NOT NULL CHECK (length(content) > 0),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (commission_id) REFERENCES commissions(id) ON DELETE CASCADE,
+  FOREIGN KEY (profile_token) REFERENCES profiles(token) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_commission_comments_commission
+  ON commission_comments(commission_id);

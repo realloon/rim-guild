@@ -1,0 +1,135 @@
+---
+import { actions } from 'astro:actions'
+import AuthorAvatar from './AuthorAvatar.astro'
+import Button from './ui/Button.astro'
+import Control from './ui/Control.astro'
+import ErrorBox from './ui/ErrorBox.astro'
+import Section from './Section.astro'
+import {
+  formatDate,
+  type CommissionComment,
+} from '../lib/commissions'
+
+interface Props {
+  commissionId: number
+  comments: CommissionComment[]
+  profileToken: string | null
+  isOwner: boolean
+  error?: { message?: string; issues?: { message: string }[] } | null
+}
+
+const { commissionId, comments, profileToken, isOwner, error } = Astro.props
+---
+
+<Section id="comments" title="评论" meta={`${comments.length}条评论`}>
+  {
+    comments.length > 0 ? (
+      <ul>
+        {comments.map(comment => (
+          <li>
+            <header>
+              <AuthorAvatar
+                seed={comment.profile_token}
+                name={comment.author_name}
+                href={`/authors/${comment.author_id}`}
+                size={24}
+              />
+              <time datetime={comment.created_at}>
+                {formatDate(comment.created_at)}
+              </time>
+              {(comment.profile_token === profileToken || isOwner) && (
+                <form
+                  method="POST"
+                  action={actions.deleteCommissionComment}
+                  data-confirm="确定删除这条评论吗？"
+                >
+                  <input type="hidden" name="commentId" value={comment.id} />
+                  <Button variant="link" type="submit">
+                    删除
+                  </Button>
+                </form>
+              )}
+            </header>
+            <p>{comment.content}</p>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>还没有评论</p>
+    )
+  }
+
+  {
+    profileToken ? (
+      <form method="POST" action={actions.addCommissionComment}>
+        <input type="hidden" name="commissionId" value={commissionId} />
+        <Control
+          as="textarea"
+          name="content"
+          required
+          maxlength="500"
+          rows="4"
+          placeholder="写下你的看法或问题……"
+        />
+        <ErrorBox error={error} />
+        <Button size="sm" type="submit">
+          发表评论
+        </Button>
+      </form>
+    ) : (
+      <Button size="sm" variant="ghost" href={'/login?next=/commissions/' + commissionId}>
+        登录后参与评论
+      </Button>
+    )
+  }
+</Section>
+
+<style>
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0 0 20px;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    padding: 16px;
+    border-left: 2px solid var(--line-muted);
+    background-color: var(--surface);
+    box-shadow: var(--shadow-small);
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      time {
+        margin-right: auto;
+      }
+
+      form {
+        display: inline-flex;
+      }
+    }
+
+    p {
+      line-height: 1.5;
+    }
+  }
+
+  section > p {
+    margin: 0 0 10px;
+    color: var(--text-muted);
+    font-size: 0.84rem;
+  }
+
+  form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+</style>
