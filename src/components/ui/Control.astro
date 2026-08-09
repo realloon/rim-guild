@@ -14,7 +14,7 @@ type Props =
     })
   | (HTMLAttributes<'textarea'> & {
       as: 'textarea'
-      variant?: never
+      variant?: 'surface'
       density?: 'compact'
     })
 
@@ -28,6 +28,7 @@ const { as, variant, density, ...attrs } = Astro.props
 ) : as === 'textarea' ? (
   <textarea
     {...attrs}
+    data-variant={variant}
     data-density={density}
     data-auto-resize
   ><slot /></textarea>
@@ -132,5 +133,10 @@ const { as, variant, density, ...attrs } = Astro.props
   textarea[data-density='compact'] {
     flex: 0 0 100%;
     min-height: 72px;
+  }
+
+  textarea[data-variant='surface'] {
+    border: 1px solid var(--line);
+    background-color: var(--surface);
   }
 </style>

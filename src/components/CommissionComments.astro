@@ -65,12 +65,18 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
     profileToken ? (
       <form method="POST" action={actions.addCommissionComment}>
         <input type="hidden" name="commissionId" value={commissionId} />
+        <label class="sr-only" for={`comment-content-${commissionId}`}>
+          评论内容
+        </label>
         <Control
           as="textarea"
+          id={`comment-content-${commissionId}`}
+          variant="surface"
+          density="compact"
           name="content"
           required
           maxlength="500"
-          rows="4"
+          rows="3"
           placeholder="留下你的评论……"
         />
         <ErrorBox error={error} />
@@ -94,7 +100,11 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
   ul {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
+
+    padding-block: 0;
+    border-top: 1px solid var(--line);
+    margin-block: 0;
   }
 
   li {
@@ -102,9 +112,12 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
     flex-direction: column;
     gap: 8px;
 
-    background-color: var(--surface);
-    padding: 16px;
-    border: 1px solid var(--line);
+    padding-block: 16px;
+    border-bottom: 1px dashed var(--line);
+
+    &:last-child {
+      border-bottom: 0;
+    }
 
     header {
       display: flex;
@@ -121,6 +134,7 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
     }
 
     p {
+      padding-inline-start: 28px;
       line-height: 1.5;
     }
   }
@@ -128,13 +142,9 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
   section > form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 
     margin-top: 16px;
-
-    textarea {
-      border: 1px solid var(--line);
-    }
 
     button {
       align-self: end;
