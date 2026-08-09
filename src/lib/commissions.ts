@@ -64,6 +64,7 @@ export interface Commission extends CommissionSummary {
   author_qq: string
   author_github: string
   author_steam: string
+  view_count: number
 }
 
 export interface CommissionClaim {
@@ -147,7 +148,7 @@ function parseClaim(claim: CommissionClaimRow): CommissionClaim {
 }
 
 export const COMMISSION_SELECT = `
-  SELECT c.id, c.title, c.description, c.tags, c.created_at,
+  SELECT c.id, c.title, c.description, c.tags, c.view_count, c.created_at,
     p.author_name, p.token AS author_token, p.author_id,
     p.qq AS author_qq, p.github AS author_github, p.steam AS author_steam,
     json_group_array(
@@ -181,6 +182,25 @@ export async function findCommission(
     .first<CommissionRow>()
 
   return row ? commissionFromRow(row) : undefined
+}
+
+export async function incrementCommissionViews(
+  db: D1Database,
+  commissionId: number,
+  excludeToken: string | null,
+): Promise<number | null> {
+  const row = await db
+    .prepare(
+      `UPDATE commissions
+       SET view_count = view_count + 1
+       WHERE id = ?
+         AND (? IS NULL OR author_token != ?)
+       RETURNING view_count`,
+    )
+    .bind(commissionId, excludeToken, excludeToken)
+    .first<{ view_count: number }>()
+
+  return row?.view_count ?? null
 }
 
 export async function listCommissionsByAuthor(

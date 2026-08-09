@@ -115,12 +115,6 @@ form {
   margin: 0;
 }
 
-time {
-  color: var(--text-muted);
-  font-size: 0.76rem;
-  white-space: nowrap;
-}
-
 ul {
   list-style-type: none;
   padding-inline-start: unset;

@@ -4,6 +4,7 @@ import { env } from 'cloudflare:workers'
 import { findProfileByToken, listContactMethods } from '../../lib/profiles'
 import {
   findCommission,
+  incrementCommissionViews,
   listCommissionClaims,
   listCommissionUpdates,
   tagLabel,
@@ -74,6 +75,14 @@ if (updateResult && !updateResult.error && commission) {
   return Astro.redirect(`/commissions/${commission.id}`)
 }
 
+const viewCount = commission
+  ? ((await incrementCommissionViews(
+      db,
+      commission.id,
+      commission.author_token,
+    )) ?? commission.view_count)
+  : 0
+
 const commissionUpdates = commission
   ? await listCommissionUpdates(db, commission.id)
   : []
@@ -135,6 +144,7 @@ const navs = [
               <time datetime={commission.created_at}>
                 {formatDate(commission.created_at)}
               </time>
+              <span>{viewCount}次浏览</span>
             </address>
           </header>
 
@@ -258,11 +268,14 @@ const navs = [
       align-items: center;
       gap: 8px;
 
+      color: var(--text-muted);
+      font-size: 0.75rem;
       font-style: normal;
+      font-family: var(--mono);
       margin-block: 16px;
 
-      time {
-        font-family: var(--mono);
+      time,
+      span {
         margin-bottom: -1.5px;
       }
     }
