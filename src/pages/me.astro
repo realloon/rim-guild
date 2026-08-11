@@ -95,9 +95,12 @@ const navs = [
                   as="input"
                   id="qq"
                   name="qq"
-                  maxlength="50"
+                  type="text"
+                  inputmode="numeric"
+                  minlength="5"
+                  maxlength="12"
                   value={myQq}
-                  placeholder="选填"
+                  placeholder="选填，输入QQ号码"
                 />
               </Field>
               <Field label="GitHub" for="github">
@@ -107,7 +110,7 @@ const navs = [
                   name="github"
                   maxlength="100"
                   value={myGithub}
-                  placeholder="选填"
+                  placeholder="选填，输入GitHub用户名"
                 />
               </Field>
               <Field label="Steam" for="steam">
@@ -117,7 +120,7 @@ const navs = [
                   name="steam"
                   maxlength="100"
                   value={mySteam}
-                  placeholder="选填"
+                  placeholder="选填，输入Steam账号ID"
                 />
               </Field>
             </div>

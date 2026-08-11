@@ -211,7 +211,15 @@ const navs = [
                 <address>
                   {contactMethods.length > 0 ? (
                     contactMethods.map(contact => (
-                      <p>
+                      <a
+                        href={
+                          contact.label === 'GitHub'
+                            ? `https://github.com/${contact.value}`
+                            : contact.label === 'Steam'
+                              ? `https://steamcommunity.com/id/${contact.value}`
+                              : `http://wpa.qq.com/msgrd?v=3&uin=${contact.value}&site=qq&menu=yes`
+                        }
+                      >
                         {contact.label === 'QQ' && (
                           <IconQq aria-hidden="true" />
                         )}
@@ -222,7 +230,7 @@ const navs = [
                           <IconSteam aria-hidden="true" />
                         )}
                         <span>{contact.value}</span>
-                      </p>
+                      </a>
                     ))
                   ) : (
                     <p>未填写</p>
@@ -374,7 +382,7 @@ const navs = [
         font-family: var(--mono);
         margin-top: 12px;
 
-        p {
+        a {
           display: flex;
           align-items: center;
           gap: 8px;
