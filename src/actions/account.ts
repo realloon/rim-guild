@@ -31,18 +31,9 @@ export const accountActions = {
         formText,
         z.string().min(1, '请填写你的昵称').max(30, '昵称最多 30 个字'),
       ),
-      qq: z.preprocess(
-        formText,
-        z.string().max(50),
-      ),
-      github: z.preprocess(
-        formText,
-        z.string().max(100),
-      ),
-      steam: z.preprocess(
-        formText,
-        z.string().max(100),
-      ),
+      qq: z.preprocess(formText, z.string().max(50)),
+      github: z.preprocess(formText, z.string().max(100)),
+      steam: z.preprocess(formText, z.string().max(100)),
       creatorTypes: z.array(z.enum(REQUIREMENT_TYPE_KEYS)).default([]),
     }),
     handler: async (input, context) => {
@@ -134,7 +125,7 @@ export const accountActions = {
     accept: 'form',
     input: z.object({
       email: emailSchema,
-      password: z.string().min(1, '请输入密码'),
+      password: z.string().min(8, '密码至少8位'),
     }),
     handler: async (input, context) => {
       const db = env.rim_guild_db

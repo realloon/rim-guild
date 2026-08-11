@@ -4,14 +4,36 @@ interface Props {
 }
 
 const { error } = Astro.props
+
+const issueMessages = error?.issues?.map(issue => issue.message) ?? []
+const validationMessages = (() => {
+  if (!error?.message?.startsWith('Failed to validate:')) return []
+
+  try {
+    const issues = JSON.parse(error.message.slice('Failed to validate:'.length))
+    return Array.isArray(issues)
+      ? issues
+          .map(issue => issue?.message)
+          .filter((message): message is string => typeof message === 'string')
+      : []
+  } catch {
+    return []
+  }
+})()
+const messages = issueMessages.length
+  ? issueMessages
+  : validationMessages.length
+    ? validationMessages
+    : error?.message
+      ? [error.message]
+      : []
 ---
 
 {
-  error && (
+  messages.length > 0 && (
     <div role="alert">
-      {error.message && <p>{error.message}</p>}
-      {error.issues?.map(issue => (
-        <p>{issue.message}</p>
+      {messages.map(message => (
+        <p>{message}</p>
       ))}
     </div>
   )

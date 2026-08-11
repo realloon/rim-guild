@@ -83,8 +83,8 @@ const result = mode === 'register' ? registerResult : loginResult
     submit.textContent = content.submit
     switchLabel.textContent = content.switchLabel
     switchLink.textContent = content.switchText
-    password.toggleAttribute('minlength', isRegister)
-    password.placeholder = isRegister ? '至少8位' : ''
+    password.minLength = 8
+    password.placeholder = '至少8位'
 
     const url = new URL(window.location.href)
     if (isRegister) {
@@ -111,6 +111,13 @@ const result = mode === 'register' ? registerResult : loginResult
     event.preventDefault()
     const currentMode = form.dataset.mode === 'register' ? 'register' : 'login'
     updateMode(currentMode === 'register' ? 'login' : 'register')
+  })
+
+  form.addEventListener('submit', event => {
+    if (!form.checkValidity()) {
+      event.preventDefault()
+      form.reportValidity()
+    }
   })
 </script>
 
@@ -165,8 +172,8 @@ const result = mode === 'register' ? registerResult : loginResult
             name="password"
             type="password"
             required
-            minlength={mode === 'register' ? 8 : undefined}
-            placeholder={mode === 'register' ? '至少8位' : undefined}
+            minlength="8"
+            placeholder="至少8位"
           />
         </Field>
 
@@ -283,7 +290,7 @@ const result = mode === 'register' ? registerResult : loginResult
 
       a {
         color: var(--accent-strong);
-        font-weight: 700;
+        font-weight: bold;
       }
     }
   }
