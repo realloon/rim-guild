@@ -160,11 +160,15 @@ const {
 
     list.addEventListener('submit', async event => {
       const form = event.target as HTMLFormElement
-      if (!form.matches('form[data-comment-delete]')) return
+      if (
+        !form.matches('form[data-comment-delete]') ||
+        !form.hasAttribute('data-confirmed')
+      ) {
+        return
+      }
 
       event.preventDefault()
       event.stopPropagation()
-      if (!confirm(form.dataset.confirm!)) return
 
       const button = form.querySelector<HTMLButtonElement>(
         'button[type="submit"]',

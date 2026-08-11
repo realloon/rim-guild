@@ -130,16 +130,6 @@ const navs = [
 ]
 ---
 
-<script>
-  document.addEventListener('submit', event => {
-    const form = event.target as HTMLFormElement
-    const message = form.dataset.confirm
-    if (message && !confirm(message)) {
-      event.preventDefault()
-    }
-  })
-</script>
-
 <Layout
   title={commission
     ? `${commission.title} · 边缘公会`

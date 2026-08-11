@@ -1,6 +1,7 @@
 ---
 import '../assets/styles/main.css'
 import Button from '../components/ui/Button.astro'
+import ConfirmDialog from '../components/ui/ConfirmDialog.astro'
 import { avatarUrl } from '../lib/avatar'
 import { actions } from 'astro:actions'
 
@@ -126,6 +127,7 @@ const isHome = Astro.url.pathname === '/'
     </menu>
 
     <slot />
+    <ConfirmDialog />
 
     <footer>
       <span
