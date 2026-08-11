@@ -3,10 +3,10 @@ import AuthorAvatar from './AuthorAvatar.astro'
 import BadgeList from './ui/BadgeList.astro'
 import {
   requirementTypeLabel,
-  formatDate,
   type CommissionSummary,
   type RequirementType,
 } from '../lib/commissions'
+import { formatDate } from '../lib/date'
 
 interface Props {
   commission: CommissionSummary

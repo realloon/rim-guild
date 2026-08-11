@@ -461,14 +461,23 @@ export const server = {
         throw new ActionError({ code: 'NOT_FOUND', message: '该委托不存在' })
       }
 
-      await db
+      const comment = await db
         .prepare(
-          'INSERT INTO commission_comments (commission_id, profile_token, content) VALUES (?, ?, ?)',
+          `INSERT INTO commission_comments (commission_id, profile_token, content)
+           VALUES (?, ?, ?)
+           RETURNING id, content, created_at`,
         )
         .bind(input.commissionId, profileToken, input.content)
-        .run()
+        .first<{
+          id: number
+          content: string
+          created_at: string
+        }>()
+      if (!comment) {
+        throw new Error('插入评论后数据库未返回记录')
+      }
 
-      return { ok: true }
+      return comment
     },
   }),
   deleteCommissionComment: defineAction({

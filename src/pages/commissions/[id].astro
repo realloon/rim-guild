@@ -9,9 +9,9 @@ import {
   listCommissionComments,
   listCommissionUpdates,
   tagLabel,
-  formatDate,
   type CommissionClaim,
 } from '../../lib/commissions'
+import { formatDate } from '../../lib/date'
 import Layout from '../../layouts/Layout.astro'
 import AuthorAvatar from '../../components/AuthorAvatar.astro'
 import CommissionComments from '../../components/CommissionComments.astro'
@@ -46,6 +46,16 @@ const viewer =
 if (commission && myProfileToken && !isOwner && !viewer) {
   throw new Error('登录会话对应的个人资料不存在')
 }
+const commenter =
+  commission && myProfileToken
+    ? isOwner
+      ? {
+          token: commission.author_token,
+          author_id: commission.author_id,
+          author_name: commission.author_name,
+        }
+      : viewer
+    : null
 const contactMethods = commission
   ? listContactMethods({
       qq: commission.author_qq,
@@ -121,17 +131,12 @@ const navs = [
 ---
 
 <script>
-  const forms = Array.from(document.forms).filter(form =>
-    form.hasAttribute('data-confirm'),
-  )
-
-  forms.forEach(form => {
-    form.addEventListener('submit', event => {
-      const message = form.dataset.confirm
-      if (!confirm(message)) {
-        event.preventDefault()
-      }
-    })
+  document.addEventListener('submit', event => {
+    const form = event.target as HTMLFormElement
+    const message = form.dataset.confirm
+    if (message && !confirm(message)) {
+      event.preventDefault()
+    }
   })
 </script>
 
@@ -202,6 +207,7 @@ const navs = [
                 commissionId={commission.id}
                 comments={commissionComments}
                 profileToken={myProfileToken}
+                commenter={commenter}
                 isOwner={isOwner}
                 error={commentResult?.error ?? commentDeleteResult?.error}
               />

@@ -5,18 +5,31 @@ import Button from './ui/Button.astro'
 import Control from './ui/Control.astro'
 import ErrorBox from './ui/ErrorBox.astro'
 import Section from './Section.astro'
-import { formatDate, type CommissionComment } from '../lib/commissions'
+import type { CommissionComment } from '../lib/commissions'
+import { formatDate } from '../lib/date'
 
 interface Props {
   commissionId: number
   comments: CommissionComment[]
   profileToken: string | null
+  commenter: {
+    token: string
+    author_id: string
+    author_name: string
+  } | null
   isOwner: boolean
   error?: { message?: string; issues?: { message: string }[] } | null
 }
 
-const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
-  Astro.props
+const {
+  commissionId,
+  comments,
+  profileToken,
+  commenter,
+  isOwner,
+  error,
+  ...attrs
+} = Astro.props
 ---
 
 <Section
@@ -25,45 +38,73 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
   meta={`${comments.length}条评论`}
   {...attrs}
 >
-  {
-    comments.length > 0 && (
-      <ul>
-        {comments.map(comment => (
-          <li>
-            <header>
-              <AuthorAvatar
-                seed={comment.profile_token}
-                name={comment.author_name}
-                href={`/authors/${comment.author_id}`}
-                size={20}
-              />
-              <time datetime={comment.created_at}>
-                {formatDate(comment.created_at)}
-              </time>
-              {(comment.profile_token === profileToken || isOwner) && (
-                <form
-                  method="POST"
-                  action={actions.deleteCommissionComment}
-                  data-confirm="确定删除这条评论吗？"
-                >
-                  <input type="hidden" name="commentId" value={comment.id} />
-                  <Button variant="link" type="submit">
-                    删除
-                  </Button>
-                </form>
-              )}
-            </header>
+  <ul data-comment-list hidden={comments.length === 0}>
+    {comments.map(comment => (
+      <li>
+        <header>
+          <AuthorAvatar
+            seed={comment.profile_token}
+            name={comment.author_name}
+            href={`/authors/${comment.author_id}`}
+            size={20}
+          />
+          <time datetime={comment.created_at}>
+            {formatDate(comment.created_at)}
+          </time>
+          {(comment.profile_token === profileToken || isOwner) && (
+            <form
+              method="POST"
+              action={actions.deleteCommissionComment}
+              data-confirm="确定删除这条评论吗？"
+            >
+              <input type="hidden" name="commentId" value={comment.id} />
+              <Button variant="link" type="submit">
+                删除
+              </Button>
+            </form>
+          )}
+        </header>
 
-            <p>{comment.content}</p>
-          </li>
-        ))}
-      </ul>
+        <p>{comment.content}</p>
+      </li>
+    ))}
+  </ul>
+
+  {
+    commenter && (
+      <template data-comment-template>
+        <li>
+          <header>
+            <AuthorAvatar
+              seed={commenter.token}
+              name={commenter.author_name}
+              href={`/authors/${commenter.author_id}`}
+              size={20}
+            />
+            <time data-comment-time></time>
+            <form
+              method="POST"
+              action={actions.deleteCommissionComment}
+              data-confirm="确定删除这条评论吗？"
+            >
+              <input type="hidden" name="commentId" />
+              <Button variant="link" type="submit">删除</Button>
+            </form>
+          </header>
+
+          <p data-comment-content></p>
+        </li>
+      </template>
     )
   }
 
   {
     profileToken ? (
-      <form method="POST" action={actions.addCommissionComment}>
+      <form
+        method="POST"
+        action={actions.addCommissionComment}
+        data-comment-form
+      >
         <input type="hidden" name="commissionId" value={commissionId} />
         <label class="sr-only" for={`comment-content-${commissionId}`}>
           评论内容
@@ -79,7 +120,11 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
           rows="3"
           placeholder="留下你的评论……"
         />
-        <ErrorBox error={error} />
+        {error ? (
+          <ErrorBox error={error} />
+        ) : (
+          <p role="alert" hidden />
+        )}
         <Button size="sm" type="submit">
           发表
         </Button>
@@ -96,6 +141,84 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
   }
 </Section>
 
+<script>
+  import { actions } from 'astro:actions'
+  import { formatDate } from '../lib/date'
+
+  const forms = Array.from(
+    document.querySelectorAll<HTMLFormElement>('form[data-comment-form]'),
+  )
+
+  forms.forEach(form => {
+    const section = form.closest<HTMLElement>('section')!
+    const list = section.querySelector<HTMLUListElement>(
+      'ul[data-comment-list]',
+    )!
+    const count = section.querySelector<HTMLElement>('header > span')!
+    const template = section.querySelector<HTMLTemplateElement>(
+      'template[data-comment-template]',
+    )!
+    const errorMessage = form.querySelector<HTMLElement>('[role="alert"]')!
+    const content = form.querySelector<HTMLTextAreaElement>(
+      'textarea[name="content"]',
+    )!
+    const button = form.querySelector<HTMLButtonElement>(
+      'button[type="submit"]',
+    )!
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault()
+      if (button.disabled) return
+
+      button.disabled = true
+      form.setAttribute('aria-busy', 'true')
+      errorMessage.hidden = true
+      errorMessage.textContent = ''
+
+      try {
+        let result
+        try {
+          result = await actions.addCommissionComment(new FormData(form))
+        } catch (error) {
+          if (!(error instanceof TypeError)) throw error
+          errorMessage.textContent = '网络请求失败，请稍后重试'
+          errorMessage.hidden = false
+          return
+        }
+
+        if (result.error) {
+          errorMessage.textContent = result.error.message
+          errorMessage.hidden = false
+          return
+        }
+
+        const comment = template.content.firstElementChild!.cloneNode(
+          true,
+        ) as HTMLLIElement
+        const time = comment.querySelector<HTMLTimeElement>(
+          '[data-comment-time]',
+        )!
+        time.dateTime = result.data.created_at
+        time.textContent = formatDate(result.data.created_at)
+        comment.querySelector<HTMLParagraphElement>(
+          '[data-comment-content]',
+        )!.textContent = result.data.content
+        comment.querySelector<HTMLInputElement>('input[name="commentId"]')!
+          .value = String(result.data.id)
+
+        list.appendChild(comment)
+        list.hidden = false
+        count.textContent = `${list.children.length}条评论`
+        form.reset()
+        content.dispatchEvent(new Event('input', { bubbles: true }))
+      } finally {
+        button.disabled = false
+        form.removeAttribute('aria-busy')
+      }
+    })
+  })
+</script>
+
 <style>
   ul {
     display: flex;
@@ -105,6 +228,10 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
     padding-block: 0;
     border-top: 1px solid var(--line);
     margin-block: 0;
+
+    &[hidden] {
+      display: none;
+    }
   }
 
   li {
@@ -149,5 +276,11 @@ const { commissionId, comments, profileToken, isOwner, error, ...attrs } =
     button {
       align-self: end;
     }
+  }
+
+  p[role='alert'] {
+    margin: 0;
+    color: var(--danger);
+    font-size: 0.875rem;
   }
 </style>

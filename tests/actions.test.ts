@@ -444,12 +444,15 @@ describe('commission actions', () => {
       '请先登录',
     )
 
-    expect(
-      await server.addCommissionComment(
-        { commissionId, content: '这条评论' },
-        context('member'),
-      ),
-    ).toEqual({ ok: true })
+    const comment = await server.addCommissionComment(
+      { commissionId, content: '这条评论' },
+      context('member'),
+    )
+    expect(comment).toEqual({
+      id: 1,
+      content: '这条评论',
+      created_at: expect.any(String),
+    })
 
     expect(
       database

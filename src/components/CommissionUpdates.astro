@@ -4,7 +4,8 @@ import Button from './ui/Button.astro'
 import ErrorBox from './ui/ErrorBox.astro'
 import Control from './ui/Control.astro'
 import Section from './Section.astro'
-import { formatDate, type CommissionUpdate } from '../lib/commissions'
+import type { CommissionUpdate } from '../lib/commissions'
+import { formatDate } from '../lib/date'
 
 interface Props {
   commissionId: number
