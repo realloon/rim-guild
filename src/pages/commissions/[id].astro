@@ -304,7 +304,7 @@ const navs = [
     gap: 32px;
 
     @media (max-width: 768px) {
-      flex-wrap: wrap;
+      flex-direction: column;
     }
   }
 
@@ -344,9 +344,11 @@ const navs = [
 
     flex-basis: 280px;
     align-self: start;
+    min-width: 0;
 
     @media (max-width: 768px) {
       flex-grow: 1;
+      margin-top: 24px;
 
       nav {
         display: none;
@@ -377,8 +379,14 @@ const navs = [
           align-items: center;
           gap: 8px;
 
+          svg {
+            flex-shrink: 0;
+          }
+
           span {
             color: var(--accent-strong);
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         }
       }
