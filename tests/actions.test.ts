@@ -429,6 +429,51 @@ describe('commission actions', () => {
     ).toBe(2)
   })
 
+  test('updateCommission cascades claims for removed requirements', async () => {
+    const database = createDatabase()
+    addProfile(database)
+    addProfile(database, 'member')
+    const commissionId = addCommission(database)
+    database
+      .query(
+        `INSERT INTO requirements
+         (commission_id, requirement_type, description, count, status)
+         VALUES (?, 'writer', '测试文案需求', 1, 'open')`,
+      )
+      .run(commissionId)
+    addClaim(database, commissionId, 'artist', 'member')
+
+    expect(
+      await server.updateCommission(
+        {
+          commissionId,
+          title: '更新后的测试委托',
+          description: '',
+          tags: [],
+          requirementTypes: ['writer'],
+          requirementDescriptions: ['保留文案需求'],
+          requirementCounts: [1],
+        },
+        context('owner'),
+      ),
+    ).toEqual({ id: commissionId })
+
+    expect(
+      database
+        .query(
+          'SELECT requirement_type FROM requirements ORDER BY requirement_type',
+        )
+        .all(),
+    ).toEqual([{ requirement_type: 'writer' }])
+    expect(
+      database
+        .query<{ count: number }, SQLQueryBindings[]>(
+          'SELECT COUNT(*) AS count FROM claims',
+        )
+        .get()!.count,
+    ).toBe(0)
+  })
+
   test('addCommissionComment requires login and stores the comment', async () => {
     const database = createDatabase()
     addProfile(database, 'owner')

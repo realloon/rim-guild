@@ -1,4 +1,3 @@
-import type { RequirementType } from './commissions'
 import type { RequirementInput } from './requirements'
 
 interface CommissionFields {
@@ -47,22 +46,8 @@ export async function updateCommission(
   fields: CommissionFields,
   requirements: RequirementInput[],
 ) {
-  const existingRows = await db
-    .prepare(
-      `SELECT r.requirement_type, r.status
-       FROM requirements r
-       JOIN commissions c ON c.id = r.commission_id
-       WHERE r.commission_id = ? AND c.author_token = ?`,
-    )
-    .bind(commissionId, authorToken)
-    .all<{ requirement_type: string; status: string }>()
-
-  const requestedTypes = new Set(
-    requirements.map(requirement => requirement.type),
-  )
-  const existingTypes = new Set<RequirementType>(
-    existingRows.results.map(row => row.requirement_type as RequirementType),
-  )
+  const types = requirements.map(requirement => requirement.type)
+  const placeholders = types.map(() => '?').join(', ')
 
   const statements = [
     db
@@ -78,10 +63,18 @@ export async function updateCommission(
         commissionId,
         authorToken,
       ),
-    ...requirements.map(requirement => {
-      const existing = existingRows.results.find(
-        row => row.requirement_type === requirement.type,
+    db
+      .prepare(
+        `DELETE FROM requirements
+         WHERE commission_id = ?
+           AND requirement_type NOT IN (${placeholders})
+           AND EXISTS (
+             SELECT 1 FROM commissions
+             WHERE id = ? AND author_token = ?
+           )`,
       )
+      .bind(commissionId, ...types, commissionId, authorToken),
+    ...requirements.map(requirement => {
       return db
         .prepare(
           `INSERT INTO requirements
@@ -99,25 +92,11 @@ export async function updateCommission(
           requirement.type,
           requirement.description,
           requirement.count,
-          existing?.status ?? 'open',
+          'open',
           commissionId,
           authorToken,
         )
     }),
-    ...[...existingTypes]
-      .filter(type => !requestedTypes.has(type))
-      .map(type =>
-        db
-          .prepare(
-            `DELETE FROM requirements
-             WHERE commission_id = ? AND requirement_type = ?
-               AND EXISTS (
-                 SELECT 1 FROM commissions
-                 WHERE id = ? AND author_token = ?
-               )`,
-          )
-          .bind(commissionId, type, commissionId, authorToken),
-      ),
   ]
 
   const [commissionResult] = await db.batch(statements)
