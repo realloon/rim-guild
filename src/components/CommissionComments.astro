@@ -57,7 +57,8 @@ const {
                 method="POST"
                 action={actions.deleteCommissionComment}
                 data-comment-delete
-                data-confirm="确定删除这条评论吗？"
+                data-confirm-title="删除该评论"
+                data-confirm-message="该操作不可恢复"
               >
                 <input type="hidden" name="commentId" value={comment.id} />
                 <Button variant="link" type="submit">
@@ -89,7 +90,8 @@ const {
               method="POST"
               action={actions.deleteCommissionComment}
               data-comment-delete
-              data-confirm="确定删除这条评论吗？"
+              data-confirm-title="删除该评论"
+              data-confirm-message="该操作不可恢复"
             >
               <input type="hidden" name="commentId" />
               <Button variant="link" type="submit">
@@ -144,8 +146,44 @@ const {
 </Section>
 
 <script>
-  import { actions } from 'astro:actions'
+  import { actions, type SafeResult } from 'astro:actions'
   import { formatDate } from '../lib/date'
+
+  const runAction = async <T,>(
+    form: HTMLFormElement,
+    button: HTMLButtonElement,
+    errorMessage: HTMLElement,
+    action: (
+      formData: FormData,
+    ) => Promise<SafeResult<Record<string, never>, T>>,
+  ): Promise<T | null> => {
+    if (button.disabled) return null
+
+    button.disabled = true
+    form.setAttribute('aria-busy', 'true')
+    errorMessage.hidden = true
+    errorMessage.textContent = ''
+
+    try {
+      const result = await action(new FormData(form)).catch(error => {
+        if (!(error instanceof TypeError)) throw error
+        errorMessage.textContent = '网络请求失败，请稍后重试'
+        errorMessage.hidden = false
+        return null
+      })
+
+      if (result?.error) {
+        errorMessage.textContent = result.error.message
+        errorMessage.hidden = false
+        return null
+      }
+
+      return result?.data ?? null
+    } finally {
+      button.disabled = false
+      form.removeAttribute('aria-busy')
+    }
+  }
 
   const forms = Array.from(
     document.querySelectorAll<HTMLFormElement>('form[data-comment-form]'),
@@ -177,36 +215,17 @@ const {
         'form[data-comment-form] [role="alert"]',
       )!
 
-      button.disabled = true
-      form.setAttribute('aria-busy', 'true')
-      errorMessage.hidden = true
-      errorMessage.textContent = ''
+      const result = await runAction(
+        form,
+        button,
+        errorMessage,
+        actions.deleteCommissionComment,
+      )
+      if (!result) return
 
-      try {
-        const result = await actions
-          .deleteCommissionComment(new FormData(form))
-          .catch(error => {
-            if (!(error instanceof TypeError)) throw error
-            errorMessage.textContent = '网络请求失败，请稍后重试'
-            errorMessage.hidden = false
-            return null
-          })
-
-        if (!result) return
-
-        if (result.error) {
-          errorMessage.textContent = result.error.message
-          errorMessage.hidden = false
-          return
-        }
-
-        form.closest<HTMLLIElement>('li')!.remove()
-        list.hidden = list.children.length === 0
-        count.textContent = `${list.children.length}条评论`
-      } finally {
-        button.disabled = false
-        form.removeAttribute('aria-busy')
-      }
+      form.closest<HTMLLIElement>('li')!.remove()
+      list.hidden = list.children.length === 0
+      count.textContent = `${list.children.length}条评论`
     })
   })
 
@@ -229,54 +248,35 @@ const {
 
     form.addEventListener('submit', async event => {
       event.preventDefault()
-      if (button.disabled) return
 
-      button.disabled = true
-      form.setAttribute('aria-busy', 'true')
-      errorMessage.hidden = true
-      errorMessage.textContent = ''
+      const result = await runAction(
+        form,
+        button,
+        errorMessage,
+        actions.addCommissionComment,
+      )
+      if (!result) return
 
-      try {
-        let result
-        try {
-          result = await actions.addCommissionComment(new FormData(form))
-        } catch (error) {
-          if (!(error instanceof TypeError)) throw error
-          errorMessage.textContent = '网络请求失败，请稍后重试'
-          errorMessage.hidden = false
-          return
-        }
+      const comment = template.content.firstElementChild!.cloneNode(
+        true,
+      ) as HTMLLIElement
+      const time = comment.querySelector<HTMLTimeElement>(
+        '[data-comment-time]',
+      )!
+      time.dateTime = result.created_at
+      time.textContent = formatDate(result.created_at)
+      comment.querySelector<HTMLParagraphElement>(
+        '[data-comment-content]',
+      )!.textContent = result.content
+      comment.querySelector<HTMLInputElement>(
+        'input[name="commentId"]',
+      )!.value = String(result.id)
 
-        if (result.error) {
-          errorMessage.textContent = result.error.message
-          errorMessage.hidden = false
-          return
-        }
-
-        const comment = template.content.firstElementChild!.cloneNode(
-          true,
-        ) as HTMLLIElement
-        const time = comment.querySelector<HTMLTimeElement>(
-          '[data-comment-time]',
-        )!
-        time.dateTime = result.data.created_at
-        time.textContent = formatDate(result.data.created_at)
-        comment.querySelector<HTMLParagraphElement>(
-          '[data-comment-content]',
-        )!.textContent = result.data.content
-        comment.querySelector<HTMLInputElement>(
-          'input[name="commentId"]',
-        )!.value = String(result.data.id)
-
-        list.appendChild(comment)
-        list.hidden = false
-        count.textContent = `${list.children.length}条评论`
-        form.reset()
-        content.dispatchEvent(new Event('input', { bubbles: true }))
-      } finally {
-        button.disabled = false
-        form.removeAttribute('aria-busy')
-      }
+      list.appendChild(comment)
+      list.hidden = false
+      count.textContent = `${list.children.length}条评论`
+      form.reset()
+      content.dispatchEvent(new Event('input', { bubbles: true }))
     })
   })
 </script>

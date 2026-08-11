@@ -240,7 +240,8 @@ const navs = [
                 <form
                   method="POST"
                   action={actions.deleteCommission}
-                  data-confirm="确定删除这份委托吗？删除后不可恢复。"
+                  data-confirm-title="删除该委托"
+                  data-confirm-message="删除后，关联的进展与留言也将被删除，该操作不可恢复"
                 >
                   <Button
                     type="button"

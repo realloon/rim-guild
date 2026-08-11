@@ -5,11 +5,10 @@ import Button from './Button.astro'
 <dialog
   data-confirm-dialog
   aria-labelledby="confirm-dialog-title"
-  aria-describedby="confirm-dialog-message"
 >
   <form method="dialog">
     <h2 id="confirm-dialog-title">确认操作</h2>
-    <p data-confirm-message></p>
+    <p id="confirm-dialog-message" data-confirm-message hidden></p>
     <footer>
       <Button type="submit" value="cancel" variant="ghost">取消</Button>
       <Button type="submit" value="confirm" variant="danger">确认</Button>
@@ -21,14 +20,15 @@ import Button from './Button.astro'
   const dialog = document.querySelector<HTMLDialogElement>(
     'dialog[data-confirm-dialog]',
   )!
+  const title = dialog.querySelector<HTMLElement>('#confirm-dialog-title')!
   const message = dialog.querySelector<HTMLElement>('[data-confirm-message]')!
   let pendingForm: HTMLFormElement | null = null
   let returnFocus: HTMLElement | null = null
 
   document.addEventListener('submit', event => {
     const form = event.target as HTMLFormElement
-    const confirmation = form.dataset.confirm
-    if (!confirmation || form.hasAttribute('data-confirmed')) return
+    const confirmTitle = form.dataset.confirmTitle
+    if (!confirmTitle || form.hasAttribute('data-confirmed')) return
 
     event.preventDefault()
     if (dialog.open) return
@@ -38,7 +38,15 @@ import Button from './Button.astro'
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null
-    message.textContent = confirmation
+    const confirmMessage = form.dataset.confirmMessage
+    title.textContent = confirmTitle
+    message.textContent = confirmMessage ?? ''
+    message.hidden = !confirmMessage
+    if (confirmMessage) {
+      dialog.setAttribute('aria-describedby', 'confirm-dialog-message')
+    } else {
+      dialog.removeAttribute('aria-describedby')
+    }
     dialog.showModal()
   })
 
@@ -81,10 +89,11 @@ import Button from './Button.astro'
 
     h2 {
       color: var(--forest);
-      font-size: 1.5rem;
+      font-size: 1.25rem;
     }
 
     p {
+      color: var(--text-muted);
       line-height: 1.5;
     }
 
