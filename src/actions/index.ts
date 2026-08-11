@@ -3,7 +3,6 @@ import { z } from 'astro/zod'
 import { env } from 'cloudflare:workers'
 import {
   REQUIREMENT_TYPE_KEYS,
-  parseRequirementStatus,
 } from '../lib/commissions'
 import { commissionActions } from './commission'
 import { commentActions } from './comments'
@@ -63,35 +62,6 @@ export const server = {
       const db = env.rim_guild_db
       const profileToken = requireAuth(context)
 
-      const requirement = await db
-        .prepare(
-          `SELECT c.author_token, r.status
-           FROM commissions c
-           JOIN requirements r
-             ON r.commission_id = c.id
-            AND r.requirement_type = ?
-           WHERE c.id = ?`,
-        )
-        .bind(input.requirementType, input.commissionId)
-        .first<{
-          author_token: string
-          status: string
-        }>()
-      if (!requirement) {
-        throw new ActionError({ code: 'NOT_FOUND', message: '该需求不存在' })
-      }
-      if (requirement.author_token === profileToken) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: '不能认领自己发布的委托',
-        })
-      }
-      if (parseRequirementStatus(requirement.status) !== 'open') {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: '该需求已停止招募',
-        })
-      }
       const result = await db
         .prepare(
           `INSERT INTO claims (commission_id, requirement_type, profile_token)
@@ -102,7 +72,9 @@ export const server = {
               AND r.requirement_type = ?
               AND r.status = 'open'
               AND c.author_token != ?
-            ON CONFLICT (commission_id, requirement_type, profile_token) DO NOTHING`,
+            ON CONFLICT (commission_id, requirement_type, profile_token)
+            DO NOTHING
+            RETURNING commission_id`,
         )
         .bind(
           profileToken,
@@ -110,12 +82,12 @@ export const server = {
           input.requirementType,
           profileToken,
         )
-        .run()
+        .first<{ commission_id: number }>()
 
-      if (result.meta.changes !== 1) {
+      if (!result) {
         const currentRequirement = await db
           .prepare(
-            `SELECT r.status,
+            `SELECT c.author_token, r.status,
                     EXISTS (
                       SELECT 1 FROM claims own_claim
                       WHERE own_claim.commission_id = r.commission_id
@@ -123,16 +95,24 @@ export const server = {
                         AND own_claim.profile_token = ?
                     ) AS already_claimed
              FROM requirements r
+             JOIN commissions c ON c.id = r.commission_id
              WHERE r.commission_id = ?
                AND r.requirement_type = ?`,
           )
           .bind(profileToken, input.commissionId, input.requirementType)
           .first<{
+            author_token: string
             status: string
             already_claimed: number
           }>()
         if (!currentRequirement) {
           throw new ActionError({ code: 'NOT_FOUND', message: '该需求不存在' })
+        }
+        if (currentRequirement.author_token === profileToken) {
+          throw new ActionError({
+            code: 'BAD_REQUEST',
+            message: '不能认领自己发布的委托',
+          })
         }
         if (currentRequirement.already_claimed) {
           return getRequirementClaimState(
@@ -142,7 +122,7 @@ export const server = {
             profileToken,
           )
         }
-        if (parseRequirementStatus(currentRequirement.status) !== 'open') {
+        if (currentRequirement.status !== 'open') {
           throw new ActionError({
             code: 'BAD_REQUEST',
             message: '该需求已停止招募',

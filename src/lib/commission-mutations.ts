@@ -139,12 +139,13 @@ export async function updateRequirementStatus(
          AND EXISTS (
            SELECT 1 FROM commissions
            WHERE id = ? AND author_token = ?
-         )`,
+         )
+       RETURNING commission_id`,
     )
     .bind(status, commissionId, requirementType, commissionId, authorToken)
-    .run()
+    .first<{ commission_id: number }>()
 
-  return result.meta.changes === 1
+  return result !== null
 }
 
 export async function deleteCommission(
@@ -153,11 +154,13 @@ export async function deleteCommission(
   commissionId: number,
 ) {
   const result = await db
-    .prepare('DELETE FROM commissions WHERE id = ? AND author_token = ?')
+    .prepare(
+      'DELETE FROM commissions WHERE id = ? AND author_token = ? RETURNING id',
+    )
     .bind(commissionId, authorToken)
-    .run()
+    .first<{ id: number }>()
 
-  return result.meta.changes > 0
+  return result !== null
 }
 
 export async function addCommissionUpdate(
@@ -173,12 +176,13 @@ export async function addCommissionUpdate(
        WHERE EXISTS (
          SELECT 1 FROM commissions
          WHERE id = ? AND author_token = ?
-       )`,
+       )
+       RETURNING commission_id`,
     )
     .bind(commissionId, content, commissionId, authorToken)
-    .run()
+    .first<{ commission_id: number }>()
 
-  return result.meta.changes === 1
+  return result !== null
 }
 
 export async function deleteCommissionComment(
@@ -198,10 +202,11 @@ export async function deleteCommissionComment(
              WHERE commissions.id = commission_comments.commission_id
                AND commissions.author_token = ?
            )
-         )`,
+         )
+       RETURNING id`,
     )
     .bind(commentId, profileToken, profileToken)
-    .run()
+    .first<{ id: number }>()
 
-  return result.meta.changes === 1
+  return result !== null
 }
