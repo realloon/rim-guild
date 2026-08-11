@@ -9,41 +9,37 @@ interface Props {
 const { legend, name, options, checked } = Astro.props
 ---
 
-<fieldset>
-  <legend>{legend}</legend>
-  {
-    Object.entries(options).map(([value, label]) => (
-      <label>
-        <input
-          type="checkbox"
-          name={name}
-          value={value}
-          checked={checked.includes(value)}
-        />
-        {label}
-      </label>
-    ))
-  }
-</fieldset>
+<div>
+  <span class="legend">{legend}</span>
+  <div class="options">
+    {
+      Object.entries(options).map(([value, label]) => (
+        <label>
+          <input
+            type="checkbox"
+            name={name}
+            value={value}
+            checked={checked.includes(value)}
+          />
+          {label}
+        </label>
+      ))
+    }
+  </div>
+</div>
 
 <style>
-  fieldset {
+  .legend {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+
+  .options {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: unset;
-    border: unset;
-    margin-inline: unset;
-
-    legend {
-      color: var(--text-muted);
-
-      font-size: 0.75rem;
-      font-weight: bold;
-
-      padding-inline: unset;
-      margin-bottom: 8px;
-    }
+    margin-top: 8px;
   }
 
   label {
@@ -52,38 +48,34 @@ const { legend, name, options, checked } = Astro.props
     gap: 8px;
 
     color: var(--text-muted);
-    background: color-mix(in srgb, var(--surface) 68%, transparent);
+    background-color: var(--page);
 
     font-size: 0.875rem;
-    line-height: 1.5;
 
-    padding: 6px 12px;
+    padding: 8px 12px;
     border: 1px solid var(--line);
     border-radius: 12px;
-
     cursor: pointer;
+
     transition: 0.2s;
 
     input {
-      width: auto;
-      min-height: auto;
-      margin: 0;
+      margin: unset;
       accent-color: var(--accent);
     }
 
-    &:hover {
-      border-color: var(--accent);
+    &:hover,
+    &:has(input:checked) {
       color: var(--accent-strong);
+      border-color: var(--accent);
     }
 
     &:has(input:checked) {
-      border-color: var(--accent);
       background: color-mix(
         in oklch,
         var(--accent) 22%,
         light-dark(white, black)
       );
-      color: var(--accent-strong);
     }
   }
 </style>
