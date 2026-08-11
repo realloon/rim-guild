@@ -1,71 +1,21 @@
-import { Database, type SQLQueryBindings } from 'bun:sqlite'
 import { afterEach, describe, expect, test } from 'bun:test'
+import { type Database } from 'bun:sqlite'
 import {
   findCommission,
   incrementCommissionViews,
 } from '../src/lib/commissions'
+import {
+  createDatabase as createTestDatabase,
+  createD1,
+  loadSchema,
+} from './helpers/d1'
 
-class SQLitePreparedStatement {
-  private parameters: SQLQueryBindings[] = []
-
-  constructor(
-    private readonly database: Database,
-    private readonly sql: string,
-  ) {}
-
-  bind(...parameters: SQLQueryBindings[]) {
-    this.parameters = parameters
-    return this
-  }
-
-  async first<T>() {
-    return this.database
-      .query<T, SQLQueryBindings[]>(this.sql)
-      .get(...this.parameters)
-  }
-
-  async all<T>() {
-    return {
-      results: this.database
-        .query<T, SQLQueryBindings[]>(this.sql)
-        .all(...this.parameters),
-    }
-  }
-
-  async run() {
-    const result = this.database.query(this.sql).run(...this.parameters)
-    return {
-      meta: {
-        changes: result.changes,
-        last_row_id: result.lastInsertRowid,
-      },
-    }
-  }
-}
-
-class SQLiteD1 {
-  constructor(private readonly database: Database) {}
-
-  prepare(sql: string) {
-    return new SQLitePreparedStatement(this.database, sql)
-  }
-}
-
-// The lib functions only need the D1 operations the shim provides.
-function createDb(database: Database) {
-  return new SQLiteD1(database) as unknown as D1Database
-}
-
-const schema = await Bun.file(
-  new URL('../db/schema.sql', import.meta.url),
-).text()
+const schema = await loadSchema()
 
 const databases: Database[] = []
 
 function createDatabase() {
-  const database = new Database(':memory:')
-  database.run('PRAGMA foreign_keys = ON')
-  database.run(schema)
+  const database = createTestDatabase(schema)
   databases.push(database)
   return database
 }
@@ -107,7 +57,7 @@ describe('commission view counts', () => {
   test('starts at zero and accumulates on each view', async () => {
     const database = createDatabase()
     addProfile(database)
-    const db = createDb(database)
+    const db = createD1(database)
 
     const commissionId = addCommission(database)
     expect((await findCommission(db, commissionId))!.view_count).toBe(0)
@@ -121,12 +71,10 @@ describe('commission view counts', () => {
     const database = createDatabase()
     addProfile(database, 'owner')
     addProfile(database, 'member')
-    const db = createDb(database)
+    const db = createD1(database)
 
     const commissionId = addCommission(database)
-    expect(
-      await incrementCommissionViews(db, commissionId, 'owner'),
-    ).toBeNull()
+    expect(await incrementCommissionViews(db, commissionId, 'owner')).toBeNull()
     expect(await incrementCommissionViews(db, commissionId, 'member')).toBe(1)
     expect((await findCommission(db, commissionId))!.view_count).toBe(1)
   })

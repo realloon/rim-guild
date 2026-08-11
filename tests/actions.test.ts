@@ -260,7 +260,7 @@ describe('commission actions', () => {
     ])
   })
 
-  test('claimRequirement allows claims beyond the target and duplicate claims', async () => {
+  test('claimRequirement treats count as informational and is idempotent', async () => {
     const database = createDatabase()
     addProfile(database, 'owner')
     addProfile(database, 'member-1')
@@ -373,7 +373,7 @@ describe('commission actions', () => {
         context('member'),
       ),
       'FORBIDDEN',
-      '无权操作',
+      '你无权执行此操作',
     )
     expect(
       await server.updateRequirementStatus(
@@ -481,7 +481,7 @@ describe('commission actions', () => {
     await expectActionError(
       server.deleteCommissionComment({ commentId }, context('other')),
       'FORBIDDEN',
-      '无权删除该评论',
+      '你无权执行此操作',
     )
 
     expect(
@@ -498,8 +498,8 @@ describe('commission actions', () => {
 
     await expectActionError(
       server.deleteCommissionComment({ commentId }, context('member')),
-      'NOT_FOUND',
-      '评论不存在',
+      'FORBIDDEN',
+      '你无权执行此操作',
     )
   })
 

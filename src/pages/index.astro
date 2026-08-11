@@ -12,7 +12,6 @@ import Button from '../components/ui/Button.astro'
 import CommissionList from '../components/CommissionList.astro'
 import SiteStats from '../components/SiteStats.astro'
 import Control from '../components/ui/Control.astro'
-import EmptyState from '../components/EmptyState.astro'
 
 const db = env.rim_guild_db
 const requirementParam = Astro.url.searchParams.get('requirement')
@@ -24,21 +23,10 @@ const q = (Astro.url.searchParams.get('q') ?? '').trim()
 
 const myProfileToken = Astro.locals.auth?.profileToken ?? null
 const commissions = await listOpenCommissions(db, {
+  requirementType: activeRequirementType ?? undefined,
   search: q || undefined,
 })
-const hasVisibleCommissions = commissions.some(commission =>
-  activeRequirementType
-    ? commission.requirements.some(
-        requirement =>
-          requirement.status === 'open' &&
-          requirement.type === activeRequirementType,
-      )
-    : true,
-)
 const { commissionCount, registeredUserCount } = await getSiteStats(db)
-const clearSearchHref = activeRequirementType
-  ? `/?requirement=${activeRequirementType}`
-  : '/'
 ---
 
 <script>
