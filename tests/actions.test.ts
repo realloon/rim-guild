@@ -2,6 +2,11 @@ import type { ActionClient, ActionInputSchema } from 'astro:actions'
 import type { z } from 'astro/zod'
 import { Database, type SQLQueryBindings } from 'bun:sqlite'
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import {
+  createDatabase as createTestDatabase,
+  createD1,
+  loadSchema,
+} from './helpers/d1'
 
 class TestActionError extends Error {
   constructor(readonly details: { code: string; message: string }) {
@@ -15,88 +20,22 @@ mock.module('astro:actions', () => ({
     config.handler,
 }))
 
-const environment: { rim_guild_db: SQLiteD1 | null } = {
+const environment: { rim_guild_db: D1Database | null } = {
   rim_guild_db: null,
 }
 
 mock.module('cloudflare:workers', () => ({ env: environment }))
 
 const { server: actionServer } = await import('../src/actions/index')
-const schema = await Bun.file(
-  new URL('../db/schema.sql', import.meta.url),
-).text()
-
-class SQLitePreparedStatement {
-  private parameters: SQLQueryBindings[] = []
-
-  constructor(
-    private readonly database: Database,
-    private readonly sql: string,
-  ) {}
-
-  bind(...parameters: SQLQueryBindings[]) {
-    this.parameters = parameters
-    return this
-  }
-
-  async first<T>() {
-    return this.database
-      .query<T, SQLQueryBindings[]>(this.sql)
-      .get(...this.parameters)
-  }
-
-  async all<T>() {
-    return {
-      results: this.database
-        .query<T, SQLQueryBindings[]>(this.sql)
-        .all(...this.parameters),
-    }
-  }
-
-  async run() {
-    const result = this.database.query(this.sql).run(...this.parameters)
-    return {
-      meta: {
-        changes: result.changes,
-        last_row_id: result.lastInsertRowid,
-      },
-    }
-  }
-}
-
-// The handlers only need these D1 operations; SQLite keeps the tests in memory.
-class SQLiteD1 {
-  constructor(private readonly database: Database) {}
-
-  prepare(sql: string) {
-    return new SQLitePreparedStatement(this.database, sql)
-  }
-
-  async batch(statements: SQLitePreparedStatement[]) {
-    this.database.run('BEGIN')
-    try {
-      const results = []
-      for (const statement of statements) {
-        results.push(await statement.run())
-      }
-      this.database.run('COMMIT')
-      return results
-    } catch (error) {
-      this.database.run('ROLLBACK')
-      throw error
-    }
-  }
-}
+const schema = await loadSchema()
 
 const databases: Database[] = []
 
 function createDatabase() {
-  const database = new Database(':memory:')
-  database.run('PRAGMA foreign_keys = ON')
-  database.run(schema)
+  const database = createTestDatabase(schema)
   databases.push(database)
 
-  environment.rim_guild_db = new SQLiteD1(database)
+  environment.rim_guild_db = createD1(database)
   return database
 }
 
@@ -390,7 +329,7 @@ describe('commission actions', () => {
     ).toBe('closed')
   })
 
-  test('updateCommission can reduce the target below existing claims', async () => {
+  test('updateCommission preserves claims when count changes', async () => {
     const database = createDatabase()
     addProfile(database, 'owner')
     addProfile(database, 'member')
