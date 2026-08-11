@@ -39,35 +39,38 @@ const {
   {...attrs}
 >
   <ul data-comment-list hidden={comments.length === 0}>
-    {comments.map(comment => (
-      <li>
-        <header>
-          <AuthorAvatar
-            seed={comment.profile_token}
-            name={comment.author_name}
-            href={`/authors/${comment.author_id}`}
-            size={20}
-          />
-          <time datetime={comment.created_at}>
-            {formatDate(comment.created_at)}
-          </time>
-          {(comment.profile_token === profileToken || isOwner) && (
-            <form
-              method="POST"
-              action={actions.deleteCommissionComment}
-              data-confirm="确定删除这条评论吗？"
-            >
-              <input type="hidden" name="commentId" value={comment.id} />
-              <Button variant="link" type="submit">
-                删除
-              </Button>
-            </form>
-          )}
-        </header>
+    {
+      comments.map(comment => (
+        <li>
+          <header>
+            <AuthorAvatar
+              seed={comment.profile_token}
+              name={comment.author_name}
+              href={`/authors/${comment.author_id}`}
+              size={20}
+            />
+            <time datetime={comment.created_at}>
+              {formatDate(comment.created_at)}
+            </time>
+            {(comment.profile_token === profileToken || isOwner) && (
+              <form
+                method="POST"
+                action={actions.deleteCommissionComment}
+                data-comment-delete
+                data-confirm="确定删除这条评论吗？"
+              >
+                <input type="hidden" name="commentId" value={comment.id} />
+                <Button variant="link" type="submit">
+                  删除
+                </Button>
+              </form>
+            )}
+          </header>
 
-        <p>{comment.content}</p>
-      </li>
-    ))}
+          <p>{comment.content}</p>
+        </li>
+      ))
+    }
   </ul>
 
   {
@@ -81,18 +84,21 @@ const {
               href={`/authors/${commenter.author_id}`}
               size={20}
             />
-            <time data-comment-time></time>
+            <time data-comment-time />
             <form
               method="POST"
               action={actions.deleteCommissionComment}
+              data-comment-delete
               data-confirm="确定删除这条评论吗？"
             >
               <input type="hidden" name="commentId" />
-              <Button variant="link" type="submit">删除</Button>
+              <Button variant="link" type="submit">
+                删除
+              </Button>
             </form>
           </header>
 
-          <p data-comment-content></p>
+          <p data-comment-content />
         </li>
       </template>
     )
@@ -120,11 +126,7 @@ const {
           rows="3"
           placeholder="留下你的评论……"
         />
-        {error ? (
-          <ErrorBox error={error} />
-        ) : (
-          <p role="alert" hidden />
-        )}
+        {error ? <ErrorBox error={error} /> : <p role="alert" hidden />}
         <Button size="sm" type="submit">
           发表
         </Button>
@@ -148,6 +150,61 @@ const {
   const forms = Array.from(
     document.querySelectorAll<HTMLFormElement>('form[data-comment-form]'),
   )
+  const lists = Array.from(
+    document.querySelectorAll<HTMLUListElement>('ul[data-comment-list]'),
+  )
+
+  lists.forEach(list => {
+    const section = list.closest<HTMLElement>('section')!
+    const count = section.querySelector<HTMLElement>('header > span')!
+
+    list.addEventListener('submit', async event => {
+      const form = event.target as HTMLFormElement
+      if (!form.matches('form[data-comment-delete]')) return
+
+      event.preventDefault()
+      event.stopPropagation()
+      if (!confirm(form.dataset.confirm!)) return
+
+      const button = form.querySelector<HTMLButtonElement>(
+        'button[type="submit"]',
+      )!
+      const errorMessage = section.querySelector<HTMLElement>(
+        'form[data-comment-form] [role="alert"]',
+      )!
+
+      button.disabled = true
+      form.setAttribute('aria-busy', 'true')
+      errorMessage.hidden = true
+      errorMessage.textContent = ''
+
+      try {
+        const result = await actions
+          .deleteCommissionComment(new FormData(form))
+          .catch(error => {
+            if (!(error instanceof TypeError)) throw error
+            errorMessage.textContent = '网络请求失败，请稍后重试'
+            errorMessage.hidden = false
+            return null
+          })
+
+        if (!result) return
+
+        if (result.error) {
+          errorMessage.textContent = result.error.message
+          errorMessage.hidden = false
+          return
+        }
+
+        form.closest<HTMLLIElement>('li')!.remove()
+        list.hidden = list.children.length === 0
+        count.textContent = `${list.children.length}条评论`
+      } finally {
+        button.disabled = false
+        form.removeAttribute('aria-busy')
+      }
+    })
+  })
 
   forms.forEach(form => {
     const section = form.closest<HTMLElement>('section')!
@@ -203,8 +260,9 @@ const {
         comment.querySelector<HTMLParagraphElement>(
           '[data-comment-content]',
         )!.textContent = result.data.content
-        comment.querySelector<HTMLInputElement>('input[name="commentId"]')!
-          .value = String(result.data.id)
+        comment.querySelector<HTMLInputElement>(
+          'input[name="commentId"]',
+        )!.value = String(result.data.id)
 
         list.appendChild(comment)
         list.hidden = false
