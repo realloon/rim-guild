@@ -2,10 +2,7 @@
 import Button from './Button.astro'
 ---
 
-<dialog
-  data-confirm-dialog
-  aria-labelledby="confirm-dialog-title"
->
+<dialog data-confirm-dialog aria-labelledby="confirm-dialog-title">
   <form method="dialog">
     <h2 id="confirm-dialog-title">确认操作</h2>
     <p id="confirm-dialog-message" data-confirm-message hidden></p>
@@ -71,7 +68,7 @@ import Button from './Button.astro'
   dialog {
     background-color: var(--surface);
 
-    width: min(calc(100% - 32px), 420px);
+    width: min(calc(100% - 32px), 400px);
     padding: 24px;
     border: 1px solid var(--line);
     box-shadow: var(--shadow);
@@ -84,7 +81,7 @@ import Button from './Button.astro'
     form {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 8px;
     }
 
     h2 {
@@ -101,6 +98,7 @@ import Button from './Button.astro'
       display: flex;
       justify-content: end;
       gap: 8px;
+      margin-top: 16px;
     }
   }
 </style>
